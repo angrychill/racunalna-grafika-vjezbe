@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="hr">
+	<head>
+		<meta charset="UTF-8">
+		<title>slider i canvas</title>
+		<script>
+		  window.onload = canApp;
+
+		  function canApp() {
+		  	/* ovo je bolje staviti izvan funkcije slikaj
+		  	jer se funkcija slikaj poziva prilikom svakog klika misa na canvasu,
+		  	a parametri canvasa (duljina, sirina, 2d kontekst, font, ...) su stalno isti
+		  	i nema potrebe ponovo to "racunati" prilikom svakog klika misem
+		  	*/
+		  	var platno1 = document.getElementById("slika1");
+			if(!platno1) alert("Greška - nema platna!");
+			var w = platno1.width;
+			var h = platno1.height;
+			var g = platno1.getContext("2d");
+
+            var pxT = document.getElementById("pxT");
+            var xTekst = document.getElementById("xTekst");
+            var pyT = document.getElementById("pyT");
+            var yTekst = document.getElementById("yTekst");
+
+            var pxL = document.getElementById("pxL");
+            var xLinija = document.getElementById("xLinija");
+            var pyL = document.getElementById("pyL");
+            var yLinija = document.getElementById("yLinija");
+
+			//trenutna pozicija teksta
+            //round uzimamo da osiguramo cjelobrojne koordinate bez obzira na dimenzije canvasa
+            //da nam slider na pocetku ne prikazuje decimalne koordinate
+            var posx = Math.round(w / 2);
+            var posy = Math.round(h / 2);
+
+            //pozicija prijeloma linije
+            var lx = Math.round(w / 2);
+            var ly = h;
+
+            //font
+            g.font = "16px Sans-Serif";
+            //debljina linije
+            g.lineWidth = "3";
+
+            //duljina teksta u pixelima (opcenito je realni broj) 
+            //zbog toga uzimamo Math.ceil koja zaokruzuje na najblizi veci cijeli broj
+            var tekst_length = Math.ceil(g.measureText("Hello World!").width);
+
+            //postavke slidera za x koordinatu teksta
+            //postavljamo u javascriptu tako da ne moramo rucno mijenjati u html kodu ako promijenimo dimenzije canvasa
+            pxT.max = w - tekst_length;
+            pxT.value = posx;
+            xTekst.innerHTML = posx;
+
+            //postavke slidera za y koordinatu teksta
+            //postavljamo u javascriptu tako da ne moramo rucno mijenjati u html kodu ako promijenimo dimenzije canvasa
+            pyT.max = h;
+            pyT.value = posy;
+            yTekst.innerHTML = posy;
+
+            //postavke slidera za x koordinatu tocke loma linije
+            //postavljamo u javascriptu tako da ne moramo rucno mijenjati u html kodu ako promijenimo dimenzije canvasa
+            pxL.max = w;
+            pxL.value = lx;
+            xLinija.innerHTML = lx;
+
+            //postavke slidera za y koordinatu tocke loma linije
+            //postavljamo u javascriptu tako da ne moramo rucno mijenjati u html kodu ako promijenimo dimenzije canvasa
+            pyL.max = h;
+            pyL.value = ly;
+            yLinija.innerHTML = ly;
+
+            //dodavanje input eventa na slidere da reagiraju na promjenu svojih vrijednosti i updejtaju canvas
+            pxT.addEventListener("input", event => {
+                xTekst.innerHTML = pxT.value;
+                posx = pxT.value;
+                slikaj();
+            });
+
+            pyT.addEventListener("input", event => {
+                yTekst.innerHTML = pyT.value;
+                posy = pyT.value;
+                slikaj();
+            });
+
+            pxL.addEventListener("input", event => {
+                xLinija.innerHTML = pxL.value;
+                lx = pxL.value;
+                slikaj();
+            });
+
+            pyL.addEventListener("input", event => {
+                yLinija.innerHTML = pyL.value;
+                ly = pyL.value;
+                slikaj();
+            });
+
+            //pozivanje funkcije slikaj da nacrta sliku u canvasu
+            //(slobodno bude prije same implementacije te funkcije)
+            slikaj();
+			
+			//implementacija funkcije slikaj
+			function slikaj() {
+                //pozadina
+                g.fillStyle = "#FFFFE0";
+                g.fillRect(0, 0, w, h);
+
+				//crtanje linije
+				g.beginPath();
+				g.moveTo(0, 0);
+				g.lineTo(lx, ly); g.lineTo(w, 0);
+				g.strokeStyle = "red";
+				g.stroke();
+
+				//tekst
+                g.fillStyle = "black";
+                g.fillText("Hello World!", posx, posy);
+			}
+
+		}
+		</script>
+	</head>
+
+	<body>
+		<h1>Slider i canvas</h1>
+		<div style="float: left; margin-right: 50px; margin-bottom:50px;">
+			<canvas id="slika1" width="500" height="500" style="border:5px solid black">
+				Vaš preglednik ne podržava HTML5 canvas.
+			</canvas>
+		</div>
+		<div style="margin-top:150px; margin-bottom:30px;">
+        <label for="pxT">x-tekst</label>
+        <input type="range" id="pxT" min="0" style="width:300px;"><span id="xTekst"></span><br><br>
+        <label for="pyT">y-tekst</label>
+        <input type="range" id="pyT" min="13" style="width:300px;"><span id="yTekst"></span>
+        <hr style="width:400px; margin-left:0px; margin-top:30px; margin-bottom:30px; border-color:blue;">
+        <label for="pxL">x-linija</label>
+        <input type="range" id="pxL" min="0" style="width:300px;"><span id="xLinija"></span><br><br>
+        <label for="pyL">y-linija</label>
+        <input type="range" id="pyL" min="0" style="width:300px;"><span id="yLinija"></span>     
+        </div>
+	</div>
+    <div style="clear:both;">Pomoću slidera mijenjajte poziciju teksta i točku loma linije.</div>
+	</body>
+</html>

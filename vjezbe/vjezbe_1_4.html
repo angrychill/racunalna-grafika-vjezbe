@@ -52,22 +52,23 @@
 				}
 
 				postaviNa(x, y) {
-					var kords = vratiPretvoreneKoord(x,y);
-					g.moveTo(kords.x, kords.y);
-					g.beginPath();
+					var kords = this.vratiPretvoreneKoord(x,y);
+					this.g.moveTo(kords.x, kords.y);
+					this.g.beginPath();
 				}
 
 				linijaDo(x, y) {
-					var kords = vratiPretvoreneKoord(x, y);
-					g.moveTo(kords.x, kords.y);
+					var kords = this.vratiPretvoreneKoord(x, y);
+					this.g.lineTo(kords.x, kords.y);
 				}
 				
 				koristiBoju(c) {
-					g.strokeStyle = c;
+					
+					this.g.strokeStyle = c;
 
 				}
 				povuciLiniju() {
-					g.stroke();
+					this.g.stroke();
 					
 				}
 
@@ -93,6 +94,10 @@
 				var y_max = 10;
 				var gks = new GKS(platno1, x_min, x_max, y_min, y_max);
 				gks.nacrtajGlavneOsi(true);
+
+				gks.postaviNa(4, 4);
+				gks.koristiBoju("black");
+				gks.linijaDo(5, 5);
 
 
             }
