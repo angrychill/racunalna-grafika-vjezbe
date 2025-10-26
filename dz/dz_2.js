@@ -60,6 +60,7 @@ window.onload = function () {
         crtac.nacrtajLokomotivu(gks, mat);
 
 
+
 } 
 
     function slikaj_zad_2() {
@@ -85,10 +86,6 @@ window.onload = function () {
         crtac.nacrtajCvijet(gks, 4, 1.15);
 
         mat.identitet();
-       
-        //mat.pomakni(-2, 0);
-        //mat.rotiraj_oko_tocke({x:0, y:0}, Math.PI);
-        //mat.rotiraj(Utility.degToRad(15));
         mat.rotiraj(Utility.degToRad(135));
         mat.pomakni(0, 5);
         mat.skaliraj(1, 1.8);
@@ -131,6 +128,7 @@ window.onload = function () {
         gks.trans(mat);
         crtac.nacrtajCvijet(gks, 4, 1.15);
 
+     
 
        
 
