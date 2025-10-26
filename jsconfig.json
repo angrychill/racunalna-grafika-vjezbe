@@ -11,11 +11,6 @@
       "DOM"
     ]
   },
-  "include": [
-    "**/*.js",
-    "**/*.json",
-    "**/*.html"
-  ],
   "exclude": [
     "node_modules"
   ]

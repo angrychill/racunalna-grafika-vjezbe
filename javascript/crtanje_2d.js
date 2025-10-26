@@ -1,10 +1,11 @@
+
 class Crtanje2D {
 
     constructor() {
         
     }
 
-     static nacrtajElipsu(gks, a, b, ishodiste = { x: 0, y: 0 }, rezolucija = 0.05) {
+    nacrtajElipsu(gks, a, b, ishodiste = { x: 0, y: 0 }, rezolucija = 0.05) {
        if (!gks || !(gks instanceof GKS)) alert("Greška - nema platna!");
        if (!a || !b || typeof a != "number" || typeof b != "number") alert("Nema argumenata!");
    
@@ -27,7 +28,7 @@ class Crtanje2D {
    
    }
    
-     static nacrtajLeptira(gks, rezolucija = 0.05, skaliraj = 1, donja = 0, gornja = Math.PI * 12, ishodiste = { x: 0, y: 0 }) {
+    nacrtajLeptira(gks, rezolucija = 0.05, skaliraj = 1, donja = 0, gornja = Math.PI * 12, ishodiste = { x: 0, y: 0 }) {
        if (!gks || !(gks instanceof GKS)) alert("Greška - nema platna!");
    
        if (typeof donja != "number" || typeof gornja != "number") alert("Krivi tip argumenta!");
@@ -50,11 +51,11 @@ class Crtanje2D {
    
    }
    
-     static degToRad(deg){
+    static degToRad(deg){
        return deg * (Math.PI/180);
    }
    
-     static radToDeg(rad){
+    static radToDeg(rad){
        return rad * (180 / Math.PI);
    
    }
