@@ -74,9 +74,16 @@ class MT2D {
             }
         }
         this._matrica = m1;
-        console.log(m);
-        console.log(m1);
-        console.log(this._matrica);
+
+    }
+
+    zrcaliNaPravac(k, l){
+        let a = Math.atan(k);
+        this.pomakni(0, l);
+        this.rotiraj(a);
+        this.zrcaliNaX();
+        this.rotiraj(-a);
+        this.pomakni(0, -l);
     }
 
 

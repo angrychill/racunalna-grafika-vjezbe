@@ -2,106 +2,37 @@
 <html lang="hr">
 	<head>
 		<meta charset="UTF-8">
-		<title>Vježbe 2 - Iris Stare</title>
+		<title>DZ 2 - Iris Stare</title>
 
 	</head>
 
 	<body>
-		<h1>Vježbe 2 - Iris Stare</h1>	
+		<h1>DZ 2 - Iris Stare</h1>	
 		
         <script src="../javascript/crtanje_2d.js"></script>
         <script src="../javascript/gks.js"></script>
         <script src="../javascript/mt2d.js"></script>
+		<script src="../javascript/utility.js"></script>
 		
 	
 		
-		<script>
-			//import Crtanje2D from '../javascript/crtanje_2d.js';
-			//import GKS from '../javascript/gks.js';
-			//import MT2D from '../javascript/mt2d.js';
-
-
-            
-            window.onload = function() {
-                // priprema
-
-				/** @type {Crtanje2D} */
-				var crtac = new Crtanje2D();
-			
-				var platno = document.getElementById("canvas1");
-				
-				if ( !platno) alert("Nema platna!");
-
-				var w = platno.width;
-				var h = platno.height;
-				var g = platno.getContext("2d");
-
-
-				
-				var x_min = -10;
-				var x_max = 10;
-				var y_min = -10;
-				var y_max = 10;
-				
-				/** @type {GKS} */
-				var gks = new GKS(platno, x_min, x_max);
-				
-				
-				/** @type {MT2D} */
-				var mat = new MT2D();
-		
-				
-				slikaj(platno, gks);
-
-				function slikaj(platno, gks){
-					if (!platno) alert("Nema platna!");
-					if (!gks || !(gks instanceof GKS)) alert("Nema GKS!");
-					//nactrajElipsu(gks, 4, 2, {x: 2, y: 2}, 0.05);
-					platno.getContext("2d").clearRect(0, 0, w, h);
-					
-					gks.nacrtajGrid(1, 1);
-					
-					gks.nacrtajGlavneOsi(true);
-					gks.korisitDebljinu(2);
-					gks.koristiBoju("red");
-					
-					mat.pomakni(4, 0);
-					mat.rotiraj(Crtanje2D.degToRad(-30));
-					gks.trans(mat);
-					crtac.nacrtajElipsu(gks, 6, 3);
-
-					mat.identitet();
-
-					gks.koristiBoju("blue");
-					mat.rotiraj((-30));
-					mat.pomakni(4,0);
-					gks.trans(mat);
-					crtac.nacrtajElipsu(gks, 6, 3);
-
-					mat.identitet();
-
-					gks.koristiBoju("green");
-					mat.zrcaliNaY();
-					mat.pomakni(3, 0);
-					mat.rotiraj((75));
-					gks.trans(mat);
-					crtac.nacrtajElipsu(gks, 4, 1);
-				}
-            }
-
-			
-			
+		<script src="dz_2.js">
 
 		</script>
 	
 
 
-	<canvas id="canvas1" width="400" height="400" style="border:5px solid black">
+	<canvas id="canvas1" width="300" height="300" style="border:5px solid black">
+		Vaš preglednik ne podržava HTML5 canvas.
+	</canvas>
+
+	<canvas id="canvas2" width="300" height="300" style="border:5px solid black">
 		Vaš preglednik ne podržava HTML5 canvas.
 	</canvas>
 
 	<div style="margin-top:50px; margin-bottom:30px;">
-     
+     <p>Metoda za zrcaljenje: MT2D.zrcaliNaPravac(k, l)</p>
+	 <p>Metoda za rotaciju: MT2D.rotiraj_oko_tocke(k, l)</p>
         </div>
 	
 	</body>
