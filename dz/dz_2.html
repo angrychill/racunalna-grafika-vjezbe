@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="hr">
+	<head>
+		<meta charset="UTF-8">
+		<title>Vježbe 2 - Iris Stare</title>
+
+	</head>
+
+	<body>
+		<h1>Vježbe 2 - Iris Stare</h1>	
+		
+        <script src="../javascript/crtanje_2d.js"></script>
+        <script src="../javascript/gks.js"></script>
+        <script src="../javascript/mt2d.js"></script>
+		
+		<script>
+            
+            
+            window.onload = function() {
+                // priprema
+				
+			
+				var platno = document.getElementById("canvas1");
+				
+				if ( !platno) alert("Nema platna!");
+
+				var w = platno.width;
+				var h = platno.height;
+				var g = platno.getContext("2d");
+
+
+				
+				var x_min = -10;
+				var x_max = 10;
+				var y_min = -10;
+				var y_max = 10;
+				
+				var gks = new GKS(platno, x_min, x_max);
+				
+				
+
+		
+				
+				slikaj(platno, gks);
+
+				function slikaj(platno, gks){
+					if (!platno) alert("Nema platna!");
+					if (!gks || !(gks instanceof GKS)) alert("Nema GKS!");
+					//nactrajElipsu(gks, 4, 2, {x: 2, y: 2}, 0.05);
+					platno.getContext("2d").clearRect(0, 0, w, h);
+					
+					gks.nacrtajGrid(1, 1);
+					
+					var mat = new MT2D();
+					gks.nacrtajGlavneOsi(true);
+					gks.korisitDebljinu(2);
+					gks.koristiBoju("red");
+					
+					mat.pomakni(4, 0);
+					mat.rotiraj(degToRad(-30));
+					gks.trans(mat);
+					nacrtajElipsu(gks, 6, 3);
+
+					mat.identitet();
+
+					gks.koristiBoju("blue");
+					mat.rotiraj((-30));
+					mat.pomakni(4,0);
+					gks.trans(mat);
+					nacrtajElipsu(gks, 6, 3);
+
+					mat.identitet();
+
+					gks.koristiBoju("green");
+					mat.zrcaliNaY();
+					mat.pomakni(3, 0);
+					mat.rotiraj(CrtanjedegToRad(75));
+					gks.trans(mat);
+					nacrtajElipsu(gks, 4, 1);
+				}
+            }
+
+			
+			
+
+		</script>
+	
+
+
+	<canvas id="canvas1" width="400" height="400" style="border:5px solid black">
+		Vaš preglednik ne podržava HTML5 canvas.
+	</canvas>
+
+	<div style="margin-top:50px; margin-bottom:30px;">
+     
+        </div>
+	
+	</body>
+</html>

@@ -1,4 +1,5 @@
-class GKS_s {
+
+class GKS {
     constructor(platno, xmin, xmax, ymin = 0, ymax = 0) {
         this.g = platno.getContext("2d");
         this.w = platno.width;
@@ -146,142 +147,12 @@ class GKS_s {
     }
 
     trans(mat) {
-        if (mat instanceof MT2D_s == true) {
+        if (mat instanceof MT2D == true) {
             this._matrica = mat._matrica
 
         } else {
             alert("Nije pružan MT2D objekt");
         }
     }
-
-}
-
-class MT2D_s {
-
-    constructor() {
-
-        this._matrica = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
-    }
-
-    identitet() {
-        this._matrica = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
-    }
-
-    pomakni(px, py) {
-        let t = [[1, 0, px], [0, 1, py], [0, 0, 1]];
-        this.mult(t);
-    }
-
-    skaliraj(sx, sy) {
-        let s = [[sx, 0, 0], [0, sy, 0], [0, 0, 1]];
-        this.mult(s);
-
-    }
-
-    zrcaliNaX() {
-        let z = [[1, 0, 0], [0, -1, 0], [0, 0, 1]];
-        this.mult(z);
-        
-    }
-
-    zrcaliNaY() {
-        let z = [[-1, 0, 0], [0, 1, 0], [0, 0, 1]];
-        this.mult(z);
-
-    }
-
-    rotiraj(kut) {
-        let r = [
-            [Math.cos(kut), -Math.sin(kut), 0],
-            [Math.sin(kut), Math.cos(kut), 0],
-            [0, 0, 1]
-        ];
-
-        this.mult(r);
-
-
-    }
-    //skew
-    smicanje(alpha, beta) {
-        let sk = [
-            [1, Math.tan(beta), 0],
-            [Math.tan(alpha), 1, 0],
-            [0, 0, 1]
-        ];
-
-        this.mult(sk);
-    }
-
-    mult(m){
-        let m1 = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
-
-        for (let i = 0; i<3; i++){
-            for (let j = 0; j<3; j++){
-                for (let k = 0; k<3; k++){
-                    m1[i][j] = m1[i][j] + this._matrica[i][k] * m[k][j];
-                }
-            }
-        }
-        this._matrica = m1;
-        console.log(m);
-        console.log(m1);
-        console.log(this._matrica);
-    }
-
-
-}
-
-function nacrtajElipsu(gks, a, b, ishodiste = { x: 0, y: 0 }, rezolucija = 0.05) {
-    if (!gks || !(gks instanceof GKS_s)) alert("Greška - nema platna!");
-    if (!a || !b || typeof a != "number" || typeof b != "number") alert("Nema argumenata!");
-
-    gks.postaviNa(ishodiste.x, ishodiste.y);
-
-    for (let t = 0; t <= 2 * Math.PI + rezolucija; t = t + rezolucija) {
-        var x_d = a * Math.cos(t) + ishodiste.x;
-        var y_d = b * Math.sin(t) + ishodiste.y;
-
-        if (t == 0) {
-            gks.postaviNa(x_d, y_d);
-        } else {
-            gks.linijaDo(x_d, y_d);
-
-        }
-
-    }
-    gks.povuciLiniju();
-
-
-}
-
-function nacrtajLeptira(gks, rezolucija = 0.05, skaliraj = 1, donja = 0, gornja = Math.PI * 12, ishodiste = { x: 0, y: 0 }) {
-    if (!gks || !(gks instanceof GKS_s)) alert("Greška - nema platna!");
-
-    if (typeof donja != "number" || typeof gornja != "number") alert("Krivi tip argumenta!");
-    for (var t = donja; t <= gornja + rezolucija; t = t + rezolucija) {
-        var R = (Math.exp(Math.cos(t)) - 2 * Math.cos(4 * t) + Math.pow(Math.sin(t / 12), 5));
-        var x = R * Math.sin(t) * skaliraj;
-        var y = R * Math.cos(t) * skaliraj;
-        if (t == donja) {
-            gks.postaviNa(x, y);
-        } else {
-            gks.linijaDo(x, y);
-        }
-
-
-    }
-
-
-    gks.povuciLiniju();
-
-
-}
-
-function degToRad(deg){
-    return deg * (Math.PI/180);
-}
-
-function radToDeg(rad){
-    return rad * (180 / Math.PI);
 
 }
