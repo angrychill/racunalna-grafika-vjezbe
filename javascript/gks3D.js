@@ -23,7 +23,7 @@ class GKS3D {
 
         }
 
-        this._matrica = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+        this._matrica = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]];
 
     }
 
@@ -40,13 +40,13 @@ class GKS3D {
         this.g.beginPath();
         this.g.lineWidth = 0.5;
         for (let x = this.x_min; x <= this.x_max + 1; x += razmak) {
-            var koords = this.vratiPretvoreneKoord(x, 0);
+            var koords = this.vratiPretvoreneKoord(x, 0, 0);
             this.g.moveTo(koords.x, koords.y - razmak * 5);
             this.g.lineTo(koords.x, koords.y + razmak * 5);
         }
 
         for (let y = this.y_min; y <= this.y_max + 1; y += razmak) {
-            var koords = this.vratiPretvoreneKoord(0, y);
+            var koords = this.vratiPretvoreneKoord(0, y, 0);
             this.g.moveTo(koords.x - razmak * 5, koords.y);
             this.g.lineTo(koords.x + razmak * 5, koords.y);
         }
@@ -94,16 +94,16 @@ class GKS3D {
         }
     }
 
-    postaviNa(x, y) {
+    postaviNa(x, y, z) {
         
-        var kords = this.vratiPretvoreneKoord(x, y);
+        var kords = this.vratiPretvoreneKoord(x, y, z);
         // beginPath uvijek prije moveTo!
         this.g.beginPath();
         this.g.moveTo(kords.x, kords.y);
     }
 
-    linijaDo(x, y, stroke = false) {
-        var kords = this.vratiPretvoreneKoord(x, y);
+    linijaDo(x, y, z, stroke = false) {
+        var kords = this.vratiPretvoreneKoord(x, y, z);
         this.g.lineTo(kords.x, kords.y);
         this.g.moveTo(kords.x, kords.y);
 
@@ -134,11 +134,11 @@ class GKS3D {
 
     }
 
-    vratiPretvoreneKoord(x, y) {
+    vratiPretvoreneKoord(x, y, z) {
         // x' = a_00*x + a_01*y + a_02
         // y' = a_10*x + a_11*y + a_12
-        var x_trans = this._matrica[0][0]*x + this._matrica[0][1]*y + this._matrica[0][2];
-        var y_trans = this._matrica[1][0]*x + this._matrica[1][1]*y + this._matrica[1][2];
+        var x_trans = this._matrica[0][0]*x + this._matrica[0][1]*y + this._matrica[0][2]*z + this._matrica[0][3];
+        var y_trans = this._matrica[1][0]*x + this._matrica[1][1]*y + this._matrica[1][2]*z + this._matrica[1][3];
 
         var x_i = this.p_x + this.s_x * x_trans;
         var y_i = this.p_y + this.s_y * y_trans;
