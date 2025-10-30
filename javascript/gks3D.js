@@ -1,5 +1,5 @@
 
-class GKS {
+class GKS3D {
     constructor(platno, xmin, xmax, ymin = 0, ymax = 0) {
         this.g = platno.getContext("2d");
         this.w = platno.width;
