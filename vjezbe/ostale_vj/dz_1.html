@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="hr">
+	<head>
+		<meta charset="UTF-8">
+		<title>DZ1 - Iris Stare</title>
+	</head>
+
+	<body>
+		<h1>DZ1 - Iris Stare</h1>	
+		
+		<script>
+			class GKS {
+				
+
+				constructor(platno, xmin, xmax, ymin, ymax) {
+					this.g = platno.getContext("2d");
+					this.w = platno.width;
+					this.h = platno.height;
+					this.x_min = xmin;
+					this.x_max = xmax;
+					this.y_min = ymin;
+					this.y_max = ymax;
+
+					this.s_x = this.w / (this.x_max -this.x_min);
+					this.s_y = -this.h / (this.y_max - this.y_min);
+					this.p_x = -this.s_x * this.x_min;
+					this.p_y = -this.s_y * this.y_max;
+				}
+
+				nacrtajGlavneOsi(koristiOznake = false, razmak = 1) {
+					this.g.beginPath();
+					this.g.moveTo(0, this.p_y);
+					this.g.lineTo(this.w, this.p_y);
+					this.g.moveTo(this.p_x, 0);
+					this.g.lineTo(this.p_x, this.h);
+					this.g.strokeStyle = "black";
+					this.g.lineWidth = 2;
+					this.g.stroke()
+
+					if (koristiOznake == true){
+						this.g.font = "14px Times New Roman";
+						var offset = 14;
+
+						for (let x = this.x_min; x<= this.x_max + 1; x += razmak) {
+							var koords = this.vratiPretvoreneKoord(x, 0);
+							this.g.fillText(x, koords.x, koords.y + offset);
+						}
+
+						for (let y = this.y_min; y<= this.y_max + 1; y += razmak) {
+							var koords = this.vratiPretvoreneKoord(0, y);
+							this.g.fillText(y, koords.x + offset, koords.y);
+						}
+
+					}
+				}
+
+				postaviNa(x, y) {
+					var kords = this.vratiPretvoreneKoord(x,y);
+					// beginPath uvijek prije moveTo!
+					this.g.beginPath();
+					this.g.moveTo(kords.x, kords.y);
+				}
+
+				linijaDo(x, y, stroke = false) {
+					var kords = this.vratiPretvoreneKoord(x, y);
+					this.g.lineTo(kords.x, kords.y);
+					this.g.moveTo(kords.x, kords.y);
+				
+					if (stroke == true){
+						this.povuciLiniju();
+					}
+	
+				}
+				
+				koristiBoju(c) {
+					if (typeof c != "string"){
+						alert("boja nije string!");
+					}
+					this.g.strokeStyle = c;
+
+				}
+
+				korisitDebljinu(c){
+					if (typeof c != "number"){
+						alert("debljina nije broj!");
+					}
+
+					this.g.lineWidth = c;
+				}
+
+				povuciLiniju() {
+					this.g.stroke();
+					
+				}
+
+				vratiPretvoreneKoord(x, y) {
+					var x_i = this.p_x + this.s_x * x;
+					var y_i = this.p_y + this.s_y * y;
+		
+					return {x: x_i, y: y_i };
+				}
+				
+			}
+
+			function nactrajElipsu(gks, a, b, ishodiste = {x: 0, y: 0}, rezolucija = 0.05){
+				if (!gks || !(gks instanceof GKS)) alert("Greška - nema platna!");
+				if (!a || !b || typeof a != "number" || typeof b != "number") alert("Nema argumenata!");
+
+				gks.postaviNa(ishodiste.x, ishodiste.y);
+
+				for (let t = 0; t<= 2*Math.PI + rezolucija; t = t+rezolucija){
+					var x_d = a*Math.cos(t) + ishodiste.x;
+					var y_d = b*Math.sin(t) + ishodiste.y;
+
+					if (t == 0){
+						gks.postaviNa(x_d, y_d);
+					} else {
+						gks.linijaDo(x_d, y_d);
+
+					}
+	
+				}
+				gks.povuciLiniju();
+
+
+			}
+
+			function nacrtajLeptira(gks,rezolucija = 0.05, skaliraj = 1, donja = 0, gornja = Math.PI*12, ishodiste = {x: 0, y: 0}){
+				if (!gks || !(gks instanceof GKS)) alert("Greška - nema platna!");
+		
+				if (typeof donja != "number" || typeof gornja != "number") alert("Krivi tip argumenta!");
+				for (var t = donja; t<=gornja + rezolucija; t = t+rezolucija){
+					var R = (Math.exp(Math.cos(t)) - 2 * Math.cos(4 * t) + Math.pow(Math.sin(t / 12), 5));
+					var x = R * Math.sin(t) * skaliraj;
+					var y = R * Math.cos(t) * skaliraj;
+					if (t == donja) {
+						gks.postaviNa(x, y);
+					} else {
+						gks.linijaDo(x, y);
+					}
+				
+				
+				}
+				
+				
+				gks.povuciLiniju();
+
+
+			}
+
+		    window.onload = function() {
+				// priprema
+				
+				var platno_leptir = document.getElementById("canvas_leptir");
+				var platno_elipsa = document.getElementById("canvas_elipsa");
+				
+				if (!platno_leptir || !platno_elipsa) alert("Nema platna!");
+
+				var w = platno_leptir.width;
+				var h = platno_leptir.height;
+				var g = platno_leptir.getContext("2d");
+
+
+				
+				var x_min = -10;
+				var x_max = 10;
+				var y_min = -10;
+				var y_max = 10;
+				
+				var gks_elipsa = new GKS(platno_elipsa, x_min, x_max, y_min, y_max);
+				var gks_leptir = new GKS(platno_leptir, x_min, x_max, y_min, y_max);
+				gks_elipsa.nacrtajGlavneOsi(true);
+				gks_leptir.nacrtajGlavneOsi(true);
+
+				var donji_seg = document.getElementById("donji_seg");
+				var donji_seg_tekst = document.getElementById("donji_seg_tekst");
+				var gornji_seg = document.getElementById("gornji_seg");
+				var gornji_seg_tekst = document.getElementById("gornji_seg_tekst");
+				
+				var leptir_scale = document.getElementById("leptir_scale");
+				var leptir_scale_tekst = document.getElementById("leptir_scale_tekst");
+				
+				var rez = document.getElementById("rez");
+				var rez_tekst = document.getElementById("rez_tekst");
+
+				var elipsa_a = document.getElementById("elipsa_a");
+				var elipsa_b = document.getElementById("elipsa_b");
+				var elipsa_ishodiste_x = document.getElementById("elipsa_ishodiste_x");
+				var elipsa_ishodiste_y = document.getElementById("elipsa_ishodiste_y");
+				var rez_elipsa = document.getElementById("rez_elipsa");
+				var rez_elipsa_var = 0.05
+				var elipsa_a_var = 4
+				var elipsa_b_var = 2
+				var elipsa_ishodiste = {x: 0, y: 0}
+
+				var leptir_scale_var = 1.0
+				var rez_var = 0.05
+				var donji_seg_var = 0
+				var gornji_seg_var = 12*Math.PI
+				
+				donji_seg.value = donji_seg_var;
+				gornji_seg.value =gornji_seg_var;
+				leptir_scale.value = leptir_scale_var;
+	
+
+				rez.min = 0.01;
+				rez.max = 1.0;
+				rez.step = 0.01;
+				rez.value = rez_var;
+			
+
+				donji_seg.addEventListener("input", event => {
+					donji_seg_tekst.innerHTML = donji_seg.value;
+					donji_seg_var = parseFloat(donji_seg.value);
+					slikaj(platno_leptir, gks_leptir, "leptir");
+				});
+
+				gornji_seg.addEventListener("input", event => {
+					gornji_seg_tekst.innerHTML = gornji_seg.value;
+					gornji_seg_var = parseFloat(gornji_seg.value);
+					slikaj(platno_leptir, gks_leptir, "leptir");
+				});
+
+				leptir_scale.addEventListener("input", event => {
+					leptir_scale_tekst.innerHTML = leptir_scale.value;
+					leptir_scale_var = parseFloat(leptir_scale.value);
+					slikaj(platno_leptir, gks_leptir, "leptir");
+				});
+
+				rez.addEventListener("input", event => {
+					rez_tekst.innerHTML = rez.value;
+					rez_var = parseFloat(rez.value);
+					slikaj(platno_leptir, gks_leptir, "leptir");
+				});
+
+				elipsa_a.addEventListener("input", event => {
+					elipsa_a_var = parseFloat(elipsa_a.value);
+					slikaj(platno_elipsa, gks_elipsa, "elipsa");
+				});
+				elipsa_b.addEventListener("input", event => {
+					elipsa_b_var = parseFloat(elipsa_b.value);
+					slikaj(platno_elipsa, gks_elipsa, "elipsa");
+				});
+				elipsa_ishodiste_x.addEventListener("input", event => {
+					elipsa_ishodiste = {x: parseFloat(elipsa_ishodiste_x.value), y: elipsa_ishodiste.y};
+					slikaj(platno_elipsa, gks_elipsa, "elipsa");
+				});
+				elipsa_ishodiste_y.addEventListener("input", event => {
+					elipsa_ishodiste = {x: elipsa_ishodiste.x, y: parseFloat(elipsa_ishodiste_y.value)};
+					slikaj(platno_elipsa, gks_elipsa, "elipsa");
+				});
+
+				//rez_elipsa.addEventListener("input", event => {
+				//	rez_elipsa_var = parseFloat(rez_elipsa.value);
+				//	slikaj(platno_elipsa, gks_elipsa, "elipsa");
+				//});
+
+
+
+				leptir_scale_tekst.innerHTML = leptir_scale;
+				
+				slikaj(platno_leptir, gks_leptir, "leptir");
+				slikaj(platno_elipsa, gks_elipsa, "elipsa");
+
+				function slikaj(platno, gks, mode){
+					if (!platno) alert("Nema platna!");
+					if (!gks || !(gks instanceof GKS)) alert("Nema GKS!");
+					//nactrajElipsu(gks, 4, 2, {x: 2, y: 2}, 0.05);
+					platno.getContext("2d").clearRect(0, 0, w, h);
+					
+
+					switch (mode) {
+						case "leptir":
+							gks.korisitDebljinu(0.5);
+							gks.koristiBoju("red");
+							nacrtajLeptira(gks, rez_var, leptir_scale_var, donji_seg_var, gornji_seg_var);
+							break;
+						
+						case "elipsa":
+							gks.nacrtajGlavneOsi(true);
+							gks.korisitDebljinu(2);
+							gks.koristiBoju("red");
+							nactrajElipsu(gks, elipsa_a_var, elipsa_b_var, elipsa_ishodiste);
+							break;
+					
+						}
+				
+				}
+            }
+
+			
+			
+
+		</script>
+		
+		<canvas id="canvas_leptir" width="400" height="400" style="border:5px solid black">
+			Vaš preglednik ne podržava HTML5 canvas.
+		</canvas>
+		
+		
+		<div style="margin-top:50px; margin-bottom:30px;">
+        <label for="donji_seg">donji segment</label>
+        <input type="range" id="donji_seg" min="0" style="width:300px;"><span id="donji_seg_tekst"></span><br><br>
+        <label for="gornji_seg">gornji segment</label>
+        <input type="range" id="gornji_seg" min="0" style="width:300px;"><span id="gornji_seg_tekst"></span><br><br>
+        <label for="leptir_scale">skala leptira</label>
+        <input type="range" id="leptir_scale" min="0" style="width:300px;"><span id="leptir_scale_tekst"></span><br><br>
+        <label for="rez">rezolucija</label>
+        <input type="range" id="rez" min="0" max="0.50" value = "0.1" step="0.005" style="width:300px;"><span id="rez_tekst">0.1</span><br><br>
+        
+	</div>
+
+
+	<canvas id="canvas_elipsa" width="400" height="400" style="border:5px solid black">
+		Vaš preglednik ne podržava HTML5 canvas.
+	</canvas>
+
+	<div style="margin-top:50px; margin-bottom:30px;">
+        <label for="elipsa_a">elipsa a</label>
+        <input type="number" id="elipsa_a" min="0" value="4" style="width:60px;"><br><br>
+        <label for="elipsa_b">elipsa b</label>
+        <input type="number" id="elipsa_b" min="0" value="2" style="width:60px;"><br><br>
+        <label for="elipsa_ishodiste_x">ishodiste x</label>
+        <input type="number" id="elipsa_ishodiste_x"  value="0" style="width:60px;"><br><br>
+		 <label for="elipsa_ishodiste_y">ishodiste y</label>
+        <input type="number" id="elipsa_ishodiste_y" value="0"  style="width:60px;"><br><br>
+        <!-- <label for="rez_elipsa">rezolucija</label>
+        <input type="range" id="rez_elipsa" min="0" step="0.005" max="1" style="width:300px;"><span id="rez_elipsa_tekst">0.05</span><br><br> -->
+        
+        </div>
+	
+	</body>
+</html>

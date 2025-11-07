@@ -7,9 +7,7 @@ window.onload = function () {
     /** @type {HTMLCanvasElement} */
     // @ts-ignore
     var platno2 = document.getElementById("canvas2");
-    
-    /** @type {Utility} */
-    var ut = new Utility();
+
 
     if (!platno1) alert("Nema platna!");
 
@@ -29,8 +27,8 @@ window.onload = function () {
 
     
     function slikaj_zad_1() {
-        /** @type {GKS} */
-        var gks = new GKS(platno1, x_min, x_max);
+        /** @type {GKS2D} */
+        var gks = new GKS2D(platno1, x_min, x_max);
         
         
         /** @type {MT2D} */

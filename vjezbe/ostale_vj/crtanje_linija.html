@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="hr">
+	<head>
+		<meta charset="UTF-8">
+		<title>Crtanje linija</title>
+	</head>
+
+	<body>
+		<h1>Crtanje linija</h1>	
+		<canvas id="canvas1" width="500" height="500" style="border:5px solid black">
+			Vaš preglednik ne podržava HTML5 canvas.
+		</canvas>
+
+		<script>
+		    window.onload = function() {
+				// priprema
+				var platno1 = document.getElementById("canvas1");
+				if(!platno1) alert("Greška - nema platna!");
+				var w = platno1.width;
+				var h = platno1.height;
+				var g = platno1.getContext("2d");
+
+				// iscrtavanje
+				g.beginPath();
+				g.moveTo(0, 0);
+				g.lineTo(w / 2, h);
+				g.lineTo(w, 0);
+				g.strokeStyle = "red";
+				g.stroke();
+            }
+		</script>
+	</body>
+</html>

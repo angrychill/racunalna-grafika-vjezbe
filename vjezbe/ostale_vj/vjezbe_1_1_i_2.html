@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="hr">
+	<head>
+		<meta charset="UTF-8">
+		<title>Crtanje linija</title>
+	</head>
+
+	<body>
+		<h1>Crtanje linija</h1>	
+		<canvas id="canvas1" width="600" height="600" style="border:5px solid black">
+			Vaš preglednik ne podržava HTML5 canvas.
+		</canvas>
+
+		<script>
+		    window.onload = function() {
+				// priprema
+				var platno1 = document.getElementById("canvas1");
+				if(!platno1) alert("Greška - nema platna!");
+				var w = platno1.width;
+				var h = platno1.height;
+				var g = platno1.getContext("2d");
+
+				// prvo je coordinate grid koji ima razmak 40 točaka
+				var razmak = 40;
+				g.moveTo(0,0);
+
+				for (var i = 0; i<w; i = i+razmak){
+					g.beginPath();
+					g.moveTo(0,i);
+					g.lineTo(w, i);
+					g.strokeStyle = "black";
+
+
+					g.stroke();
+				}
+
+				g.moveTo(0,0);
+
+				for (var i = 0; i<h; i = i+razmak){
+					g.beginPath();
+					g.moveTo(i,0);
+					g.lineTo(i, h);
+					g.strokeStyle = "black";
+					
+
+					g.stroke();
+				}
+
+				// x od -5 do 5
+				// y od -5 do 5
+				g.moveTo(w/2, g/2);
+				var s_x = w / (5 - (-5));
+				var s_y = -h / (5 - (-5));
+				var p_x = -s_x * -5;
+				var p_y = -s_y * 5;
+				// 𝑥′ = 𝑝_𝑥 + 𝑠_𝑥 * 𝑥
+				// 𝑦′ = 𝑝_𝑦 + 𝑠_𝑦 * 𝑦
+				
+				// y(x)=0.5*x^2-3
+				var step_size = 0.5
+				g.moveTo(w/2, h/2);
+				g.beginPath();
+				console.log(s_x, s_y, p_x, p_y);
+
+
+				for (var x = -5; x<=5; x = x+step_size) {
+					var y = 0.5 * (x*x) -3
+					var x_i = p_x + s_x * x
+					var y_i = p_y + s_y * y
+					g.lineTo(x_i, y_i);
+					g.moveTo(x_i, y_i);
+					g.strokeStyle = "red";
+					g.stroke();
+				} 
+
+
+            }
+
+			
+
+		</script>
+	</body>
+</html>

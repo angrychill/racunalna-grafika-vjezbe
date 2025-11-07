@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="hr">
+	<head>
+		<meta charset="UTF-8">
+		<title>Vježbe 2 - Iris Stare</title>
+
+	</head>
+
+	<body>
+		<h1>Vježbe 2 - Iris Stare</h1>	
+		<script src="vjezbe_2.js"></script>
+		
+		<script>
+
+		    window.onload = function() {
+				// priprema
+				
+			
+				var platno_elipsa = document.getElementById("canvas_elipsa");
+				
+				if ( !platno_elipsa) alert("Nema platna!");
+
+				var w = platno_elipsa.width;
+				var h = platno_elipsa.height;
+				var g = platno_elipsa.getContext("2d");
+
+
+				
+				var x_min = -10;
+				var x_max = 10;
+				var y_min = -10;
+				var y_max = 10;
+				
+				var gks_elipsa = new GKS(platno_elipsa, x_min, x_max);
+				
+				gks_elipsa.nacrtajGlavneOsi(true);
+				
+
+			
+				var elipsa_a = document.getElementById("elipsa_a");
+				var elipsa_b = document.getElementById("elipsa_b");
+				var elipsa_ishodiste_x = document.getElementById("elipsa_ishodiste_x");
+				var elipsa_ishodiste_y = document.getElementById("elipsa_ishodiste_y");
+		
+				var rez_elipsa_var = 0.05
+				var elipsa_a_var = 4
+				var elipsa_b_var = 2
+				var elipsa_ishodiste = {x: 0, y: 0}
+
+			
+
+	
+
+				elipsa_a.addEventListener("input", event => {
+					elipsa_a_var = parseFloat(elipsa_a.value);
+					slikaj(platno_elipsa, gks_elipsa, "elipsa");
+				});
+				elipsa_b.addEventListener("input", event => {
+					elipsa_b_var = parseFloat(elipsa_b.value);
+					slikaj(platno_elipsa, gks_elipsa, "elipsa");
+				});
+				elipsa_ishodiste_x.addEventListener("input", event => {
+					elipsa_ishodiste = {x: parseFloat(elipsa_ishodiste_x.value), y: elipsa_ishodiste.y};
+					slikaj(platno_elipsa, gks_elipsa, "elipsa");
+				});
+				elipsa_ishodiste_y.addEventListener("input", event => {
+					elipsa_ishodiste = {x: elipsa_ishodiste.x, y: parseFloat(elipsa_ishodiste_y.value)};
+					slikaj(platno_elipsa, gks_elipsa, "elipsa");
+				});
+
+				//rez_elipsa.addEventListener("input", event => {
+				//	rez_elipsa_var = parseFloat(rez_elipsa.value);
+				//	slikaj(platno_elipsa, gks_elipsa, "elipsa");
+				//});
+
+
+
+		
+				
+				slikaj(platno_elipsa, gks_elipsa);
+
+				function slikaj(platno, gks){
+					if (!platno) alert("Nema platna!");
+					if (!gks || !(gks instanceof GKS)) alert("Nema GKS!");
+					//nactrajElipsu(gks, 4, 2, {x: 2, y: 2}, 0.05);
+					platno.getContext("2d").clearRect(0, 0, w, h);
+					
+					gks.nacrtajGrid(1, 1);
+					
+					var mat = new MT2D();
+					gks.nacrtajGlavneOsi(true);
+					gks.korisitDebljinu(2);
+					gks.koristiBoju("red");
+					
+					mat.pomakni(4, 0);
+					mat.rotiraj(degToRad(-30));
+					gks.trans(mat);
+					nacrtajElipsu(gks, 6, 3);
+
+					mat.identitet();
+
+					gks.koristiBoju("blue");
+					mat.rotiraj(degToRad(-30));
+					mat.pomakni(4,0);
+					gks.trans(mat);
+					nacrtajElipsu(gks, 6, 3);
+
+					mat.identitet();
+
+					gks.koristiBoju("green");
+					mat.zrcaliNaY();
+					mat.pomakni(3, 0);
+					mat.rotiraj(degToRad(75));
+					gks.trans(mat);
+					nacrtajElipsu(gks, 4, 1);
+				}
+            }
+
+			
+			
+
+		</script>
+	
+
+
+	<canvas id="canvas_elipsa" width="400" height="400" style="border:5px solid black">
+		Vaš preglednik ne podržava HTML5 canvas.
+	</canvas>
+
+	<div style="margin-top:50px; margin-bottom:30px;">
+        <label for="elipsa_a">elipsa a</label>
+        <input type="number" id="elipsa_a" min="0" value="4" style="width:60px;"><br><br>
+        <label for="elipsa_b">elipsa b</label>
+        <input type="number" id="elipsa_b" min="0" value="2" style="width:60px;"><br><br>
+        <label for="elipsa_ishodiste_x">ishodiste x</label>
+        <input type="number" id="elipsa_ishodiste_x"  value="0" style="width:60px;"><br><br>
+		 <label for="elipsa_ishodiste_y">ishodiste y</label>
+        <input type="number" id="elipsa_ishodiste_y" value="0"  style="width:60px;"><br><br>
+        <!-- <label for="rez_elipsa">rezolucija</label>
+        <input type="range" id="rez_elipsa" min="0" step="0.005" max="1" style="width:300px;"><span id="rez_elipsa_tekst">0.05</span><br><br> -->
+        
+        </div>
+	
+	</body>
+</html>

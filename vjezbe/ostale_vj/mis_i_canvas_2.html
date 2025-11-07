@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="hr">
+	<head>
+		<meta charset="UTF-8">
+		<title>Miš i tekst</title>
+		<script>
+		  window.onload = canApp;
+
+		  function canApp() {
+		  	/* ovo je bolje staviti izvan funkcije slikaj
+		  	jer se funkcija slikaj poziva prilikom svakog klika misa na canvasu,
+		  	a parametri canvasa (duljina, sirina, 2d kontekst, font, ...) su stalno isti
+		  	i nema potrebe ponovo to "racunati" prilikom svakog klika misem
+		  	*/
+		  	var platno1 = document.getElementById("slika1");
+			if(!platno1) alert("Greška - nema platna!");
+			var w = platno1.width;
+			var h = platno1.height;
+			var g = platno1.getContext("2d");
+
+			//trenutna pozicija teksta
+            var posx = w / 2;
+            var posy = h / 2;
+
+            //font
+            g.font = "16px Sans-Serif";
+            //debljina linije
+            g.lineWidth = "3";
+
+            //duljina teksta u pixelima (opcenito je realni broj) 
+            //zbog toga uzimamo Math.ceil koja zaokruzuje na najblizi veci cijeli broj
+            var tekst_length = Math.ceil(g.measureText("Hello World!").width);
+
+            //dodavanje eventa na canvas element da reagira na klik s misem
+            //koristena je sintaksa s => za brzo definiranje funkcije
+            //moglo se i bez =>, klasicno preko function
+            platno1.addEventListener("click", event => {
+            	/*
+            	odredjivanje koordinata misa (pogledajte help o getBoundingClientRect metodi)
+            	clientX i clientY su koordinate misa u pikselima, ali od gornjeg lijevog ruba prozora
+            	nama trebaju koordinate u pikselima od gornjeg lijevog vrha canvasa (zbog toga nam treba getBoundingClientRect)
+            	jos treba uvaziti i debljinu ruba canvasa.
+            	ukljucite ispis koordinata u konzoli pa probajte sljedece opcije:
+            	 * posx = event.clientX, posy = event.clientY
+            	 * posx = event.clientX - platno1.getBoundingClientRect().left, posy = event.clientY - platno1.getBoundingClientRect().top
+            	 * i navedenu opciju u kodu
+            	pritom klikajte unutar canvasa i na rub canvasa i bit ce jasnije, zasto tako mora biti kako pise u kodu
+            	*/
+
+            	posx = event.clientX - platno1.getBoundingClientRect().left - 5; //5 je debljina ruba canvasa
+                posy = event.clientY - platno1.getBoundingClientRect().top - 5; //5 je debljina ruba canvasa
+                //console.log(posx,posy)
+
+                //sljedeci testovi su samo da citavi tekst uvijek ostane unutar canvasa
+                //slobodno zakomentirate; u tom slucaju ce dio teksta pobjeci van canvasa ako kliknete blize nekom rubu canvasa
+                var test = tekst_length - w + posx;
+                if (test > 0) posx -= test;
+                if (posx < 0) posx = 0;
+                if (posy < 13) posy = 13;
+                if (posy >= h) posy = h - 1;
+
+                //ponovo iscrtavanje slike u canvasu kako bi se tekst prikazao na poziciji gdje je kliknuto misem
+                slikaj();
+            });
+
+            //pozivanje funkcije slikaj da nacrta sliku u canvasu
+            //(slobodno bude prije same implementacije te funkcije)
+            slikaj();
+			
+			//implementacija funkcije slikaj
+			function slikaj() {
+                //pozadina
+                g.fillStyle = "#FFFFE0";
+                g.fillRect(0, 0, w, h);
+
+				//crtanje linije
+				g.beginPath();
+				g.moveTo(0, 0);
+				g.lineTo(w / 2, h); g.lineTo(w, 0);
+				g.strokeStyle = "red";
+				g.stroke();
+
+				//tekst
+                g.fillStyle = "black";
+                g.fillText("Hello World!", posx, posy);
+			}
+
+		}
+		</script>
+	</head>
+
+	<body>
+		<h1>Miš i tekst</h1>
+		<div>
+			<canvas id="slika1" width="500" height="500" style="border:5px solid black">
+				Vaš preglednik ne podržava HTML5 canvas.
+			</canvas>
+		</div>
+		<div style="margin-top: 20px;">Kliknite mišem unutar canvasa ako želite promijeniti poziciju teksta.</div>
+	</div>
+	</body>
+</html>
