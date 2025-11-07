@@ -1,4 +1,4 @@
-
+// @ts-ignore
 class Crtanje2D {
     mat: MT2D;
     vrijeme: number;
@@ -221,6 +221,22 @@ class Crtanje2D {
         
         requestAnimationFrame(() => this.animiraj_ventilator());
     
+
+   }
+
+   astroida(r : number, t: number) {
+    // x = 4*r cos^3 t, y = 4*r sin^3 t
+    // t e 0, 2pi
+
+    let x = 4*r*Math.pow(Math.cos(t), 3);
+    let y = 4*r*Math.pow(Math.sin(t), 3);
+    if (t == 0){
+        this.gks.postaviNa(x, y);
+    }
+    this.gks.linijaDo(x, y, true);
+
+    // nacrtaj kruznicu, liniju i tocku
+    return {x: x, y: y}
 
    }
 

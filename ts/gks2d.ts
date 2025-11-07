@@ -1,6 +1,6 @@
-
+// @ts-ignore
 class GKS2D {
-    g: CanvasRenderingContext2D;
+    g: CanvasRenderingContext2D | null;
     w: number;
     h: number;
     x_min: number;

@@ -31,4 +31,8 @@ class Crtanje3D {
             this.gks.linijaDo(v[j][0], v[j][1], v[j][2], true);
         }
     }
+    nacrtajGlavneOsi() {
+    }
+    nacrtajOs() { }
+    nacrtajGridURavnini() { }
 }

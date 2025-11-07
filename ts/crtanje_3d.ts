@@ -30,11 +30,22 @@ class Crtanje3D {
         [0,4],[1,5],[2,6],[3,7]
     ];
 
-    for (const [i, j] of e) {
-        this.gks.postaviNa(v[i][0], v[i][1], v[i][2]);
-        this.gks.linijaDo(v[j][0], v[j][1], v[j][2], true);
-    }
-
+        for (const [i, j] of e) {
+            this.gks.postaviNa(v[i][0], v[i][1], v[i][2]);
+            this.gks.linijaDo(v[j][0], v[j][1], v[j][2], true);
+        }
             
     }
+
+    nacrtajGlavneOsi() {
+
+    }
+
+    nacrtajOs() {}
+
+    nacrtajGridURavnini() {}
+
+    
+
+
 }

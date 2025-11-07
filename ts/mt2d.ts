@@ -1,4 +1,4 @@
-
+// @ts-ignore
 class MT2D {
     public _matrica: number[][];
 

@@ -1,4 +1,5 @@
 "use strict";
+// @ts-ignore
 class GKS2D {
     g;
     w;

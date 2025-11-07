@@ -1,4 +1,5 @@
 "use strict";
+// @ts-ignore
 class Utility {
     constructor() {
     }

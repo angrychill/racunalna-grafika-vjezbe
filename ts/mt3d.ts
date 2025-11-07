@@ -1,4 +1,4 @@
-
+// @ts-ignore
 class MT3D {
     public _matrica: number[][];
 
@@ -120,6 +120,13 @@ class MT3D {
         ];
 
         this.mult(r);
+    }
+
+    rotiraj_oko_osi(x0: number, y0: number, z0: number,
+         u1: number, u2: number, u3: number, kut: number){
+
+        let kut_rad : number= Utility.degToRad(kut);
+
     }
 
 

@@ -1,4 +1,5 @@
 "use strict";
+// @ts-ignore
 class MT3D {
     _matrica;
     constructor() {
@@ -95,6 +96,9 @@ class MT3D {
             [0, 0, 0, 1]
         ];
         this.mult(r);
+    }
+    rotiraj_oko_osi(x0, y0, z0, u1, u2, u3, kut) {
+        let kut_rad = Utility.degToRad(kut);
     }
     mult(m) {
         let m1 = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];

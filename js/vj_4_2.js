@@ -35,25 +35,55 @@ class zad_1 {
 }
 // @ts-ignore
 class zad_2 {
+    crtac;
+    gks;
+    mat;
     constructor(canvas) {
         var x_min = -10;
         var x_max = 10;
         var y_min = -10;
         var y_max = 10;
-        var gks = new GKS3D(canvas, x_min, x_max);
-        var mat = new MT3D();
-        var crtac = new Crtanje3D(gks, mat);
-        this.crtaj();
+        this.gks = new GKS2D(canvas, x_min, x_max);
+        this.mat = new MT2D();
+        this.crtac = new Crtanje2D(this.gks, this.mat);
+        this.animiraj();
     }
-    crtaj() {
+    crtaj(step) {
+        //this.mat.identitet();
+        //this.gks.trans(this.mat);
+        this.mat.identitet();
+        this.gks.trans(this.mat);
+        let koord = this.crtac.astroida(1, step);
+        if (step == 0) {
+            this.gks.postaviNa(koord.x, koord.y);
+        }
+        else {
+            this.gks.linijaDo(koord.x, koord.y, true);
+        }
+        this.crtac.nacrtajElipsu(4, 4, 0.1);
+        this.mat.pomakni(koord.x, koord.y);
+        this.gks.trans(this.mat);
+        this.crtac.nacrtajElipsu(0.1, 0.1, 0.5);
+    }
+    step = 0;
+    animiraj() {
+        this.gks.g.clearRect(0, 0, this.gks.w, this.gks.h);
+        this.step += 0.01;
+        if (this.step > Math.PI * 2) {
+            this.step = 0;
+        }
+        this.crtaj(this.step);
+        requestAnimationFrame(() => this.animiraj());
     }
 }
 // @ts-ignore
 function main() {
     let platno1 = document.getElementById("canvas1");
+    let platno2 = document.getElementById("canvas2");
     var w = platno1.width;
     var h = platno1.height;
     var g = platno1.getContext("2d");
     new zad_1(platno1);
+    new zad_2(platno2);
 }
 window.addEventListener("load", () => main());

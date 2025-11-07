@@ -1,4 +1,5 @@
 "use strict";
+// @ts-ignore
 class GKS3D {
     _matrica;
     g;
@@ -35,45 +36,6 @@ class GKS3D {
             this.p_y = -this.s_y * this.y_max;
         }
         this._matrica = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]];
-    }
-    nacrtajGlavneOsi(koristiOznake = false, razmak = 1) {
-        this.g.beginPath();
-        this.g.moveTo(0, this.p_y);
-        this.g.lineTo(this.w, this.p_y);
-        this.g.moveTo(this.p_x, 0);
-        this.g.lineTo(this.p_x, this.h);
-        this.g.strokeStyle = "black";
-        this.g.lineWidth = 2;
-        this.g.stroke();
-        this.g.beginPath();
-        this.g.lineWidth = 0.5;
-        for (let x = this.x_min; x <= this.x_max + 1; x += razmak) {
-            var koords = this.vratiPretvoreneKoord(x, 0, 0);
-            this.g.moveTo(koords.x, koords.y - razmak * 5);
-            this.g.lineTo(koords.x, koords.y + razmak * 5);
-        }
-        for (let y = this.y_min; y <= this.y_max + 1; y += razmak) {
-            var koords = this.vratiPretvoreneKoord(0, y, 0);
-            this.g.moveTo(koords.x - razmak * 5, koords.y);
-            this.g.lineTo(koords.x + razmak * 5, koords.y);
-        }
-        this.g.stroke();
-        if (koristiOznake == true) {
-            this.g.font = "10px Times New Roman";
-            var offset = 20;
-            for (let x = this.x_min; x <= this.x_max + 1; x += razmak) {
-                var koords = this.vratiPretvoreneKoord(x, 0, 0);
-                if (x != 0) {
-                    this.g.fillText(x.toString(), koords.x, koords.y + offset);
-                }
-            }
-            for (let y = this.y_min; y <= this.y_max + 1; y += razmak) {
-                var koords = this.vratiPretvoreneKoord(0, y, 0);
-                if (y != 0) {
-                    this.g.fillText(y.toString(), koords.x + offset / 2, koords.y);
-                }
-            }
-        }
     }
     nacrtajGrid(cell_w, cell_h) {
         this.g.beginPath();
@@ -131,7 +93,7 @@ class GKS3D {
             this._matrica = mat._matrica;
         }
         else {
-            alert("Nije pružan MT2D objekt");
+            alert("Nije pružan MT3D objekt");
         }
     }
 }
