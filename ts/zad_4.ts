@@ -10,11 +10,11 @@ class zad_1 {
         var y_min = -10;
         var y_max = 10;
 
-        this.gks = new GKS3D(canvas, x_min, x_max, y_min, y_max);
+        this.gks = new GKS3DPerspective(canvas, x_min, x_max, y_min, y_max);
         this.mat = new MT3D();
         this.crtac = new Crtanje3D(this.gks, this.mat);
-
-        this.animiraj();
+        this.crtaj(45);
+        //this.animiraj();
 
     }
 
@@ -25,9 +25,13 @@ class zad_1 {
         let h = 5 + 5 * Math.sin(step);
         let eye_x = r * Math.cos(step);
         let eye_z = r * Math.sin(step);
-        this.mat.postaviKameru(eye_x, h, eye_z, 0, 0, 0, 0, 1, 0);
+        //this.mat.postaviKameru(eye_x, h, eye_z, 0, 0, 0, 0, 1, 0);
+        this.mat.postaviKameru(4, 2.5, 5, 0, 0, 0, 0, 1, 0);
         this.gks.trans(this.mat);
+
+        this.crtac.nacrtajGridXZ();
         this.crtac.nacrtajGlavneOsi();
+        
         this.crtac.nacrtajF();
 
     }

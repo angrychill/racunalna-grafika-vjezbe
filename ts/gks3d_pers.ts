@@ -19,7 +19,7 @@ class GKS3DPerspective {
     constructor(platno : HTMLCanvasElement,
         xmin : number,
         xmax: number, ymin = 0, ymax = 0,
-    dist = 1) {
+    dist = 10) {
         // @ts-ignore
         this.g = platno.getContext("2d");
         this.w = platno.width;
@@ -105,7 +105,7 @@ class GKS3DPerspective {
     }
 
     vratiPretvoreneKoord(x: number, y: number, z: number):
-    PixelKoords {
+    {x:number, y:number} {
       
         let x_trans = this._matrica[0][0]*x + this._matrica[0][1]*y + this._matrica[0][2]*z + this._matrica[0][3];
         let y_trans = this._matrica[1][0]*x + this._matrica[1][1]*y + this._matrica[1][2]*z + this._matrica[1][3];

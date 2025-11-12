@@ -14,7 +14,7 @@ class GKS3DPerspective {
     s_y;
     p_x;
     p_y;
-    constructor(platno, xmin, xmax, ymin = 0, ymax = 0, dist = 1) {
+    constructor(platno, xmin, xmax, ymin = 0, ymax = 0, dist = 10) {
         // @ts-ignore
         this.g = platno.getContext("2d");
         this.w = platno.width;

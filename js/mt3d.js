@@ -172,8 +172,13 @@ class MT3D {
             [n[0], n[1], n[2], 0],
             [0, 0, 0, 1]
         ];
-        let TK = this.multMatrice(K, T);
-        this._kamera = TK;
+        let final = [
+            [u[0], u[1], u[2], -u[0] * x0 - u[1] * y0 - u[2] * z0],
+            [v[0], v[1], v[2], -v[0] * x0 - v[1] * y0 - v[2] * z0],
+            [n[0], n[1], n[2], -n[0] * x0 - n[1] * y0 - n[2] * z0],
+            [0, 0, 0, 1]
+        ];
+        this._kamera = final;
     }
     vratiAbsVektora(vek) {
         let a = 0;
