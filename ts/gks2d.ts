@@ -1,6 +1,6 @@
 // @ts-ignore
 class GKS2D {
-    g: CanvasRenderingContext2D | null;
+    g: CanvasRenderingContext2D;
     w: number;
     h: number;
     x_min: number;
@@ -13,6 +13,7 @@ class GKS2D {
     p_y: number;
     _matrica: number[][];
     constructor(platno: HTMLCanvasElement, xmin: number, xmax: number, ymin = 0, ymax = 0) {
+        // @ts-ignore
         this.g = platno.getContext("2d");
         this.w = platno.width;
         this.h = platno.height;
