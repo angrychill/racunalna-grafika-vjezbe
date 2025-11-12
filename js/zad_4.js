@@ -9,19 +9,32 @@ class zad_1 {
         var x_max = 10;
         var y_min = -10;
         var y_max = 10;
-        this.gks = new GKS3DPerspective(canvas, x_min, x_max, x_min, x_max, 5);
+        this.gks = new GKS3D(canvas, x_min, x_max, y_min, y_max);
         this.mat = new MT3D();
-        this.crtac = new Crtanje3DPerspective(this.gks, this.mat);
-        this.crtaj(0);
+        this.crtac = new Crtanje3D(this.gks, this.mat);
+        this.animiraj();
     }
     crtaj(step) {
+        this.gks.g.clearRect(0, 0, this.gks.w, this.gks.h);
         this.mat.identitet();
-        this.mat.postaviKameru(5, 5, 0, 0, 0, 0, 5, 5, 5);
+        let r = 8;
+        let h = 5 + 5 * Math.sin(step);
+        let eye_x = r * Math.cos(step);
+        let eye_z = r * Math.sin(step);
+        this.mat.postaviKameru(eye_x, h, eye_z, 0, 0, 0, 0, 1, 0);
         this.gks.trans(this.mat);
-        //this.crtac.nacrtajKocku(3);
         this.crtac.nacrtajGlavneOsi();
+        this.crtac.nacrtajF();
     }
     step = 0;
+    animiraj() {
+        this.step += 0.01;
+        if (this.step > Math.PI * 2) {
+            this.step = 0;
+        }
+        this.crtaj(this.step);
+        requestAnimationFrame(() => this.animiraj());
+    }
 }
 // @ts-ignore
 function main() {

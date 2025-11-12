@@ -144,7 +144,6 @@ class MT3D {
                 }
             }
         }
-        console.log("rezultat: ", res);
         return res;
     }
     postaviKameru(x0, y0, z0, x1, y1, z1, Vx, Vy, Vz) {
@@ -154,7 +153,6 @@ class MT3D {
         // postaviKameru postavlja matricu transformacije
         let up_vekt = [Vx, Vy, Vz];
         let N = [x0 - x1, y0 - y1, z0 - z1];
-        console.log("N: ", N);
         //let norm_vekt = N/Math.abs(N);
         let abs_N = this.vratiAbsVektora(N);
         let n = this.vratiScalarDivVektora(N, abs_N);
@@ -174,14 +172,8 @@ class MT3D {
             [n[0], n[1], n[2], 0],
             [0, 0, 0, 1]
         ];
-        let z = [[1, 0, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 1, 0],
-            [0, 0, 0, 1]];
-        let TK = this.multMatrice(T, K);
+        let TK = this.multMatrice(K, T);
         this._kamera = TK;
-    }
-    pretvoriIzGKSKoorduKSKKoord(gks_pos) {
     }
     vratiAbsVektora(vek) {
         let a = 0;
@@ -195,8 +187,5 @@ class MT3D {
             ret[i] = vek[i] / scal;
         }
         return ret;
-    }
-    multMatriceIVektora(mat, vek) {
-        return 0;
     }
 }

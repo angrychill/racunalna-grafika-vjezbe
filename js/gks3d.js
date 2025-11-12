@@ -90,7 +90,6 @@ class GKS3D {
         return { x: x_i, y: y_i };
     }
     trans(mat) {
-        this._matrica = mat._matrica;
         this._matrica = mat.multMatrice(mat._kamera, mat._matrica);
     }
 }

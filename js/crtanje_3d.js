@@ -31,13 +31,38 @@ class Crtanje3D {
         }
     }
     nacrtajGlavneOsi() {
+        this.gks.koristiBoju("black");
         this.gks.postaviNa(-10, 0, 0);
         this.gks.linijaDo(10, 0, 0);
+        this.gks.povuciLiniju();
         this.gks.postaviNa(0, -10, 0);
         this.gks.linijaDo(0, 10, 0);
+        this.gks.povuciLiniju();
         this.gks.postaviNa(0, 0, -10);
         this.gks.linijaDo(0, 0, 10);
         this.gks.povuciLiniju();
+    }
+    nacrtajF() {
+        this.gks.koristiBoju("red");
+        for (let i = 0; i < 5; i++) {
+            this.nacrtajKocku(1);
+            this.mat.pomakni(0, 1, 0);
+            this.gks.trans(this.mat);
+        }
+        this.mat.pomakni(0, -1, 0);
+        for (let i = 1; i < 3; i++) {
+            this.mat.pomakni(1, 0, 0);
+            this.gks.trans(this.mat);
+            this.nacrtajKocku(1);
+        }
+        this.mat.pomakni(-2, -2, 0);
+        for (let i = 1; i < 3; i++) {
+            this.mat.pomakni(1, 0, 0);
+            this.gks.trans(this.mat);
+            this.nacrtajKocku(1);
+        }
+    }
+    nacrtajGrid() {
     }
     nacrtajOs() { }
     nacrtajGridURavnini() { }

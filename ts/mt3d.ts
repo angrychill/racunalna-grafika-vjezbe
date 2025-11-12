@@ -185,8 +185,7 @@ class MT3D {
             }
         }
 
-        console.log("rezultat: ",res);
-
+ 
         return res;
     }
 
@@ -203,7 +202,7 @@ class MT3D {
         let up_vekt = [Vx, Vy, Vz];
 
         let N = [x0-x1, y0-y1, z0-z1];
-        console.log("N: ", N);
+
 
        //let norm_vekt = N/Math.abs(N);
        let abs_N = this.vratiAbsVektora(N);
@@ -229,21 +228,14 @@ class MT3D {
             [0, 0, 0, 1]
         ];
 
-        let z = [[1, 0, 0, 0],
-                [0, 1, 0, 0],
-                [0, 0, 1, 0],
-                [0, 0, 0, 1]];
 
-        let TK = this.multMatrice(T, K);
+        let TK = this.multMatrice(K, T);
 
         
         this._kamera = TK;
 
     }
 
-    pretvoriIzGKSKoorduKSKKoord(gks_pos : number[]){
-
-    }
 
     vratiAbsVektora(vek : number[]) : number{
 
@@ -263,14 +255,6 @@ class MT3D {
 
         return ret;
     }
-
-    multMatriceIVektora(mat : number[][], vek : number[]) {
-
-
-        return 0;
-    }
-
-
 
 
 }
