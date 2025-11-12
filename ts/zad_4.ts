@@ -3,6 +3,7 @@ class zad_1 {
     crtac : Crtanje3D
     gks: GKS3D;
     mat: MT3D;
+    isPaused: boolean = false;
 
     constructor(canvas : HTMLCanvasElement){
         var x_min = -10;
@@ -13,8 +14,14 @@ class zad_1 {
         this.gks = new GKS3DPerspective(canvas, x_min, x_max, y_min, y_max, 10);
         this.mat = new MT3D();
         this.crtac = new Crtanje3D(this.gks, this.mat);
-        this.crtaj(15);
-        //this.animiraj();
+        //this.crtaj(15);
+        this.animiraj();
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                this.isPaused = !this.isPaused;
+            }
+        });
     }
 
     crtaj(step : number) {
@@ -37,11 +44,13 @@ class zad_1 {
     step = 0;
 
     animiraj() {
-        this.step += 0.01;
-        if (this.step > Math.PI * 2) {
-            this.step = 0;
+        if (!this.isPaused) {
+            this.step += 0.01;
+            if (this.step > Math.PI * 2) {
+                this.step = 0;
+            }
+            this.crtaj(this.step);
         }
-        this.crtaj(this.step);
         requestAnimationFrame(() => this.animiraj());
     }
 

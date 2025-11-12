@@ -66,6 +66,8 @@ class Crtanje3D {
             this.nacrtajKocku(1);
         }
     }
+    nacrtajGrid() {
+    }
     nacrtajGridXZ(cell_w = 1, cell_h = 1) {
         this.gks.koristiBoju("gray");
         this.gks.korisitDebljinu(0.5);

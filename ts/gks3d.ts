@@ -41,7 +41,22 @@ class GKS3D {
 
     }
 
+    nacrtajGrid(cell_w: number, cell_h: number) {
+        this.g.beginPath();
+        this.g.strokeStyle = "gray"
+        this.g.lineWidth = 0.25
+        for (let i = this.y_min; i <= this.y_max + 1; i += cell_h) {
+            this.postaviNa(this.x_min, i, 0);
+            this.linijaDo(this.x_max, i, 0);
+            this.povuciLiniju();
+        }
 
+        for (let i = this.x_min; i <= this.x_max + 1; i += cell_w) {
+            this.postaviNa(i, this.y_min, 0);
+            this.linijaDo(i, this.y_max, 0);
+            this.povuciLiniju();
+        }
+    }
 
     postaviNa(x: number, y: number, z: number) {
         

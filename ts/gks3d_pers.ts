@@ -49,6 +49,22 @@ class GKS3DPerspective {
         this._lastpos = {x:0, y:0, z:0};
     }
 
+    nacrtajGrid(cell_w: number, cell_h: number) {
+        this.g.beginPath();
+        this.g.strokeStyle = "gray"
+        this.g.lineWidth = 0.25
+        for (let i = this.y_min; i <= this.y_max + 1; i += cell_h) {
+            this.postaviNa(this.x_min, i, 0);
+            this.linijaDo(this.x_max, i, 0);
+            this.povuciLiniju();
+        }
+
+        for (let i = this.x_min; i <= this.x_max + 1; i += cell_w) {
+            this.postaviNa(i, this.y_min, 0);
+            this.linijaDo(i, this.y_max, 0);
+            this.povuciLiniju();
+        }
+    }
 
     postaviNa(x: number, y: number, z: number) {
 
@@ -70,7 +86,7 @@ class GKS3DPerspective {
     linijaDo(x: number, y: number, z: number, stroke = false) {
         var trans = this.vratiKameraKoord(x, y, z);
 
-        let eps = -0.01;
+        let eps = -0.001;
         let kords = {x:0, y:0};
         
 
@@ -79,6 +95,7 @@ class GKS3DPerspective {
             kords = this.vratiProjektiraneKoord(trans.x, trans.y, trans.z);
             if (!Number.isNaN(kords.x) && !Number.isNaN(kords.y)) {
                 this.g.lineTo(kords.x, kords.y);
+                this._lastpos = trans;
             }
         } else if (this._lastpos.z > eps && trans.z > eps) {
             // Case 2: both behind - nothing
@@ -90,10 +107,12 @@ class GKS3DPerspective {
             kords = this.vratiProjektiraneKoord(x_pr, y_pr, eps);
             if (!Number.isNaN(kords.x) && !Number.isNaN(kords.y)) {
                 this.g.lineTo(kords.x, kords.y);
+                this._lastpos = trans;
             }
             kords = this.vratiProjektiraneKoord(trans.x, trans.y, trans.z);
             if (!Number.isNaN(kords.x) && !Number.isNaN(kords.y)) {
                 this.g.lineTo(kords.x, kords.y);
+                this._lastpos = trans;
             }
         } else if (this._lastpos.z < eps && trans.z > eps) {
             // Case 4: last front, current behind
@@ -103,6 +122,7 @@ class GKS3DPerspective {
             kords = this.vratiProjektiraneKoord(x_pr, y_pr, eps);
             if (!Number.isNaN(kords.x) && !Number.isNaN(kords.y)) {
                 this.g.lineTo(kords.x, kords.y);
+                this._lastpos = trans;
             }
         }
 
@@ -110,7 +130,7 @@ class GKS3DPerspective {
             this.povuciLiniju();
         }
 
-        this._lastpos = trans;
+        //this._lastpos = trans;
     }
 
     koristiBoju(c: string) {
