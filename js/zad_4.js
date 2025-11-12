@@ -10,7 +10,7 @@ class zad_1 {
         var x_max = 10;
         var y_min = -10;
         var y_max = 10;
-        this.gks = new GKS3DPerspective(canvas, x_min, x_max, y_min, y_max, 10);
+        this.gks = new GKS3DPerspective(canvas, x_min, x_max, y_min, y_max, 5);
         this.mat = new MT3D();
         this.crtac = new Crtanje3D(this.gks, this.mat);
         //this.crtaj(15);
