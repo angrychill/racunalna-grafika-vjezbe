@@ -83,9 +83,6 @@ class Crtanje3D {
   
     }
 
-    nacrtajGrid() {
-        
-    }
 
     nacrtajGridXZ(cell_w: number = 1, cell_h: number = 1) {
         this.gks.koristiBoju("gray");
