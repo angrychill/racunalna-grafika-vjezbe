@@ -31,13 +31,6 @@ class Crtanje3D {
         }
     }
     nacrtajGlavneOsi() {
-        this.gks.postaviNa(-10, 0, 0);
-        this.gks.linijaDo(10, 0, 0);
-        this.gks.postaviNa(0, -10, 0);
-        this.gks.linijaDo(0, 10, 0);
-        this.gks.postaviNa(0, 0, -10);
-        this.gks.linijaDo(0, 0, 10);
-        this.gks.povuciLiniju();
     }
     nacrtajOs() { }
     nacrtajGridURavnini() { }

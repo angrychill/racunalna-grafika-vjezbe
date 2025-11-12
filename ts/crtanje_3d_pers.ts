@@ -1,10 +1,10 @@
 // @ts-ignore
-class Crtanje3D {
+class Crtanje3DPerspective {
    
-    gks: GKS3D;
+    gks: GKS3DPerspective;
     mat: MT3D;
 
-    constructor (gks : GKS3D, mat : MT3D){
+    constructor (gks : GKS3DPerspective, mat : MT3D){
         this.gks = gks;
         this.mat = mat;
     }

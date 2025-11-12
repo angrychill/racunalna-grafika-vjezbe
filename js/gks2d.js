@@ -14,6 +14,7 @@ class GKS2D {
     p_y;
     _matrica;
     constructor(platno, xmin, xmax, ymin = 0, ymax = 0) {
+        // @ts-ignore
         this.g = platno.getContext("2d");
         this.w = platno.width;
         this.h = platno.height;

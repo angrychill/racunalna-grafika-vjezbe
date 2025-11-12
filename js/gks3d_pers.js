@@ -1,7 +1,8 @@
 "use strict";
 // @ts-ignore
-class GKS3D {
+class GKS3DPerspective {
     _matrica;
+    _distance;
     g;
     w;
     h;
@@ -13,7 +14,7 @@ class GKS3D {
     s_y;
     p_x;
     p_y;
-    constructor(platno, xmin, xmax, ymin = 0, ymax = 0) {
+    constructor(platno, xmin, xmax, ymin = 0, ymax = 0, dist = 1) {
         // @ts-ignore
         this.g = platno.getContext("2d");
         this.w = platno.width;
@@ -37,6 +38,7 @@ class GKS3D {
             this.p_y = -this.s_y * this.y_max;
         }
         this._matrica = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]];
+        this._distance = dist;
     }
     nacrtajGrid(cell_w, cell_h) {
         this.g.beginPath();
@@ -83,11 +85,14 @@ class GKS3D {
         this.g.stroke();
     }
     vratiPretvoreneKoord(x, y, z) {
-        var x_trans = this._matrica[0][0] * x + this._matrica[0][1] * y + this._matrica[0][2] * z + this._matrica[0][3];
-        var y_trans = this._matrica[1][0] * x + this._matrica[1][1] * y + this._matrica[1][2] * z + this._matrica[1][3];
-        var x_i = this.p_x + this.s_x * x_trans;
-        var y_i = this.p_y + this.s_y * y_trans;
-        return { x: x_i, y: y_i };
+        let x_trans = this._matrica[0][0] * x + this._matrica[0][1] * y + this._matrica[0][2] * z + this._matrica[0][3];
+        let y_trans = this._matrica[1][0] * x + this._matrica[1][1] * y + this._matrica[1][2] * z + this._matrica[1][3];
+        let z_trans = this._matrica[2][0] * x + this._matrica[2][1] * y + this._matrica[2][2] * z + this._matrica[2][3];
+        let x_pr = -(this._distance / z_trans) * x_trans;
+        let y_pr = -(this._distance / z_trans) * y_trans;
+        let x_pix = this.p_x + this.s_x * x_pr;
+        let y_pix = this.p_y + this.s_y * y_pr;
+        return { x: x_pix, y: y_pix };
     }
     trans(mat) {
         this._matrica = mat._matrica;
