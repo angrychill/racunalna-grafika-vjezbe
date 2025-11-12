@@ -1,6 +1,6 @@
 // @ts-ignore
 class Crtanje3D {
-    vrijeme: number;
+   
     gks: GKS3D;
     mat: MT3D;
 

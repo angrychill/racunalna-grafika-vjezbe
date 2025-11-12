@@ -110,12 +110,10 @@ class GKS3D {
     }
 
     trans(mat: MT3D) {
-        if (mat instanceof MT3D == true) {
-            this._matrica = mat._matrica
+        this._matrica = mat._matrica
+        this._matrica = mat.multMatrice(mat._kamera, mat._matrica);
 
-        } else {
-            alert("Nije pružan MT3D objekt");
-        }
+      
     }
 
 }

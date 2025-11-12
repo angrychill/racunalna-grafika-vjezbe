@@ -243,7 +243,7 @@ class MT3D {
         let TK = this.multMatrice(T, K);
 
         
-        this.mult(TK);
+        this._kamera = TK;
 
     }
 
