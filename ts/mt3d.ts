@@ -1,10 +1,16 @@
 // @ts-ignore
 class MT3D {
     public _matrica: number[][];
+    public _kamera: number[][];
 
     constructor() {
 
         this._matrica = [[1, 0, 0, 0],
+                        [0, 1, 0, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 0, 1]];
+
+        this._kamera = [[1, 0, 0, 0],
                         [0, 1, 0, 0],
                         [0, 0, 1, 0],
                         [0, 0, 0, 1]];
@@ -141,6 +147,26 @@ class MT3D {
             }
         }
         this._matrica = m1;
+
+    }
+
+    postaviKameru(x0: number, y0: number, z0: number,
+                x1:number, y1: number, z1:number,
+                Vx:number, Vy:number, Vz:number
+    ) {
+        //x0 y0 z0 : globalni ks
+        // x1 y1 z1 : kamera gleda prema tocki
+        //Vx Vy Vz: view up vektor
+
+        // postaviKameru postavlja matricu transformacije
+
+        let z = [[-1, 0, 0, 0],
+                [0, 1, 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, 0, 1]];
+
+        
+        this.mult(z);
 
     }
 
