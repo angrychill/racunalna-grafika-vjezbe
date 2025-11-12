@@ -5,6 +5,10 @@ class GKS3DPerspective {
     _matrica: number[][];
     _distance:number;
     _lastpos : {x: number, y: number, z: number};
+    _has_drawn : boolean;
+    _xlast: number; 
+    _ylast: number; 
+    _zlast: number; 
     g: CanvasRenderingContext2D;
     w: number;
     h: number;
@@ -47,6 +51,10 @@ class GKS3DPerspective {
         this._matrica = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]];
         this._distance = dist;
         this._lastpos = {x:0, y:0, z:0};
+        this._has_drawn = false;
+        this._xlast = 0;
+        this._ylast = 0;
+        this._zlast = 0;
     }
 
     nacrtajGrid(cell_w: number, cell_h: number) {
@@ -70,12 +78,18 @@ class GKS3DPerspective {
 
         var trans = this.vratiKameraKoord(x, y, z);
         this._lastpos = trans;
+        this._xlast = trans.x;
+        this._ylast = trans.y;
+        this._zlast = trans.z;
 
         var kords = this.vratiPretvoreneKoord(x, y, z);
+
+        this._has_drawn = false;
 
         if (!Number.isNaN(kords.x) && !Number.isNaN(kords.y)){
             this.g.beginPath();
             this.g.moveTo(kords.x, kords.y);
+            this._has_drawn = true;
         }
 
 
@@ -84,53 +98,58 @@ class GKS3DPerspective {
     }
 
     linijaDo(x: number, y: number, z: number, stroke = false) {
+      
         var trans = this.vratiKameraKoord(x, y, z);
-
-        let eps = -0.001;
+        let eps = -0.01;
         let kords = {x:0, y:0};
         
+        if (this._zlast < eps && trans.z < eps) {
+          
+            kords = this.vratiProjektiraneKoord(trans.x, trans.y, trans.z);
+            if (!Number.isNaN(kords.x) && !Number.isNaN(kords.y)) {
+                this.g.lineTo(kords.x, kords.y);
+                this._xlast = trans.x;
+                this._ylast = trans.y;
+                this._zlast = trans.z;
+            }
+        } else if (this._zlast > eps && trans.z > eps) {
+           
+            this._xlast = trans.x;
+            this._ylast = trans.y;
+            this._zlast = trans.z;
 
-        if (this._lastpos.z < eps && trans.z < eps){
-            // Case 1: both front
-            kords = this.vratiProjektiraneKoord(trans.x, trans.y, trans.z);
+        } else if (this._zlast > eps && trans.z < eps) {
+            let t = (this._zlast + eps) / (this._zlast - trans.z);
+            let x_pr = this._xlast + t * (trans.x - this._xlast);
+            let y_pr = this._ylast + t * (trans.y - this._ylast);
+            kords = this.vratiProjektiraneKoord(x_pr, y_pr, eps);
             if (!Number.isNaN(kords.x) && !Number.isNaN(kords.y)) {
-                this.g.lineTo(kords.x, kords.y);
-                this._lastpos = trans;
+                this.g.beginPath();
+                this.g.moveTo(kords.x, kords.y);
+                kords = this.vratiProjektiraneKoord(trans.x, trans.y, trans.z);
+                if (!Number.isNaN(kords.x) && !Number.isNaN(kords.y)) {
+                    this.g.lineTo(kords.x, kords.y);
+                }
+                this._xlast = trans.x;
+                this._ylast = trans.y;
+                this._zlast = trans.z;
             }
-        } else if (this._lastpos.z > eps && trans.z > eps) {
-            // Case 2: both behind - nothing
-        } else if (this._lastpos.z > eps && trans.z < eps) {
-            // Case 3: last behind, current front
-            let t = (this._lastpos.z + eps) / (this._lastpos.z - trans.z);
-            let x_pr = this._lastpos.x + t * (trans.x - this._lastpos.x);
-            let y_pr = this._lastpos.y + t * (trans.y - this._lastpos.y);
+        } else if (this._zlast < eps && trans.z > eps) {
+            let t = (this._zlast + eps) / (this._zlast - trans.z);
+            let x_pr = this._xlast + t * (trans.x - this._xlast);
+            let y_pr = this._ylast + t * (trans.y - this._ylast);
             kords = this.vratiProjektiraneKoord(x_pr, y_pr, eps);
             if (!Number.isNaN(kords.x) && !Number.isNaN(kords.y)) {
                 this.g.lineTo(kords.x, kords.y);
-                this._lastpos = trans;
-            }
-            kords = this.vratiProjektiraneKoord(trans.x, trans.y, trans.z);
-            if (!Number.isNaN(kords.x) && !Number.isNaN(kords.y)) {
-                this.g.lineTo(kords.x, kords.y);
-                this._lastpos = trans;
-            }
-        } else if (this._lastpos.z < eps && trans.z > eps) {
-            // Case 4: last front, current behind
-            let t = (this._lastpos.z + eps) / (this._lastpos.z - trans.z);
-            let x_pr = this._lastpos.x + t * (trans.x - this._lastpos.x);
-            let y_pr = this._lastpos.y + t * (trans.y - this._lastpos.y);
-            kords = this.vratiProjektiraneKoord(x_pr, y_pr, eps);
-            if (!Number.isNaN(kords.x) && !Number.isNaN(kords.y)) {
-                this.g.lineTo(kords.x, kords.y);
-                this._lastpos = trans;
+                this._xlast = trans.x;
+                this._ylast = trans.y;
+                this._zlast = trans.z;
             }
         }
 
         if (stroke == true) {
             this.povuciLiniju();
         }
-
-        //this._lastpos = trans;
     }
 
     koristiBoju(c: string) {

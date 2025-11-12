@@ -109,11 +109,11 @@ class Crtanje3D {
         let dy = point2[1] - point1[1];
         let dz = point2[2] - point1[2];
         let length = Math.sqrt(dx*dx + dy*dy + dz*dz);
-        if (length === 0) return; // points are the same
+        if (length === 0) return; 
         dx /= length;
         dy /= length;
         dz /= length;
-        let t = this.gks.x_max*2; // large enough to be "infinite"
+        let t = this.gks.x_max*2; 
         let p1 = [point1[0] - t * dx, point1[1] - t * dy, point1[2] - t * dz];
         let p2 = [point1[0] + t * dx, point1[1] + t * dy, point1[2] + t * dz];
         this.gks.postaviNa(p1[0], p1[1], p1[2]);
