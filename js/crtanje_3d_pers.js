@@ -31,6 +31,7 @@ class Crtanje3DPerspective {
         }
     }
     nacrtajGlavneOsi() {
+        this.gks.koristiBoju("red");
         this.gks.postaviNa(-10, 0, 0);
         this.gks.linijaDo(10, 0, 0);
         this.gks.postaviNa(0, -10, 0);

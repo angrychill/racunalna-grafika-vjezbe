@@ -110,7 +110,7 @@ class GKS3D {
     }
 
     trans(mat: MT3D) {
-        this._matrica = mat._matrica
+     
         this._matrica = mat.multMatrice(mat._kamera, mat._matrica);
 
       

@@ -21,9 +21,9 @@ class zad_1 {
     crtaj(step : number) {
         this.mat.identitet();
         this.mat.postaviKameru(
-            5, 5, 0,
+            0, 0, 10,
             0, 0, 0,
-            5, 5, 5
+            0, 1, 0
         );
         this.gks.trans(this.mat);
         //this.crtac.nacrtajKocku(3);

@@ -140,7 +140,7 @@ class MT3D {
         for (let i = 0; i < 4; i++) {
             for (let j = 0; j < 4; j++) {
                 for (let k = 0; k < 4; k++) {
-                    res[i][j] = m1[i][k] * m2[k][j];
+                    res[i][j] += m1[i][k] * m2[k][j];
                 }
             }
         }
@@ -152,13 +152,8 @@ class MT3D {
         // x1 y1 z1 : kamera gleda prema tocki
         //Vx Vy Vz: view up vektor
         // postaviKameru postavlja matricu transformacije
-        let koord_pos = [x0, y0, z0];
-        let gledanje = [x1, y1, z1];
         let up_vekt = [Vx, Vy, Vz];
-        let N = [];
-        for (let i = 0; i < 3; i++) {
-            N[i] = koord_pos[i] - gledanje[i];
-        }
+        let N = [x0 - x1, y0 - y1, z0 - z1];
         console.log("N: ", N);
         //let norm_vekt = N/Math.abs(N);
         let abs_N = this.vratiAbsVektora(N);

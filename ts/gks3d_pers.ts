@@ -111,6 +111,10 @@ class GKS3DPerspective {
         let y_trans = this._matrica[1][0]*x + this._matrica[1][1]*y + this._matrica[1][2]*z + this._matrica[1][3];
         let z_trans = this._matrica[2][0]*x + this._matrica[2][1]*y + this._matrica[2][2]*z + this._matrica[2][3];
 
+        if (z_trans <= 0 ) {
+            return { x: 0, y: 0 };
+        }
+
         let x_pr = -(this._distance / z_trans)*x_trans;
         let y_pr = -(this._distance / z_trans)*y_trans
 
@@ -122,10 +126,8 @@ class GKS3DPerspective {
     }
 
     trans(mat: MT3D) {
-        this._matrica = mat._matrica
-        this._matrica = mat.multMatrice(mat._kamera, mat._matrica);
 
-      
+        this._matrica = mat.multMatrice(mat._kamera, mat._matrica);
     }
 
 }
