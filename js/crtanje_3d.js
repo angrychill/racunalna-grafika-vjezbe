@@ -99,5 +99,108 @@ class Crtanje3D {
         this.gks.linijaDo(p2[0], p2[1], p2[2]);
         this.gks.povuciLiniju();
     }
-    nacrtajGridURavnini() { }
+    nacrtajStozac(r, h, n) {
+        // r polumjer baze
+        // h visina stozca
+        // n broj segmenata (rezolucija)
+        // rub baze: r cos kut, r sin kut, 0
+        // za kut e 0, 2pi
+        // vrh stozca u 0, 0, h
+        // svaki korak se povecava za 2pi/n
+        this.gks.postaviNa(0, 0, 0);
+        for (let i = 0; i <= Math.PI * 2 + (2 * Math.PI) / n; i += (2 * Math.PI) / n) {
+            let x = r * Math.cos(i);
+            let z = r * Math.sin(i);
+            if (i == 0) {
+                this.gks.postaviNa(x, 0, z);
+                this.gks.linijaDo(0, h, 0);
+                this.gks.postaviNa(x, 0, z);
+            }
+            else {
+                this.gks.linijaDo(x, 0, z);
+                this.gks.linijaDo(0, h, 0, true);
+                this.gks.postaviNa(x, 0, z);
+            }
+        }
+        this.gks.povuciLiniju();
+    }
+    nacrtajValjak(r, h, n) {
+        let h1 = 0;
+        let h2 = h;
+        // donja baza
+        for (let i = 0; i <= Math.PI * 2 + (2 * Math.PI) / n; i += (2 * Math.PI) / n) {
+            let x = r * Math.cos(i);
+            let z = r * Math.sin(i);
+            if (i == 0) {
+                this.gks.postaviNa(x, h1, z);
+            }
+            else {
+                this.gks.linijaDo(x, h1, z, true);
+                this.gks.postaviNa(x, h1, z);
+            }
+        }
+        // gornja baza
+        for (let i = 0; i <= Math.PI * 2 + (2 * Math.PI) / n; i += (2 * Math.PI) / n) {
+            let x = r * Math.cos(i);
+            let z = r * Math.sin(i);
+            if (i == 0) {
+                this.gks.postaviNa(x, h2, z);
+            }
+            else {
+                this.gks.linijaDo(x, h2, z, true);
+                this.gks.postaviNa(x, h2, z);
+            }
+        }
+        // columns
+        for (let i = 0; i <= Math.PI * 2 + (2 * Math.PI) / n; i += (2 * Math.PI) / n) {
+            let x = r * Math.cos(i);
+            let z = r * Math.sin(i);
+            this.gks.postaviNa(x, h1, z);
+            this.gks.linijaDo(x, h2, z, true);
+        }
+    }
+    // todo: fix wrong number of segments
+    nacrtajKuglu(r, m, n) {
+        // r polumjer
+        // m meridijani
+        //n paralele
+        // x = r cos kut sin n
+        // y = r cos kut sin n
+        // z = r cos n
+        // radius paralele = r sin n
+        // paralela 0 O knstanta
+        // prvo svi meridijani
+        for (let i = 0; i <= Math.PI * 2 + (2 * Math.PI) / m; i += (2 * Math.PI) / m) {
+            console.log(i);
+            // prvo nacrtaj jedan meridijan za dani segment?
+            for (let j = 0; j <= Math.PI + 0.1; j += 0.1) {
+                let x = r * Math.cos(i) * Math.sin(j);
+                let y = r * Math.cos(j);
+                let z = r * Math.sin(i) * Math.sin(j);
+                if (j == 0) {
+                    this.gks.postaviNa(x, y, z);
+                }
+                else {
+                    this.gks.linijaDo(x, y, z);
+                }
+                this.gks.povuciLiniju();
+            }
+        }
+        // pa sve paralele
+        for (let i = 0; i <= Math.PI + (Math.PI / (n + 1)); i += Math.PI / (n + 1)) {
+            // nacrtaj paralelu
+            for (let j = 0; j <= (Math.PI * 2) + 0.1; j += 0.1) {
+                let x = r * Math.cos(j) * Math.sin(i);
+                let y = r * Math.cos(i);
+                let z = r * Math.sin(j) * Math.sin(i);
+                if (j == 0) {
+                    this.gks.postaviNa(x, y, z);
+                }
+                else {
+                    this.gks.linijaDo(x, y, z);
+                }
+                this.gks.povuciLiniju();
+            }
+        }
+    }
 }
