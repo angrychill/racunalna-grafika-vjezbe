@@ -28,12 +28,12 @@ class zad_1 {
         //let h = 2 + 2 * Math.sin(step)*0.5;
         //let eye_x = r * Math.cos(step)*0.5;
         //let eye_z = r * Math.sin(step)*0.5;
-        this.mat.postaviKameru(2, 6, 2, 0, 0, 0, 0, 1, 0);
+        this.mat.postaviKameru(3, 1, 3, 0, 0, 0, 0, 1, 0);
         this.gks.trans(this.mat);
         this.crtac.nacrtajGridXZ();
         this.crtac.nacrtajGlavneOsi();
         this.gks.korisitDebljinu(1);
-        this.crtac.nacrtajKuglu(5, 7, 7);
+        this.crtac.nacrtajParametarskuPlohu(-1, 1, 0, Math.PI * 2, 10, 10);
     }
     step = 0;
     animiraj() {

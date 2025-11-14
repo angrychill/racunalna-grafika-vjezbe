@@ -170,7 +170,7 @@ class Crtanje3D {
         // radius paralele = r sin n
         // paralela 0 O knstanta
         // prvo svi meridijani
-        for (let i = 0; i <= Math.PI * 2 + (2 * Math.PI) / m; i += (2 * Math.PI) / m) {
+        for (let i = 0; i <= Math.PI * 2; i += (2 * Math.PI) / m) {
             console.log(i);
             // prvo nacrtaj jedan meridijan za dani segment?
             for (let j = 0; j <= Math.PI + 0.1; j += 0.1) {
@@ -187,7 +187,7 @@ class Crtanje3D {
             }
         }
         // pa sve paralele
-        for (let i = 0; i <= Math.PI + (Math.PI / (n + 1)); i += Math.PI / (n + 1)) {
+        for (let i = 0; i <= Math.PI; i += Math.PI / (n + 1)) {
             // nacrtaj paralelu
             for (let j = 0; j <= (Math.PI * 2) + 0.1; j += 0.1) {
                 let x = r * Math.cos(j) * Math.sin(i);
@@ -201,6 +201,43 @@ class Crtanje3D {
                 }
                 this.gks.povuciLiniju();
             }
+        }
+    }
+    nacrtajParametarskuPlohu(u_min, u_max, v_min, v_max, u_curves = 5, v_curves = 10) {
+        // x = u sin v
+        // y = u cos v
+        // z = arcsin u
+        let u_increment = (u_max - u_min) / (u_curves);
+        let v_increment = (v_max - v_min) / (v_curves);
+        for (let v = v_min; v <= v_max; v += v_increment) {
+            for (let u = u_min; u <= u_max + u_increment; u += u_increment) {
+                let x = u * Math.sin(v);
+                let z = u * Math.cos(v);
+                let y = Math.asin(u);
+                if (u == u_min) {
+                    this.gks.postaviNa(x, y, z);
+                }
+                else {
+                    this.gks.linijaDo(x, y, z, true);
+                    this.gks.postaviNa(x, y, z);
+                }
+            }
+            //this.gks.povuciLiniju();
+        }
+        for (let u = u_min; u <= u_max; u += u_increment) {
+            for (let v = v_min; v <= v_max + v_increment; v += v_increment) {
+                let x = u * Math.sin(v);
+                let z = u * Math.cos(v);
+                let y = Math.asin(u);
+                if (v == v_min) {
+                    this.gks.postaviNa(x, y, z);
+                }
+                else {
+                    this.gks.linijaDo(x, y, z, true);
+                    this.gks.postaviNa(x, y, z);
+                }
+            }
+            //this.gks.povuciLiniju();
         }
     }
 }
