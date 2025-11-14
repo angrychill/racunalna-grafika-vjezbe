@@ -14,8 +14,8 @@ class zad_1 {
         this.gks = new GKS3DPerspective(canvas, x_min, x_max, y_min, y_max, 5);
         this.mat = new MT3D();
         this.crtac = new Crtanje3D(this.gks, this.mat);
-        this.crtaj(15);
-        //this.animiraj();
+        //this.crtaj(15);
+        this.animiraj();
 
         window.addEventListener('keydown', (e) => {
             if (e.code === 'Space') {
@@ -31,7 +31,7 @@ class zad_1 {
         //let h = 2 + 2 * Math.sin(step)*0.5;
         //let eye_x = r * Math.cos(step)*0.5;
         //let eye_z = r * Math.sin(step)*0.5;
-        this.mat.postaviKameru(3, 1, 3, 0, 0, 0, 0, 1, 0);
+        this.mat.postaviKameru(5, 1, 5, 0, 0, 0, 0, 1, 0);
      
         this.gks.trans(this.mat);
         
@@ -39,8 +39,8 @@ class zad_1 {
         this.crtac.nacrtajGlavneOsi();
         this.gks.korisitDebljinu(1);
     
-        
-        this.crtac.nacrtajParametarskuPlohu(-1, 1, 0, Math.PI * 2, 10,10);
+
+        this.crtac.nacrtajPolukuglu(5, 5, 5);
 
     }
     step = 0;

@@ -171,7 +171,6 @@ class Crtanje3D {
         // paralela 0 O knstanta
         // prvo svi meridijani
         for (let i = 0; i <= Math.PI * 2; i += (2 * Math.PI) / m) {
-            console.log(i);
             // prvo nacrtaj jedan meridijan za dani segment?
             for (let j = 0; j <= Math.PI + 0.1; j += 0.1) {
                 let x = r * Math.cos(i) * Math.sin(j);
@@ -200,6 +199,39 @@ class Crtanje3D {
                     this.gks.linijaDo(x, y, z);
                 }
                 this.gks.povuciLiniju();
+            }
+        }
+    }
+    nacrtajPolukuglu(r, m, n) {
+        for (let i = 0; i <= Math.PI; i += (Math.PI) / m) {
+            // prvo nacrtaj jedan meridijan za dani segment?
+            for (let j = 0; j <= Math.PI + 0.1; j += 0.1) {
+                let x = r * Math.cos(i) * Math.sin(j);
+                let y = r * Math.cos(j);
+                let z = r * Math.sin(i) * Math.sin(j);
+                if (j != 0) {
+                    this.gks.linijaDo(x, y, z, true);
+                    this.gks.postaviNa(x, y, z);
+                }
+                else {
+                    this.gks.postaviNa(x, y, z);
+                }
+            }
+        }
+        // pa sve paralele
+        for (let i = 0; i < Math.PI; i += Math.PI / (n + 1)) {
+            // nacrtaj paralelu
+            for (let j = 0; j < (Math.PI); j += 0.1) {
+                let x = r * Math.cos(j) * Math.sin(i);
+                let y = r * Math.cos(i);
+                let z = r * Math.sin(j) * Math.sin(i);
+                if (j != 0) {
+                    this.gks.linijaDo(x, y, z, true);
+                    this.gks.postaviNa(x, y, z);
+                }
+                else {
+                    this.gks.postaviNa(x, y, z);
+                }
             }
         }
     }
@@ -238,6 +270,29 @@ class Crtanje3D {
                 }
             }
             //this.gks.povuciLiniju();
+        }
+    }
+    nacrtajVjetromjer(kut) {
+        this.nacrtajStozac(4, 6, 10);
+        this.mat.pomakni(0, 4.75, 0);
+        this.mat.rotirajY(kut);
+        this.gks.trans(this.mat);
+        this.nacrtajValjak(1, 1.25, 10);
+        this.mat.pomakni(0, 0.5, 0);
+        this.mat.rotirajX(Utility.degToRad(90));
+        for (let i = 0; i < 3; i++) {
+            // a circle : 2pi
+            // a third of a circle: 2pi/3
+            this.mat.rotirajZ((Math.PI / (3 / 2)));
+            this.gks.trans(this.mat);
+            this.nacrtajValjak(0.5, 5, 5);
+            this.mat.pomakni(0, 5.5, 0);
+            this.mat.rotirajY(Utility.degToRad(90));
+            this.gks.trans(this.mat);
+            this.nacrtajPolukuglu(1, 5, 5);
+            this.mat.rotirajY(Utility.degToRad(-90));
+            this.mat.pomakni(0, -5.5, 0);
+            this.gks.trans(this.mat);
         }
     }
 }
