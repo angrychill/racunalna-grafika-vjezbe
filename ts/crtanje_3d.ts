@@ -9,33 +9,71 @@ class Crtanje3D {
         this.mat = mat;
     }
 
-    nacrtajKocku(a = 1){
+    nacrtajKocku(a = 1, centered : boolean = true){
         // srediste u ishodistu
-        let h = a/2;
+        const offsetX = centered ? a / 2 : 0;
+        const offsetY = centered ? a / 2 : 0;
+        const offsetZ = centered ? a / 2 : 0;
 
-        let v : number[][]= [
-            [-h, -h, -h],
-            [ h, -h, -h],
-            [ h,  h, -h],
-            [-h,  h, -h],
-            [-h, -h,  h],
-            [ h, -h,  h],
-            [ h,  h,  h],
-            [-h,  h,  h]
-                        ];
-        
-        let e = [
-        [0,1],[1,2],[2,3],[3,0],
-        [4,5],[5,6],[6,7],[7,4],
-        [0,4],[1,5],[2,6],[3,7]
-    ];
+        const h = a / 2;
+        const v: number[][] = [
+            [-h + offsetX, -h + offsetY, -h + offsetZ],
+            [ h + offsetX, -h + offsetY, -h + offsetZ],
+            [ h + offsetX,  h + offsetY, -h + offsetZ],
+            [-h + offsetX,  h + offsetY, -h + offsetZ],
+            [-h + offsetX, -h + offsetY,  h + offsetZ],
+            [ h + offsetX, -h + offsetY,  h + offsetZ],
+            [ h + offsetX,  h + offsetY,  h + offsetZ],
+            [-h + offsetX,  h + offsetY,  h + offsetZ]
+        ];
 
-        for (const [i, j] of e) {
+        const edges = [
+            [0,1], [1,2], [2,3], [3,0],  // bottom face
+            [4,5], [5,6], [6,7], [7,4],  // top face
+            [0,4], [1,5], [2,6], [3,7]   // vertical edges
+        ];
+
+        for (const [i, j] of edges) {
             this.gks.postaviNa(v[i][0], v[i][1], v[i][2]);
             this.gks.linijaDo(v[j][0], v[j][1], v[j][2], true);
         }
             
     }
+
+    nacrtajKvadar(w:number = 1, h:number = 1, d:number = 1, centered : boolean = true){
+
+        const hx = w / 2;
+        const hy = h / 2;
+        const hz = d / 2;
+
+        const ox = centered ? 0 : hx;
+        const oy = centered ? 0 : hy;
+        const oz = centered ? 0 : hz;
+
+        const v: number[][] = [
+            [-hx + ox, -hy + oy, -hz + oz], 
+            [ hx + ox, -hy + oy, -hz + oz], 
+            [ hx + ox,  hy + oy, -hz + oz], 
+            [-hx + ox,  hy + oy, -hz + oz], 
+            [-hx + ox, -hy + oy,  hz + oz], 
+            [ hx + ox, -hy + oy,  hz + oz], 
+            [ hx + ox,  hy + oy,  hz + oz], 
+            [-hx + ox,  hy + oy,  hz + oz]  
+        ];
+
+        const edges = [
+            [0,1], [1,2], [2,3], [3,0], 
+            [4,5], [5,6], [6,7], [7,4], 
+            [0,4], [1,5], [2,6], [3,7]   
+        ];
+
+        for (const [i, j] of edges) {
+            this.gks.postaviNa(v[i][0], v[i][1], v[i][2]);
+            this.gks.linijaDo(v[j][0], v[j][1], v[j][2], true);
+        }
+            
+    }
+    
 
     nacrtajGlavneOsi() {
         this.gks.koristiBoju("red");

@@ -8,20 +8,33 @@ class zad_1 {
     constructor(canvas : HTMLCanvasElement){
         var x_min = -10;
         var x_max = 10;
-        var y_min = -10;
-        var y_max = 10;
+    
 
-        this.gks = new GKS3DPerspective(canvas, x_min, x_max, y_min, y_max, 10);
+        this.gks = new GKS3DPerspective(canvas, x_min, x_max, 0, 0, 10);
         this.mat = new MT3D();
         this.crtac = new Crtanje3D(this.gks, this.mat);
         //this.crtaj(0);
         this.animiraj();
+
+        
 
         window.addEventListener('keydown', (e) => {
             if (e.code === 'Space') {
                 this.isPaused = !this.isPaused;
             }
         });
+
+        // Utility.dodajSlider(this, [
+        // { key: "rotationSpeed", min: 0, max: 3, step: 0.01, value: 1, label: "Brzina rotacije" }
+        //     ], "controls1");  
+        
+        // Utility.dodajCheckbox(this, "test", "test", false, "controls1");
+        // Utility.dodajRadio(this, "test2", "test2",
+        //     [{value:1, text:"test2"},
+        //         {value:2, text:"test3"}
+        //     ], "controls1"
+        // );
+        
     }
 
     crtaj(step : number) {
@@ -53,6 +66,7 @@ class zad_1 {
 
     }
     step = 0;
+    rotationSpeed : number = 0;
 
     animiraj() {
         if (!this.isPaused) {
@@ -77,10 +91,9 @@ class zad_2 {
     constructor(canvas : HTMLCanvasElement){
         var x_min = -10;
         var x_max = 10;
-        var y_min = -10;
-        var y_max = 10;
+     
 
-        this.gks = new GKS3DPerspective(canvas, x_min, x_max, y_min, y_max, 20);
+        this.gks = new GKS3DPerspective(canvas, x_min, x_max, 0, 0, 20);
         this.mat = new MT3D();
         this.crtac = new Crtanje3D(this.gks, this.mat);
         //this.crtaj(15);
@@ -91,6 +104,8 @@ class zad_2 {
                 this.isPaused = !this.isPaused;
             }
         });
+
+        
     }
 
     crtaj(step : number) {
@@ -118,10 +133,10 @@ class zad_2 {
         this.crtac.nacrtajGridXZ();
         this.gks.koristiBoju("black");
         this.gks.korisitDebljinu(0.75);
-        this.mat.skaliraj(3, 3, 3);
+        
         this.mat.pomakni(0, Math.PI/2, 0);
         this.gks.trans(this.mat);
-        this.crtac.nacrtajParametarskuPlohu(-1, 1, 0, Math.PI*2, 15, 15);
+        this.crtac.nacrtajKvadar(5, 2, 1, true);
 
     }
     step = 0;
@@ -148,6 +163,9 @@ function main() {
     let platno1 : HTMLCanvasElement = document.getElementById("canvas1") as HTMLCanvasElement;
     let platno2 : HTMLCanvasElement = document.getElementById("canvas2") as HTMLCanvasElement;
 
+    let div1 = document.getElementById("arguments")
+
+    
 
 
     var w = platno1.width;
