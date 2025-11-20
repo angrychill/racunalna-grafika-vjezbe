@@ -10,11 +10,13 @@ class zad_1 {
         var x_max = 10;
     
 
-        this.gks = new GKS3DPerspective(canvas, x_min, x_max, 0, 0, 10);
+        this.gks = new GKS3DPerspective(canvas, x_min, x_max, 0, 0, 15);
         this.mat = new MT3D();
         this.crtac = new Crtanje3D(this.gks, this.mat);
         //this.crtaj(0);
         this.animiraj();
+
+        this.gks.g.fillStyle = "#FFFFE0";
 
         
 
@@ -23,46 +25,80 @@ class zad_1 {
                 this.isPaused = !this.isPaused;
             }
         });
-
-        // Utility.dodajSlider(this, [
-        // { key: "rotationSpeed", min: 0, max: 3, step: 0.01, value: 1, label: "Brzina rotacije" }
-        //     ], "controls1");  
-        
-        // Utility.dodajCheckbox(this, "test", "test", false, "controls1");
-        // Utility.dodajRadio(this, "test2", "test2",
-        //     [{value:1, text:"test2"},
-        //         {value:2, text:"test3"}
-        //     ], "controls1"
-        // );
         
     }
 
     crtaj(step : number) {
         this.gks.g.clearRect(0, 0, this.gks.w, this.gks.h);
+        this.gks.g.fillStyle = "#FFFFE0";
+        this.gks.g.fillRect(0, 0, this.gks.w, this.gks.h);
+        
         this.mat.identitet();
         this.gks.trans(this.mat);
 
-        let kam_x = Math.sin(step) * 8;
-        let kam_z = Math.cos(step) * 8;
-        
-        let kam_y_min = 0.2;
-        let kam_y_max = 7;
-        let kam_y_offset = 5;
-
-        let kam_y = Math.sin(step) * (kam_y_max - kam_y_min) + kam_y_offset;
-
-        this.mat.postaviKameru(-5, -5, 0, 0, 0, 0, 0, 1, 0);
+        this.mat.postaviKameru(7.5, 7.5,10, 0, 0, 0, 0, 1, 0);
      
         this.gks.trans(this.mat);
     
-        this.crtac.nacrtajGridXZ();
+        //this.crtac.nacrtajGridXZ();
+        this.gks.korisitDebljinu(1);
+        this.crtac.nacrtajGlavneOsi();
        this.gks.koristiBoju("black");
         this.gks.korisitDebljinu(0.75);
-    
-        //this.mat.rotirajY(Utility.degToRad(70));
-        //this.gks.trans(this.mat);
 
-        this.crtac.nacrtajVjetromjer(step);
+        this.gks.koristiBoju("#00ADEF");
+        this.mat.pomakni(0, -3, 0);
+        this.gks.trans(this.mat);
+        this.crtac.nacrtajKrnjiStozac(2, 0.3, 5, 20);
+        this.mat.pomakni(0, 5, 0);
+        this.gks.trans(this.mat);
+        this.gks.koristiBoju("#FA003F");
+        
+        this.mat.rotirajY(step);
+        this.gks.trans(this.mat);
+        this.crtac.nacrtajArrayLinija(0.3, 5, 20);
+        this.gks.koristiBoju("black");
+        this.crtac.nacrtajTorus(5, 0.15, 40);
+
+
+
+        for (let i = 0; i<4; i++){
+
+            // prvo pozicija na torusu gornja
+            // sin i cos po rotaciji?
+
+            // postavljanje pravilne pozicije na x
+           
+            this.mat.rotirajY(Utility.degToRad(360/4));
+              this.mat.pomakni(5, -0.15, 0);
+            this.gks.trans(this.mat);
+
+            this.gks.korisitDebljinu(1);
+            this.gks.koristiBoju("black");
+            this.gks.postaviNa(0, 0, 0);
+          
+            this.mat.rotirajY(step*4);
+            this.mat.rotirajZ(Utility.degToRad(30));
+           
+            this.gks.trans(this.mat);
+
+            this.mat.pomakni(0, -2, 0);
+            this.gks.trans(this.mat);
+            this.gks.linijaDo(0, 0, 0, true);
+
+            this.gks.korisitDebljinu(0.25);
+            this.gks.koristiBoju("magenta");
+            this.crtac.nacrtajKuglu(0.25, 5, 5);
+
+
+            this.mat.pomakni(0, 2, 0);
+            this.gks.trans(this.mat);
+            this.mat.rotirajZ(Utility.degToRad(-30));
+            this.mat.rotirajY(-step*4);
+              this.mat.pomakni(-5, 0.15, 0);
+            this.gks.trans(this.mat);
+
+        }
 
     }
     step = 0;
@@ -81,79 +117,6 @@ class zad_1 {
 
 }
 
-// @ts-ignore
-class zad_2 {
-    crtac : Crtanje3D
-    gks: GKS3D;
-    mat: MT3D;
-    isPaused: boolean = false;
-
-    constructor(canvas : HTMLCanvasElement){
-        var x_min = -10;
-        var x_max = 10;
-     
-
-        this.gks = new GKS3DPerspective(canvas, x_min, x_max, 0, 0, 20);
-        this.mat = new MT3D();
-        this.crtac = new Crtanje3D(this.gks, this.mat);
-        //this.crtaj(15);
-        this.animiraj();
-
-        window.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
-                this.isPaused = !this.isPaused;
-            }
-        });
-
-        
-    }
-
-    crtaj(step : number) {
-        this.gks.g.clearRect(0, 0, this.gks.w, this.gks.h);
-        this.mat.identitet();
-        let r = 15;
-        //let h = 2 + 2 * Math.sin(step)*0.5;
-        //let eye_x = r * Math.cos(step)*0.5;
-        //let eye_z = r * Math.sin(step)*0.5;
-
-         let kam_x = Math.sin(step) * 25;
-        let kam_z = Math.cos(step) * 25;
-        
-        let kam_y_min = 4;
-        let kam_y_max = 8;
-        let kam_y_offset = 6;
-
-        let kam_y = Math.sin(step) * (kam_y_max - kam_y_min) + kam_y_offset;
-
-        this.mat.postaviKameru(kam_x, kam_y, kam_z, 0, kam_y_offset, 0, 0, 1, 0);
-      
-     
-        this.gks.trans(this.mat);
-        
-        this.crtac.nacrtajGridXZ();
-        this.gks.koristiBoju("black");
-        this.gks.korisitDebljinu(0.75);
-        
-        this.mat.pomakni(0, Math.PI/2, 0);
-        this.gks.trans(this.mat);
-        this.crtac.nacrtajKvadar(5, 2, 1, true);
-
-    }
-    step = 0;
-
-    animiraj() {
-        if (!this.isPaused) {
-            this.step += 0.005;
-            if (this.step > Math.PI * 2) {
-                this.step = 0;
-            }
-            this.crtaj(this.step);
-        }
-        requestAnimationFrame(() => this.animiraj());
-    }
-
-}
-
 
 
 // @ts-ignore
@@ -161,7 +124,6 @@ function main() {
 
  
     let platno1 : HTMLCanvasElement = document.getElementById("canvas1") as HTMLCanvasElement;
-    let platno2 : HTMLCanvasElement = document.getElementById("canvas2") as HTMLCanvasElement;
 
     let div1 = document.getElementById("arguments")
 
@@ -175,7 +137,7 @@ function main() {
 
     
     new zad_1(platno1);
-    new zad_2(platno2);
+
  
    
 }
