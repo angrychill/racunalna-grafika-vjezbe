@@ -65,7 +65,10 @@
 
           // postavljanje vrijednosti uniform varijabli
           let mat = new MT2D();
+          let gks = new GKS2D
           mat.pomakni(0.9, 0.3);
+
+          let crtac = new Crtanje2D();
           
           gl.uniformMatrix3fv(GPUprogram1.u_mTrans, false,
            mat.lista()); // jedinična matrica

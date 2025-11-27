@@ -18,15 +18,22 @@ class Crtanje2D {
   
    
        for (let t = 0; t <= 2 * Math.PI + rezolucija; t = t + rezolucija) {
-           var x_d = a * Math.cos(t);
+           let lista = [];
+            var x_d = a * Math.cos(t);
            var y_d = b * Math.sin(t);
-   
-           if (t == 0) {
-               this.gks.postaviNa(x_d, y_d);
-           } else {
-               this.gks.linijaDo(x_d, y_d);
-   
-           }
+
+        //    if (this.gks){
+        //         if (t == 0) {
+        //                     this.gks.postaviNa(x_d, y_d);
+        //                 } else {
+        //                     this.gks.linijaDo(x_d, y_d);
+                
+        //                 }
+        //    }
+         
+           lista.push(x_d);
+           lista.push(y_d);
+           return lista;
    
        }
        this.gks.povuciLiniju();
