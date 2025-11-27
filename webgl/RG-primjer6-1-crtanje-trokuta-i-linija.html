@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="hr"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+		<meta charset="UTF-8">
+		<title>WebGL2 test - Crtanje trokuta i linija</title>
+		<script src="js/RG-WebGL.js"></script>
+
+		<script>
+		  window.onload = WebGLaplikacija;
+
+		  function WebGLaplikacija() {
+        var platno1 = document.getElementById("slika1");
+        gl = platno1.getContext("webgl2");
+        if (!gl) alert("WebGL2 nije dostupan!");
+
+        GPUprogram1 = pripremiGPUprogram(gl, "vertex-shader", "fragment-shader");
+        gl.useProgram(GPUprogram1); // možemo imati više GPU programa
+
+        // definiranje geometrije preko javascript polja
+        var vrhovi = [ -0.5,  0.0,   // sredina
+                      -0.5, -0.5,   // lijevi donji vrh
+                       0.5, -0.5,   // desni donji vrh
+                       0.5,  0.5,   // desni gornji vrh
+                      -0.5,  0.5,   // lijevi gornji vrh
+                       -0.5,  0.0 ]; // sredina
+          
+        function napuniSpremnike() {
+          spremnikVrhova = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, spremnikVrhova);
+          
+          // povezivanje s atribut varijablom a_vrhXY u programu za sjenčanje
+          GPUprogram1.a_vrhXY = gl.getAttribLocation(GPUprogram1, "a_vrhXY");
+          gl.enableVertexAttribArray(GPUprogram1.a_vrhXY);
+          gl.vertexAttribPointer(GPUprogram1.a_vrhXY, 2, gl.FLOAT, false, 0, 0);
+          // punjenje spremnika - podaci koji se šalju na GPU
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vrhovi), gl.STATIC_DRAW);
+        } // napuniSpremnike
+
+        function iscrtaj() {
+          gl.clearColor(0.4, 0.4, 0.4, 1);
+          gl.clear(gl.COLOR_BUFFER_BIT);
+          gl.viewport(0, 0, platno1.width, platno1.height);
+
+          gl.drawArrays(gl.TRIANGLES, 0, vrhovi.length / 2);
+        } // iscrtaj
+
+        napuniSpremnike();
+        iscrtaj();
+      } // WebGLaplikacija
+		</script>
+
+		<script id="vertex-shader" type="x-shader/x-vertex">
+      #version 300 es
+      in vec2 a_vrhXY;
+
+      void main() {
+        gl_Position = vec4(a_vrhXY, 0, 1);
+      }
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+      #version 300 es
+      precision mediump float;
+      out vec4 bojaPiksela;
+
+      void main() {
+        bojaPiksela = vec4(0, 1, 0, 1); // RGBA, zadnja komponenta za (ne)prozirnost
+      }
+    </script>
+	</head>
+
+	<body>
+		<h1>WebGL2 test - Crtanje trokuta i linija</h1>
+		<div>
+			<canvas id="slika1" width="500" height="500" style="border:5px solid black">
+				Vaš preglednik ne podržava HTML5 canvas.
+      </canvas>
+		</div>
+	
+</body></html>
