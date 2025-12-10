@@ -30,7 +30,11 @@ class MT2D {
         let py = (-sy * ymax) + 1
          let px = (-sx * xmax) + 1
 
-        return {x:px, y:py};
+        this.mult([
+        [sx, 0, px],
+        [0, sy, py],
+        [0, 0, 1],
+        ]);;
     }
 
     identitet() {

@@ -23,7 +23,12 @@ class MT2D {
         let sy = 2 / (ymax - ymin);
         let py = (-sy * ymax) + 1;
         let px = (-sx * xmax) + 1;
-        return { x: px, y: py };
+        this.mult([
+            [sx, 0, px],
+            [0, sy, py],
+            [0, 0, 1],
+        ]);
+        ;
     }
     identitet() {
         this._matrica = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];

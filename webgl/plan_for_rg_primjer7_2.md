@@ -20,10 +20,9 @@ This document outlines a step-by-step plan to reorganize the code in [`RG-primje
 - At the end of the file, add an export or instantiation logic to run on window load, akin to the `main()` function in [`zad_5.ts`](../webgl/ts/zad_5.ts).
 
 ### Step 2: Separate Shader Code
-- Extract the vertex shader (lines 56-66) and fragment shader (lines 68-77) from the HTML into separate GLSL files.
-  - Create `webgl/shaders/primjer7_vertex.glsl` for the vertex shader.
-  - Create `webgl/shaders/primjer7_fragment.glsl` for the fragment shader.
-- In `rg_primjer7_2.ts`, load these shaders dynamically or via utilities in [`webgl_pomocnici.ts`](../webgl/ts/webgl_pomocnici.ts), instead of inline.
+- Extract both the vertex shader (lines 56-66) and fragment shader (lines 68-77) from the HTML into a single shared GLSL file.
+  - Create `webgl/shaders/rg_primjer7_2.glsl` containing both shaders (vertex and fragment sections clearly separated, e.g., with comments).
+- In `rg_primjer7_2.ts`, load this single GLSL file dynamically or via utilities in [`webgl_pomocnici.ts`](../webgl/ts/webgl_pomocnici.ts), instead of inline. Follow the naming convention where the GLSL file matches the TS file name (e.g., `task_7.ts` would pair with `task7.glsl`).
 
 ### Step 3: Enhance Utility Files for WebGL Operations
 - Update [`webgl_pomocnici.ts`](../webgl/ts/webgl_pomocnici.ts) (or create if needed) to handle common WebGL tasks from the extracted code:
