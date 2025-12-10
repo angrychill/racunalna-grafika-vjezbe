@@ -52,7 +52,7 @@ class RGPrimjer7_3 {
     const flatData = new Float32Array(this.vertices.flat());
     this.buffer = WebGLPomocnici.napuniSpremnike(this.gl, flatData);
 
-    WebGLPomocnici.postaviAtribut(this.gl, this.program, "a_vrhXY", 2, 20, 0);
+    WebGLPomocnici.postaviAtribut(this.gl, this.program, "a_vrhXYZ", 2, 20, 0);
     WebGLPomocnici.postaviAtribut(this.gl, this.program, "a_boja", 3, 20, 8);
   }
 
