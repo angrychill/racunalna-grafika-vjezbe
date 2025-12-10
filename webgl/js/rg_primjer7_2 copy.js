@@ -51,7 +51,6 @@ class RGPrimjer7_2 {
         WebGLPomocnici.iscrtaj(this.gl, this.gl.TRIANGLES, this.vertices.length);
     }
 }
-// @ts-ignore
 function vertShader() {
     const glsl = (x) => x;
     let vert = glsl `#version 300 es
@@ -67,7 +66,6 @@ function vertShader() {
       }`;
     return vert;
 }
-// @ts-ignore
 function fragShader() {
     const glsl = (x) => x;
     let frag = glsl `#version 300 es

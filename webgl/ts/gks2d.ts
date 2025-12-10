@@ -147,7 +147,7 @@ class GKS2D {
 
     }
 
-    vratiPretvoreneKoord(x: number, y: number) {
+    vratiPretvoreneKoord(x: number, y: number, projekcija : boolean = false) {
         // x' = a_00*x + a_01*y + a_02
         // y' = a_10*x + a_11*y + a_12
         var x_trans = this._matrica[0][0]*x + this._matrica[0][1]*y + this._matrica[0][2];
@@ -155,6 +155,8 @@ class GKS2D {
 
         var x_i = this.p_x + this.s_x * x_trans;
         var y_i = this.p_y + this.s_y * y_trans;
+
+       
 
         return { x: x_i, y: y_i };
     }

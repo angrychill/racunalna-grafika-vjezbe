@@ -13,6 +13,15 @@ class MT3D {
             [0, 0, 1, 0],
             [0, 0, 0, 1]];
     }
+    lista() {
+        let lista = [];
+        for (let i = 0; i < 4; i++) {
+            for (let j = 0; j < 4; j++) {
+                lista.push(this._matrica[j][i]);
+            }
+        }
+        return lista;
+    }
     identitet() {
         this._matrica = [[1, 0, 0, 0],
             [0, 1, 0, 0],

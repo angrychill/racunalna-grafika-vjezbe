@@ -1,0 +1,128 @@
+:root {
+				--bg:      #f9f9fb;      
+				--text:    #222;        
+				--accent:  #32a1ce;      
+				--font:    system-ui, sans-serif;
+			}
+
+			* { margin:0; padding:0; box-sizing:border-box; }
+
+			body {
+				background: var(--bg);
+				color: var(--text);
+				font-family: var(--font);
+				display: grid;
+				place-content: center;
+				min-height: 100vh;
+				gap: 8px;               
+				padding: 4px;           
+			}
+
+			h1 {
+				font-size: 1.4rem;
+				color: var(--accent);
+				text-align: center;
+			}
+
+			.canvases {
+				display: grid;
+				grid-template-columns: 500px 500px;  
+				gap: 8px;
+				justify-content: center;
+			}
+
+			canvas {
+				image-rendering: smooth;          
+				border: 4px double var(--accent);
+				border-radius: 8px;
+				background: white;
+		
+			}
+
+			#arguments {
+				font-size: 0.95rem;
+				text-align: center;
+				color: #555;
+			}
+
+			kbd {
+				background: #333;
+				color: #fff;
+				padding: 2px 7px;
+				border-radius: 4px;
+				font-size: 0.9em;
+			}
+
+			
+			@media (max-width: 850px) {
+				.canvases { grid-template-columns: 400px; }
+			}
+
+			.demo {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 8px;
+		}
+
+		
+        .controls {
+            background: rgba(255,255,255,0.96);
+            padding: 8px 8px;
+            border-radius: 4px;
+            box-shadow: 0 4px 4px rgba(0,0,0,0.12);
+            border: 1px solid #e0e0e0;
+            font-family: system-ui, sans-serif;
+            font-size: 0.9rem;
+            min-width: 340px;
+            backdrop-filter: blur(4px);
+        }
+
+        .controls > div {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 7px;
+        }
+
+        .controls > div:last-child { margin-bottom: 0; }
+
+        .controls label {
+            min-width: 100px;
+            font-weight: 500;
+            cursor: pointer;
+            user-select: none;
+           
+            margin-right: 5px;
+            margin-left: 5px;
+        }
+
+        .controls input[type="range"] {
+            font-size: small;
+        }
+        .controls span { 
+            width: 50px; 
+            text-align: right; 
+            font-family: "Courier New", monospace; 
+            font-weight: bold;
+            color: #1a73e8;
+        }
+
+        /* Checkbox & Radio */
+        .controls input[type="checkbox"],
+        .controls input[type="radio"] {
+          
+            width: 16px;
+            height: 16px;
+            accent-color: #32a1ce;
+        }
+
+        /* Radio group title */
+        .controls > div > div:first-child {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #444;
+        }
+
+
+        

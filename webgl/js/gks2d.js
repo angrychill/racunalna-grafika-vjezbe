@@ -121,7 +121,7 @@ class GKS2D {
     povuciLiniju() {
         this.g.stroke();
     }
-    vratiPretvoreneKoord(x, y) {
+    vratiPretvoreneKoord(x, y, projekcija = false) {
         // x' = a_00*x + a_01*y + a_02
         // y' = a_10*x + a_11*y + a_12
         var x_trans = this._matrica[0][0] * x + this._matrica[0][1] * y + this._matrica[0][2];
