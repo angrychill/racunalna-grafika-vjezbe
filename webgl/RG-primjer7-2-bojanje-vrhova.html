@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="hr">
+	<head>
+		<meta charset="UTF-8">
+		<title>WebGL2 - bojanje vrhova</title>
+		<script src="js/RG-WebGL.js"></script>
+
+		<script>
+		  window.onload = WebGLaplikacija;
+
+		  function WebGLaplikacija() {
+        var platno1 = document.getElementById("slika1");
+        gl = platno1.getContext("webgl2");
+        if (!gl) alert("WebGL2 nije dostupan!");
+
+        GPUprogram1 = pripremiGPUprogram(gl, "vertex-shader", "fragment-shader");
+        gl.useProgram(GPUprogram1); // možemo imati više GPU programa
+
+        // definiranje geometrije preko javascript polja
+        let a = 0.5;
+        vrhovi = [[ 0,  0,  1, 0, 0],  // crveno
+                  [-a, -a,  1, 0, 0],  // crveno
+                  [ a, -a,  1, 0, 0],  // crveno
+                  [ 0,  0,  1, 0, 0],  // crveno
+                  [ a,  a,  1, 1, 0],  // žuto
+                  [-a,  a,  0.5, 0, 1]]; // ljubičasto
+          
+        function napuniSpremnike() {
+          // povezivanje s atribut varijablama u programu za sjenčanje
+          GPUprogram1.a_vrhXY = gl.getAttribLocation(GPUprogram1, "a_vrhXY");
+          GPUprogram1.a_boja = gl.getAttribLocation(GPUprogram1, "a_boja");
+          
+          spremnikVrhova = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, spremnikVrhova);
+          gl.enableVertexAttribArray(GPUprogram1.a_vrhXY);
+          gl.enableVertexAttribArray(GPUprogram1.a_boja);
+          gl.vertexAttribPointer(GPUprogram1.a_vrhXY, 2, gl.FLOAT, false, 20, 0);
+          gl.vertexAttribPointer(GPUprogram1.a_boja, 3, gl.FLOAT, false, 20, 8);
+          // punjenje spremnika - podaci koji se šalju na GPU
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vrhovi.flat()), gl.STATIC_DRAW);
+        } // napuniSpremnike
+
+        function iscrtaj() {
+          gl.clearColor(0.5, 0.5, 0.5, 1);
+          gl.clear(gl.COLOR_BUFFER_BIT);
+          gl.viewport(0, 0, platno1.width, platno1.height);
+
+          gl.drawArrays(gl.TRIANGLES, 0, vrhovi.length);
+        } // iscrtaj
+
+        napuniSpremnike();
+        iscrtaj();
+      } // WebGLaplikacija
+	</script>
+
+	<script id="vertex-shader" type="x-shader/x-vertex">
+      #version 300 es
+      in vec2 a_vrhXY;
+      in vec3 a_boja;
+      out vec3 v_boja;
+
+      void main() {
+        gl_Position = vec4(a_vrhXY, 0, 1);
+        v_boja = a_boja;
+      }
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+      #version 300 es
+      precision highp float;
+      in vec3 v_boja;
+      out vec4 bojaPiksela;
+
+      void main() {
+        bojaPiksela = vec4(v_boja, 1);
+      }
+    </script>
+	</head>
+
+	<body>
+		<h1>WebGL2 - bojanje vrhova</code></h1>
+		<div>
+			<canvas id="slika1" width="500" height="500" style="border:5px solid black">
+				Vaš preglednik ne podržava HTML5 canvas.
+      </canvas>
+		</div>
+	</body>
+</html>

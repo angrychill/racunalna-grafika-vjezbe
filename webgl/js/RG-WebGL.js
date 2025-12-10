@@ -2,6 +2,7 @@
 // RG-WebGL.js - skup potprograma koji automatizira prevođenje programa za sjenčanje
 // za potrebe kolegija Računalna grafika pripremio Damir Horvat / preradio Ivan Hip
 //kreiranje shadera iz <script id="..."> taga
+//@ts-ignore
 function prevediShader(gl, id, tipShadera) {
     //potrazi skriptu u dokumentu
     var shaderSkripta = document.getElementById(id);
@@ -9,6 +10,7 @@ function prevediShader(gl, id, tipShadera) {
         throw "Nepoznata skripta: " + id;
     }
     //uzmi sadrzaj skripte
+    //@ts-ignore
     var izvorniKodShadera = shaderSkripta.text.trim();
     //napravi shader objekt
     var shader = gl.createShader(tipShadera);
@@ -24,6 +26,7 @@ function prevediShader(gl, id, tipShadera) {
     return shader;
 } // prevediShader
 //poveži sve zajedno u program
+//@ts-ignore
 function pripremiGPUprogram(gl, vsID, fsID) {
     var vshader = prevediShader(gl, vsID, gl.VERTEX_SHADER);
     var fshader = prevediShader(gl, fsID, gl.FRAGMENT_SHADER);
