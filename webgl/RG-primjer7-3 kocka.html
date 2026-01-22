@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="hr">
+	<head>
+		<meta charset="UTF-8">
+		<title>WebGL2 - bojanje vrhova</title>
+		<script src="js/RG-WebGL.js"></script>
+      <script src="js/crtanje_2d.js"></script>
+        <script src="js/gks2d.js"></script>
+        <script src="js/mt2d.js"></script>
+		<script src="js/utility.js"></script>
+        <script src="js/crtanje_3d.js"></script>
+        <script src="js/gks3d.js"></script>
+        <script src="js/mt3d.js"></script>
+        <script src="js/gks3d_pers.js"></script>
+
+      <script src="js/crtanje_webgl.js"></script>
+      <script src="js/dz_7_kocka.js"></script>
+
+		
+
+	<script id="vertex-shader" type="x-shader/x-vertex">
+      #version 300 es
+          in vec3 a_vrhXYZ;
+          in vec3 a_boja;
+
+          uniform mat4 u_mTrans;
+
+          out vec3 v_boja;
+
+          void main() {
+            gl_Position = u_mTrans * vec4(a_vrhXYZ, 1.0);
+            v_boja = a_boja;
+      }
+
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+      #version 300 es
+      precision highp float;
+      in vec3 v_boja;
+      out vec4 bojaPiksela;
+
+      void main() {
+        bojaPiksela = vec4(v_boja, 1);
+      }
+    </script>
+	</head>
+
+	<body>
+		<h1>WebGL2 - bojanje vrhova</code></h1>
+		<div>
+			<canvas id="slika1" width="500" height="500" style="border:5px solid black">
+				Vaš preglednik ne podržava HTML5 canvas.
+      </canvas>
+		</div>
+	</body>
+</html>

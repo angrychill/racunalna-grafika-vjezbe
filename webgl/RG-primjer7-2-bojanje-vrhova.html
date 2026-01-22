@@ -4,6 +4,16 @@
 		<meta charset="UTF-8">
 		<title>WebGL2 - bojanje vrhova</title>
 		<script src="js/RG-WebGL.js"></script>
+      <script src="js/crtanje_2d.js"></script>
+        <script src="js/gks2d.js"></script>
+        <script src="js/mt2d.js"></script>
+		<script src="js/utility.js"></script>
+        <script src="js/crtanje_3d.js"></script>
+        <script src="js/gks3d.js"></script>
+        <script src="js/mt3d.js"></script>
+        <script src="js/gks3d_pers.js"></script>
+
+      <script src="js/crtanje_webgl.js"></script>
 
 		<script>
 		  window.onload = WebGLaplikacija;
@@ -40,6 +50,29 @@
           gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vrhovi.flat()), gl.STATIC_DRAW);
         } // napuniSpremnike
 
+        let kut = 0;
+GPUprogram1.u_mTrans = gl.getUniformLocation(GPUprogram1, "u_mTrans");
+
+    function animacija() {
+            kut += 0.01;
+
+            let m = new MT3D();
+            m.rotirajY(kut);
+            m.rotirajX(2 * kut);
+            m.rotirajZ(3 * kut);
+
+            gl.uniformMatrix4fv(GPUprogram1.u_mTrans, false, m.lista());
+
+            gl.clearColor(0.5, 0.5, 0.5, 1);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            gl.drawArrays(gl.TRIANGLES, 0, vrhovi.length);
+
+            requestAnimationFrame(animacija);
+          }
+          
+
+
         function iscrtaj() {
           gl.clearColor(0.5, 0.5, 0.5, 1);
           gl.clear(gl.COLOR_BUFFER_BIT);
@@ -49,20 +82,24 @@
         } // iscrtaj
 
         napuniSpremnike();
-        iscrtaj();
+        animacija();
       } // WebGLaplikacija
 	</script>
 
 	<script id="vertex-shader" type="x-shader/x-vertex">
       #version 300 es
-      in vec2 a_vrhXY;
-      in vec3 a_boja;
-      out vec3 v_boja;
+          in vec2 a_vrhXY;
+          in vec3 a_boja;
 
-      void main() {
-        gl_Position = vec4(a_vrhXY, 0, 1);
-        v_boja = a_boja;
+          uniform mat4 u_mTrans;
+
+          out vec3 v_boja;
+
+          void main() {
+            gl_Position = u_mTrans * vec4(a_vrhXY, 0.0, 1.0);
+            v_boja = a_boja;
       }
+
     </script>
 
     <script id="fragment-shader" type="x-shader/x-fragment">

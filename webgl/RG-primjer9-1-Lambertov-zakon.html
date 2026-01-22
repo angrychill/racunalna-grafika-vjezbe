@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="hr">
+	<head>
+		<meta charset="UTF-8">
+		<title>Lambertov zakon</title>
+		<script src="../RG-WebGL.js"></script>
+
+		<script>
+		  window.onload = WebGL2aplikacija;
+
+		  function WebGL2aplikacija() {
+        var platno1 = document.getElementById("slika1");
+        gl = platno1.getContext("webgl2");
+        if (!gl) alert("WebGL2 nije dostupan!");
+
+        var GPUprog1 = pripremiGPUprogram(gl, "vertex-shader", "fragment-shader");
+        gl.useProgram(GPUprog1); // možemo imati više GPU programa
+
+        // povezivanje s uniform varijablama u programu za sjenčanje
+        GPUprog1.u_mTrans = gl.getUniformLocation(GPUprog1, "u_mTrans");
+        GPUprog1.u_izvorXYZ = gl.getUniformLocation(GPUprog1, "u_izvorXYZ");
+        GPUprog1.u_boja = gl.getUniformLocation(GPUprog1, "u_boja");
+
+        function valjak(r, h, n) {
+          var vrhovi = []; 
+
+          // n-terokut - donja baza valjka na z = -h / 2
+          // vektori normale su prema dolje, tj. [0, 0, -1]
+          vrhovi.push(0, 0, -h / 2, 0, 0, -1); // središte za TRIANGLE_FAN
+          let phi = 2 * Math.PI / n;
+          for(let i = 0; i <= n; i++) {
+            vrhovi.push(r * Math.cos(phi), r * Math.sin(phi), -h / 2, 0, 0, -1);
+            phi += 2 * Math.PI / n;
+          } // for
+
+          // n-terokut - gornja baza valjka na z = h / 2
+          // vektori normale su prema gore, tj. [0, 0, 1]
+          vrhovi.push(0, 0, h / 2, 0, 0, 1); // središte za TRIANGLE_FAN
+          phi = 2 * Math.PI;
+          for(let i = 0; i <= n; i++) {
+            vrhovi.push(r * Math.cos(phi), r * Math.sin(phi), h / 2, 0, 0, 1);
+            phi -= 2 * Math.PI / n;
+          } // for
+        
+          // plašt valjka
+          phi = 0;
+          for(let i = 0; i <= n; i++) {
+            let c = Math.cos(phi);
+            let s = Math.sin(phi);
+            let x = r * c;
+            let y = r * s;
+            vrhovi.push(x, y, -h / 2, c, s, 0);
+            vrhovi.push(x, y, h / 2, c, s, 0);
+            phi += 2 * Math.PI / n;
+          } // for
+
+          console.log("vrhovi.length: ", vrhovi.length);
+          return vrhovi;
+        } // valjak
+
+        function napuniSpremnike() {
+          GPUprog1.a_vrhXYZ = gl.getAttribLocation(GPUprog1, "a_vrhXYZ");
+          GPUprog1.a_normala = gl.getAttribLocation(GPUprog1, "a_normala");
+        
+          gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+          gl.enableVertexAttribArray(GPUprog1.a_vrhXYZ);
+          gl.enableVertexAttribArray(GPUprog1.a_normala);
+          gl.vertexAttribPointer(GPUprog1.a_vrhXYZ, 3, gl.FLOAT, false, 24, 0);
+          gl.vertexAttribPointer(GPUprog1.a_normala, 3, gl.FLOAT, false, 24, 12);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(valjak(0.5, 1, n)),
+            gl.STATIC_DRAW);
+        } // napuni spremnike
+
+        function iscrtaj() {
+          gl.clearColor(0.5, 0.5, 0.5, 1);
+          gl.clear(gl.COLOR_BUFFER_BIT);
+          gl.viewport(0, 0, platno1.width, platno1.height);
+
+          // matrica transformacije - rotacija oko x osi za kut alpha
+          gl.uniformMatrix4fv(GPUprog1.u_mTrans, false,
+            [1, 0, 0, 0,
+             0, Math.cos(alpha), Math.sin(alpha), 0,
+             0, -Math.sin(alpha), Math.cos(alpha), 0, 
+             0, 0, 0, 1]);
+
+          // donja baza valjka
+          gl.drawArrays(gl.TRIANGLE_FAN, 0, n + 2);
+
+          // gornja baza valjka
+          gl.drawArrays(gl.TRIANGLE_FAN, n + 2, n + 2);
+
+          // plašt valjka
+          gl.drawArrays(gl.TRIANGLE_STRIP, 2 * (n + 2), 2 * n + 2);
+
+          alpha += Math.PI / 180;
+          requestAnimationFrame(iscrtaj);
+        } // iscrtaj
+
+        var alpha = 0; // kut rotacije koji se koristi kod animacije
+        var n = 32; // broj stranica koje čine plašt valjka
+        napuniSpremnike();
+
+        // vektor položaja izvora svjetlosti
+        gl.uniform3fv(GPUprog1.u_izvorXYZ, [-10, 0, -10]);
+
+        // boja izvora u RGB formatu
+        gl.uniform3fv(GPUprog1.u_boja, [1.0, 1.0, 0.0]);
+
+        // omogući selektivno odbacivanje
+        gl.enable(gl.CULL_FACE);
+
+        iscrtaj();
+      } // WebGL2Aplikacija
+		</script>
+
+		<script id="vertex-shader" type="x-shader/x-vertex">
+      #version 300 es
+      in vec4 a_vrhXYZ;
+      in vec3 a_normala;
+      uniform mat4 u_mTrans;
+      uniform vec3 u_izvorXYZ;
+      out float v_svjetlina;
+
+      void main() {
+        vec4 vrh = u_mTrans * a_vrhXYZ; // primijeni matricu transformacije
+        vec3 normala = mat3(u_mTrans) * a_normala; // transformacija normale
+
+        // Lambertov zakon
+        vec3 premaIzvoru = normalize(u_izvorXYZ - vec3(vrh));
+        v_svjetlina = dot(premaIzvoru, normala);
+
+        gl_Position = vrh;
+      }
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+      #version 300 es
+      precision highp float;
+      uniform vec3 u_boja;
+      in float v_svjetlina;
+      out vec4 bojaFragmenta;
+
+      void main() {
+        bojaFragmenta = vec4(v_svjetlina * u_boja, 1.0); // postavlja se boja fragmenta
+      }
+    </script>
+	</head>
+
+	<body>
+		<h1>Lambertov zakon</h1>
+		<div>
+			<canvas id="slika1" width="500" height="500" style="border:5px solid black">
+				Vaš preglednik ne podržava HTML5 canvas.
+      </canvas>
+		</div>
+	</body>
+</html>

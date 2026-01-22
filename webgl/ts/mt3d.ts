@@ -2,6 +2,7 @@
 class MT3D {
     public _matrica: number[][];
     public _kamera: number[][];
+    public _projekcija: number[][];
 
     constructor() {
 
@@ -14,7 +15,20 @@ class MT3D {
                         [0, 1, 0, 0],
                         [0, 0, 1, 0],
                         [0, 0, 0, 1]];
+
+        this._projekcija = [
+            [1,0,0,0],
+            [0,1,0,0],
+            [0,0,1,0],
+            [0,0,0,1]
+];
+
     }
+
+    get matrica() {
+        return this.multMatrice(this._projekcija, this.multMatrice(this._kamera, this._matrica));
+    }
+
 
     lista(){
         let lista = []
@@ -26,12 +40,49 @@ class MT3D {
         return lista;
     }
 
+    modelLista() : number[] {
+        const out: number[] = [];
+    for (let j = 0; j < 4; j++) {
+        for (let i = 0; i < 4; i++) {
+            out.push(this._matrica[i][j]);
+        }
+    }
+    return out;
+
+    }
+
+    projekcijaLista() : number[]{
+         const PK = this.multMatrice(this._projekcija, this._kamera);
+        const out: number[] = [];
+        for (let j = 0; j < 4; j++) {
+            for (let i = 0; i < 4; i++) {
+                out.push(PK[i][j]);
+            }
+        }
+        return out;
+    }
+
     identitet() : void {
         this._matrica = [[1, 0, 0, 0],
                         [0, 1, 0, 0],
                         [0, 0, 1, 0],
                         [0, 0, 0, 1]]
     }
+
+    resetKamera() : void {
+        this._kamera = [[1, 0, 0, 0],
+                        [0, 1, 0, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 0, 1]]
+    }
+
+    resetProjekcija() : void {
+        this._projekcija = [[1, 0, 0, 0],
+                        [0, 1, 0, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 0, 1]]
+    }
+
 
     pomakni(px: number, py: number, pz: number) : void {
         let t = [[1, 0, 0, px],
@@ -209,45 +260,36 @@ class MT3D {
 
         // postaviKameru postavlja matricu transformacije
 
-        let up_vekt = [Vx, Vy, Vz];
+                let nx = x0 - x1;
+            let ny = y0 - y1;
+            let nz = z0 - z1;
+            const nl = Math.hypot(nx, ny, nz) || 1;
+            nx /= nl; ny /= nl; nz /= nl;
 
-        let N = [x0-x1, y0-y1, z0-z1];
+            // 2. u = normalize(up × n)
+            let Ux = Vy * nz - Vz * ny;
+            let Uy = Vz * nx - Vx * nz;
+            let Uz = Vx * ny - Vy * nx;
+            const ul = Math.hypot(Ux, Uy, Uz) || 1;
+            Ux /= ul; Uy /= ul; Uz /= ul;
 
+            // 3. v = n × u
+            const vx = ny * Uz - nz * Uy;
+            const vy = nz * Ux - nx * Uz;
+            const vz = nx * Uy - ny * Ux;
 
-       //let norm_vekt = N/Math.abs(N);
-       let abs_N = this.vratiAbsVektora(N);
-       let n = this.vratiScalarDivVektora(N, abs_N);
+            // 4. dot products for translation
+            const tx = -(Ux * x0 + Uy * y0 + Uz * z0);
+            const ty = -(vx * x0 + vy * y0 + vz * z0);
+            const tz = -(nx * x0 + ny * y0 + nz * z0);
 
-       let U = this.crossProdukt(up_vekt, n);
-       let abs_U = this.vratiAbsVektora(U);
-       let u = this.vratiScalarDivVektora(U, abs_U);
-
-       let v = this.crossProdukt(n, u);
-       
-        let T = [
-            [1, 0, 0, -x0],
-            [0, 1, 0, -y0],
-            [0, 0, 1, -z0],
-            [0, 0, 0, 1]
-        ];
-
-        let K = [
-            [u[0], u[1], u[2], 0],
-            [v[0], v[1], v[2], 0],
-            [n[0], n[1], n[2], 0],
-            [0, 0, 0, 1]
-        ];
-
-        let final = [
-            [u[0], u[1], u[2], -u[0]*x0-u[1]*y0 - u[2]*z0],
-            [v[0], v[1], v[2], -v[0]*x0-v[1]*y0 - v[2]*z0],
-            [n[0], n[1], n[2], -n[0]*x0-n[1]*y0 - n[2]*z0],
-            [0, 0, 0, 1]
-
-        ];
-
-        
-        this._kamera = final;
+            // 5. assign _kamera directly
+            this._kamera = [
+                [Ux, Uy, Uz, tx],
+                [vx, vy, vz, ty],
+                [nx, ny, nz, tz],
+                [0, 0, 0, 1]
+            ];
 
     }
 
@@ -270,6 +312,48 @@ class MT3D {
 
         return ret;
     }
+
+    orto(xmin: number, xmax: number, ymin: number, ymax: number, zpr: number, zst: number) {
+        let sx = 2 / (xmax - xmin);
+    let sy = 2 / (ymax - ymin);
+    let sz = -2 / (zst - zpr);
+
+    let px = -(xmax + xmin) / (xmax - xmin);
+    let py = -(ymax + ymin) / (ymax - ymin);
+    let pz = -(zst + zpr) / (zst - zpr);
+
+    this._projekcija = [
+        [sx,0,0,px],
+        [0,sy,0,py],
+        [0,0,sz,pz],
+        [0,0,0,1]
+        ];
+    }
+
+    
+   persp(xmin:number, xmax:number, ymin:number, ymax:number, zpr:number, zst:number) {
+        const l = xmin, r = xmax, b = ymin, t = ymax, n = zpr, f = zst;
+        const rl = r - l, tb = t - b, fn = f - n;
+
+
+    // Prevent division by zero
+    if (rl === 0 || tb === 0 || fn === 0 || n <= 0 || f <= 0) {
+        this._projekcija = [
+            [1,0,0,0],
+            [0,1,0,0],
+            [0,0,1,0],
+            [0,0,0,1]
+        ];
+        return;
+    }
+
+    this._projekcija = [
+        [(2*n)/rl, 0, (r+l)/rl, 0],
+        [0, (2*n)/tb, (t+b)/tb, 0],
+        [0, 0, -(f+n)/fn, (-2*f*n)/fn],
+        [0, 0, -1, 0]
+    ];
+}
 
 
 }

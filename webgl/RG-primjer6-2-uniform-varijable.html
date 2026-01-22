@@ -3,7 +3,7 @@
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 	<meta charset="UTF-8">
 	<title>WebGL2 - Primjena uniform varijable</title>
-	<script src="RG-primjer6-2-uniform-varijable_files/RG-WebGL.js"></script>
+	<script src="js/RG-WebGL.js"></script>
 	
         <script src="js/crtanje_2d.js"></script>
         <script src="js/gks2d.js"></script>
@@ -40,7 +40,7 @@
         var novi_vrhovi = [0.0, 0.0];
 
         for (let i = 0; i<=Math.PI*2; i+=Math.PI/12){
-          let x = 0.9 * Math.cos(i);
+          let x = 1.0 * Math.cos(i);
           let y = 0.2 * Math.sin(i);
           novi_vrhovi.push(x);
           novi_vrhovi.push(y);
@@ -67,7 +67,7 @@
           let mat = new MT2D();
           // constructor(platno, xmin, xmax, ymin = 0, ymax = 0)
           let gks = new GKS2D(platno1, -10, 10);
-          mat.pomakni(-0.9, 0.3);
+          mat.pomakni(-0.0, 0.3);
 
           let crtac = new Crtanje2D();
           

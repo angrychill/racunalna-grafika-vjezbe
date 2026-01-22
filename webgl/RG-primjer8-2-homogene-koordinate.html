@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="hr">
+	<head>
+		<meta charset="UTF-8">
+		<title>Ugrađene homogene koordinate</title>
+		<script src="../RG-WebGL.js"></script>
+
+		<script>
+		  window.onload = WebGLapplikacija;
+
+		  function WebGLapplikacija() {
+        var platno1 = document.getElementById("slika1");
+        gl = platno1.getContext("webgl2");
+        if (!gl) alert("WebGL2 nije dostupan!");
+
+        GPUprogram1 = pripremiGPUprogram(gl, "vertex-shader", "fragment-shader");
+        gl.useProgram(GPUprogram1);
+
+        // povezivanje s uniform varijablama u programima za sjenčanje
+        GPUprogram1.u_mTrans = gl.getUniformLocation(GPUprogram1, "u_mTrans");
+        GPUprogram1.u_boja = gl.getUniformLocation(GPUprogram1, "u_boja");
+
+        //definiranje geometrije preko javascript polja
+        var vrhovi = [[ 0.0,  0.0],   // sredina
+                      [-0.2, -0.2],   // lijevi donji vrh
+                      [ 0.2, -0.2],   // desni donji vrh
+                      [ 0.2,  0.2],   // gornji desni vrh
+                      [-0.2,  0.2],   // gornji lijevi vrh
+                      [ 0.0,  0.0]];  // sredina
+
+        function napuniSpremnike() {
+          GPUprogram1.a_vrhXY = gl.getAttribLocation(GPUprogram1, "a_vrhXY");
+
+          gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+          gl.enableVertexAttribArray(GPUprogram1.a_vrhXY);
+          gl.vertexAttribPointer(GPUprogram1.a_vrhXY, 2, gl.FLOAT, false, 0, 0);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vrhovi.flat()),
+            gl.STATIC_DRAW);
+        } // napuniSpremnike
+
+        function iscrtaj() {
+          gl.clearColor(0.5, 0.5, 0.5, 1);
+          gl.clear(gl.COLOR_BUFFER_BIT);
+          gl.viewport(0, 0, platno1.width, platno1.height);
+
+          for(let b = 0.1; b <= 1.0; b += 0.1) {
+            let kut = b * Math.PI;
+            gl.uniformMatrix2fv(GPUprogram1.u_mTrans, false,
+              [Math.cos(kut), Math.sin(kut), -Math.sin(kut), Math.cos(kut)]);
+            gl.uniform1f(GPUprogram1.u_boja, b);
+            gl.drawArrays(gl.TRIANGLES, 0, vrhovi.length);
+          } // for
+        } // iscrtaj
+
+        napuniSpremnike();
+        iscrtaj();
+      } // WebGLaplikacija
+		</script>
+
+		<script id="vertex-shader" type="x-shader/x-vertex">
+      #version 300 es
+      // precision highp float; // default u vertex shaderu
+      in vec2 a_vrhXY;
+      uniform mat2 u_mTrans;
+      uniform float u_boja;
+
+      void main() {
+        gl_Position = vec4(u_mTrans * a_vrhXY, 0, u_boja); // normira se tako da je w = 1
+      }
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+      #version 300 es
+      precision highp float; // u_boja mora biti kompatibilna s vertex shaderom
+      uniform float u_boja;
+      out vec4 bojaPiksela;
+
+      void main() {
+        bojaPiksela = vec4(0, u_boja, 0, 1);
+      }
+    </script>
+	</head>
+
+	<body>
+		<h1>Ugrađene homogene koordinate</h1>
+		<div>
+			<canvas id="slika1" width="500" height="500" style="border:5px solid black">
+				Vaš preglednik ne podržava HTML5 canvas.
+      </canvas>
+		</div>
+	</body>
+</html>

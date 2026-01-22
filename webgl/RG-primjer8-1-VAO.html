@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="hr">
+	<head>
+		<meta charset="UTF-8">
+		<title>WebGL2 - VAO</title>
+		<script src="../RG-WebGL.js"></script>
+
+		<script>
+		  window.onload = WebGLaplikacija;
+
+		  function WebGLaplikacija() {
+        var platno1 = document.getElementById("slika1");
+        gl = platno1.getContext("webgl2");
+        if (!gl) alert("WebGL2 nije dostupan!");
+
+        GPUprogram1 = pripremiGPUprogram(gl, "vertex-shader", "fragment-shader");
+        gl.useProgram(GPUprogram1); // možemo imati više GPU programa
+
+        // definiranje geometrije preko javascript polja
+        let a = 0.5;
+        vrhoviLeptira =
+          [[ 0,  0,  0, 1, 0, 0],  // crveno
+           [-a, -a,  0, 1, 0, 0],  // crveno
+           [ a, -a,  0, 1, 0, 0],  // crveno
+           [ 0,  0,  0, 1, 0, 0],  // crveno
+           [ a,  a,  0, 1, 1, 0],  // žuto
+           [-a,  a,  0, 0.5, 0, 1]]; // ljubičasto
+
+        let r = 0.9; // raspon koordinatnih osi
+        var vrhoviKoordOsi =
+          [[-r,  0,  0],
+           [ r,  0,  0],
+           [ 0,  r,  0],
+           [ 0, -r,  0]];
+          
+        function napuniSpremnike() {
+          // povezivanje s atribut varijablama u programu za sjenčanje
+          GPUprogram1.a_vrhXYZ = gl.getAttribLocation(GPUprogram1, "a_vrhXYZ");
+          GPUprogram1.a_boja = gl.getAttribLocation(GPUprogram1, "a_boja");
+          
+          leptirVAO = gl.createVertexArray();
+          gl.bindVertexArray(leptirVAO);
+          gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+          gl.enableVertexAttribArray(GPUprogram1.a_vrhXYZ);
+          gl.enableVertexAttribArray(GPUprogram1.a_boja);
+          gl.vertexAttribPointer(GPUprogram1.a_vrhXYZ, 3, gl.FLOAT, false, 24, 0);
+          gl.vertexAttribPointer(GPUprogram1.a_boja, 3, gl.FLOAT, false, 24, 12);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vrhoviLeptira.flat()),
+            gl.STATIC_DRAW); // punjenje spremnika - podaci koji se šalju na GPU
+
+          koordOsiVAO = gl.createVertexArray();
+          gl.bindVertexArray(koordOsiVAO);
+          gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+          gl.enableVertexAttribArray(GPUprogram1.a_vrhXYZ);
+          gl.vertexAttribPointer(GPUprogram1.a_vrhXYZ, 3, gl.FLOAT, false, 12, 0);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vrhoviKoordOsi.flat()),
+            gl.STATIC_DRAW); // punjenje spremnika - podaci koji se šalju na GPU
+          gl.vertexAttrib3f(GPUprogram1.a_boja, 1, 1, 1); // svi vrhovi su bijeli
+        } // napuniSpremnike
+
+        function iscrtaj() {
+          gl.clearColor(0, 0, 0, 1);
+          gl.clear(gl.COLOR_BUFFER_BIT);
+          gl.viewport(0, 0, platno1.width, platno1.height);
+
+          // poveži sa spremnikom u kojem je leptir
+          gl.bindVertexArray(leptirVAO);          
+          gl.drawArrays(gl.TRIANGLES, 0, vrhoviLeptira.length);
+
+          // poveži sa spremnikom u kojem su osi
+          gl.bindVertexArray(koordOsiVAO);          
+          gl.drawArrays(gl.LINES, 0, vrhoviKoordOsi.length);
+        } // iscrtaj
+
+        napuniSpremnike();
+        iscrtaj();
+      } // WebGLaplikacija
+	</script>
+
+	<script id="vertex-shader" type="x-shader/x-vertex">
+      #version 300 es
+      in vec3 a_vrhXYZ;
+      in vec3 a_boja;
+      out vec3 v_boja;
+
+      void main() {
+        gl_Position = vec4(a_vrhXYZ, 1);
+        v_boja = a_boja;
+      }
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+      #version 300 es
+      precision highp float;
+      in vec3 v_boja;
+      out vec4 bojaPiksela;
+
+      void main() {
+        bojaPiksela = vec4(v_boja, 1);
+      }
+    </script>
+	</head>
+
+	<body>
+		<h1>WebGL2 - Vertex Array Object</code></h1>
+		<div>
+			<canvas id="slika1" width="500" height="500" style="border:5px solid black">
+				Vaš preglednik ne podržava HTML5 canvas.
+      </canvas>
+		</div>
+	</body>
+</html>

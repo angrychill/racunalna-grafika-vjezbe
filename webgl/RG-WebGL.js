@@ -1,3 +1,4 @@
+// @ts-nocheck
 // RG-WebGL.js - skup potprograma koji automatizira prevođenje programa za sjenčanje
 // za potrebe kolegija Računalna grafika pripremio Damir Horvat / preradio Ivan Hip
 
