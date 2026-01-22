@@ -16,6 +16,7 @@ function WebGL2aplikacija() {
     var crtac = new CrtanjeWebGL();
     var matKamera = new MT3D();
     var matModel = new MT3D();
+    gl.enable(gl.DEPTH_TEST);
     var meshValjak;
     var drawModesValjak;
     function napuniSpremnike() {
@@ -24,6 +25,7 @@ function WebGL2aplikacija() {
     }
     function iscrtaj() {
         gl.clearColor(0.5, 0.5, 0.5, 1);
+        gl.enable(gl.DEPTH_TEST);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         // @ts-expect-error
         gl.viewport(0, 0, platno1.width, platno1.height);
@@ -34,8 +36,8 @@ function WebGL2aplikacija() {
         matKamera.postaviKameru(2, 2, 2, 0, 0, 0, 0, 1, 0);
         matKamera.postaviSvjetlo(10, 0, 10);
         matKamera.persp(-1, 1, -1, 1, 1, 10);
-        gl.uniformMatrix4fv(GPUprog1.u_mTrans, false, matModel.modelLista());
-        gl.uniformMatrix4fv(GPUprog1.u_viewProj, false, matKamera.viewProjLista());
+        gl.uniformMatrix4fv(GPUprog1.u_viewProj, false, new Float32Array(matKamera.viewProjLista()));
+        gl.uniformMatrix4fv(GPUprog1.u_mTrans, false, new Float32Array(matModel.modelLista()));
         // 3. Light & Camera
         gl.uniform3fv(GPUprog1.u_izvorXYZ, matKamera.vratiPozicijuSvjetla());
         gl.uniform3fv(GPUprog1.u_kameraXYZ, matKamera.vratiPozicijuKamere());
