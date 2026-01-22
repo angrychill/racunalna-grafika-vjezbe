@@ -161,4 +161,109 @@ class CrtanjeWebGL {
         console.log("vrhovi.length: ", vrhovi.length);
         return vrhovi;
     } // valjak
+    vratiMeshValjak(r, h, n) {
+        let vrhovi = [];
+        let offset = 0;
+        let drawModes = [];
+        // DONJA BAZA
+        let start = vrhovi.length / 6;
+        vrhovi.push(0, 0, -h / 2, 0, 0, -1); // centar
+        let phiStep = 2 * Math.PI / n;
+        for (let i = 0; i <= n; i++) {
+            let phi = i * phiStep;
+            vrhovi.push(r * Math.cos(phi), r * Math.sin(phi), -h / 2, 0, 0, -1);
+        }
+        drawModes.push({ mode: WebGL2RenderingContext.TRIANGLE_FAN, count: n + 2, offset: offset });
+        offset += (n + 2);
+        // GORNJA BAZA
+        let start2 = vrhovi.length / 6;
+        vrhovi.push(0, 0, h / 2, 0, 0, 1);
+        for (let i = 0; i <= n; i++) {
+            let phi = i * phiStep;
+            vrhovi.push(r * Math.cos(phi), r * Math.sin(phi), h / 2, 0, 0, 1);
+        }
+        drawModes.push({ mode: WebGL2RenderingContext.TRIANGLE_FAN, count: n + 2, offset: offset });
+        offset += (n + 2);
+        // PLAŠT
+        for (let i = 0; i <= n; i++) {
+            let phi = i * phiStep;
+            let x = r * Math.cos(phi);
+            let y = r * Math.sin(phi);
+            vrhovi.push(x, y, -h / 2, Math.cos(phi), Math.sin(phi), 0);
+            vrhovi.push(x, y, h / 2, Math.cos(phi), Math.sin(phi), 0);
+        }
+        drawModes.push({ mode: WebGL2RenderingContext.TRIANGLE_STRIP, count: 2 * (n + 1), offset: offset });
+        return { vertices: new Float32Array(vrhovi), drawModes };
+    }
+    vratiMeshStozac(r, h, n) {
+        let vrhovi = [];
+        let offset = 0;
+        let drawModes = [];
+        // DONJA BAZA
+        vrhovi.push(0, 0, 0, 0, 0, -1);
+        for (let i = 0; i <= n; i++) {
+            let phi = i * 2 * Math.PI / n;
+            vrhovi.push(r * Math.cos(phi), r * Math.sin(phi), 0, 0, 0, -1);
+        }
+        drawModes.push({ mode: WebGL2RenderingContext.TRIANGLE_FAN, count: n + 2, offset: offset });
+        offset += n + 2;
+        // PLAŠT
+        let tipX = 0, tipY = 0, tipZ = h;
+        for (let i = 0; i <= n; i++) {
+            let phi = i * 2 * Math.PI / n;
+            let x = r * Math.cos(phi);
+            let y = r * Math.sin(phi);
+            // vrh baza, vrh stošca
+            let nx = tipX - x;
+            let ny = tipY - y;
+            let nz = tipZ - 0;
+            let len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+            nx /= len;
+            ny /= len;
+            nz /= len;
+            vrhovi.push(x, y, 0, nx, ny, nz);
+            vrhovi.push(tipX, tipY, tipZ, nx, ny, nz);
+        }
+        drawModes.push({ mode: WebGL2RenderingContext.TRIANGLE_STRIP, count: 2 * (n + 1), offset: offset });
+        return { vertices: new Float32Array(vrhovi), drawModes };
+    }
+    vratiMeshKugla(r, nLat, nLon) {
+        let vrhovi = [];
+        let offset = 0;
+        let drawModes = [];
+        for (let i = 0; i < nLat; i++) {
+            let lat0 = Math.PI * (-0.5 + i / nLat);
+            let lat1 = Math.PI * (-0.5 + (i + 1) / nLat);
+            let z0 = r * Math.sin(lat0);
+            let z1 = r * Math.sin(lat1);
+            let r0 = r * Math.cos(lat0);
+            let r1 = r * Math.cos(lat1);
+            for (let j = 0; j <= nLon; j++) {
+                let lon = 2 * Math.PI * j / nLon;
+                let x0 = r0 * Math.cos(lon);
+                let y0 = r0 * Math.sin(lon);
+                let x1 = r1 * Math.cos(lon);
+                let y1 = r1 * Math.sin(lon);
+                let nx0 = x0 / r, ny0 = y0 / r, nz0 = z0 / r;
+                let nx1 = x1 / r, ny1 = y1 / r, nz1 = z1 / r;
+                vrhovi.push(x0, y0, z0, nx0, ny0, nz0);
+                vrhovi.push(x1, y1, z1, nx1, ny1, nz1);
+            }
+            drawModes.push({ mode: WebGL2RenderingContext.TRIANGLE_STRIP, count: 2 * (nLon + 1), offset: offset });
+            offset += 2 * (nLon + 1);
+        }
+        return { vertices: new Float32Array(vrhovi), drawModes };
+    }
+    napuniBuffer(gl, program, mesh) {
+        const a_vrhXYZ = gl.getAttribLocation(program, "a_vrhXYZ");
+        const a_normala = gl.getAttribLocation(program, "a_normala");
+        const buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, mesh.vertices, gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(a_vrhXYZ);
+        gl.enableVertexAttribArray(a_normala);
+        gl.vertexAttribPointer(a_vrhXYZ, 3, gl.FLOAT, false, 24, 0);
+        gl.vertexAttribPointer(a_normala, 3, gl.FLOAT, false, 24, 12);
+        return mesh.drawModes;
+    }
 }

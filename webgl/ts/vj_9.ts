@@ -20,58 +20,56 @@ window.onload = WebGL2aplikacija;
         var matKamera = new MT3D();
         var matModel = new MT3D();
       
-        function napuniSpremnike() {
-            GPUprog1.a_vrhXYZ = gl.getAttribLocation(GPUprog1, "a_vrhXYZ");
-            GPUprog1.a_normala = gl.getAttribLocation(GPUprog1, "a_normala");
-            gl.enable(gl.DEPTH_TEST);
+        
+        var meshValjak
+        var drawModesValjak: { mode: number; count: number; offset: number; }[]
 
-            gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-            gl.enableVertexAttribArray(GPUprog1.a_vrhXYZ);
-            gl.enableVertexAttribArray(GPUprog1.a_normala);
-            gl.vertexAttribPointer(GPUprog1.a_vrhXYZ, 3, gl.FLOAT, false, 24, 0);
-            gl.vertexAttribPointer(GPUprog1.a_normala, 3, gl.FLOAT, false, 24, 12);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(crtac.vratiVrhoveValjka(0.5, 1, n)), gl.STATIC_DRAW);
-        } // napuni spremnike
-       
+        function napuniSpremnike() {
+             meshValjak  = crtac.vratiMeshValjak(0.5, 1, n);
+             drawModesValjak = crtac.napuniBuffer(gl, GPUprog1, meshValjak);
+        }
 
         function iscrtaj() {
                 gl.clearColor(0.5,0.5,0.5,1);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+           gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
            
-            // @ts-expect-error
-            gl.viewport(0, 0, platno1.width, platno1.height);
+           // @ts-expect-error
+           gl.viewport(0, 0, platno1.width, platno1.height);
 
-            // 1. Model transform
-            matModel.identitet();
-            matModel.rotirajX(alpha);
+           // 1. Model transform
+           matModel.identitet();
+           matModel.rotirajX(alpha);
             
 
-            // 2. Camera + Projection
-            //matKamera.postaviKameru(2,2,2,0,0,0,0,1,0);
-            //matKamera.postaviSvjetlo(10, 0, 10);
-            //matKamera.persp(-1,1,-1,1,1,10);
+           // 2. Camera + Projection
+           matKamera.postaviKameru(2, 2, 2, 0, 0, 0, 0, 1, 0);
+           matKamera.postaviSvjetlo(10, 0, 10);
+           matKamera.persp(-1, 1, -1, 1, 1, 10);
 
-            gl.uniformMatrix4fv(GPUprog1.u_mTrans, false, matModel.modelLista());
-            gl.uniformMatrix4fv(GPUprog1.u_viewProj, false, matKamera.viewProjLista());
+           gl.uniformMatrix4fv(GPUprog1.u_mTrans, false, matModel.modelLista());
+           gl.uniformMatrix4fv(GPUprog1.u_viewProj, false, matKamera.viewProjLista());
 
-            // 3. Light & Camera
-            gl.uniform3fv(GPUprog1.u_izvorXYZ, matKamera.vratiPozicijuSvjetla());
-            gl.uniform3fv(GPUprog1.u_kameraXYZ, matKamera.vratiPozicijuKamere());
-            gl.uniform3fv(GPUprog1.u_boja, [1.0, 1.0, 1.0]); // Set a default white color for light
+           // 3. Light & Camera
+           gl.uniform3fv(GPUprog1.u_izvorXYZ, matKamera.vratiPozicijuSvjetla());
+           gl.uniform3fv(GPUprog1.u_kameraXYZ, matKamera.vratiPozicijuKamere());
+           gl.uniform3fv(GPUprog1.u_boja, matKamera.vratiBojuSvjetla()); // Set a default white color for light
 
-            // 4. Draw cylinder
-            gl.drawArrays(gl.TRIANGLE_FAN, 0, n+2); // Draw bottom base
-            gl.drawArrays(gl.TRIANGLE_FAN, n+2, n+2); // Draw top base
-            gl.drawArrays(gl.TRIANGLE_STRIP, 2*(n+2), 2*(n+1)); // Draw cylinder sides
+           // 4. Draw cylinder
+          for (const dm of drawModesValjak) {
+             gl.drawArrays(dm.mode, dm.offset, dm.count);
+            }
 
-
-            alpha += Math.PI / 180;
-            requestAnimationFrame(iscrtaj);
-        } // iscrtaj
+           alpha += Math.PI / 180;
+           requestAnimationFrame(iscrtaj);
+       } // iscrtaj
 
                 var alpha = 0; // kut rotacije koji se koristi kod animacije
-                var n = 32; // broj stranica koje čine plašt valjka
+                var n = 16; // broj stranica koje čine plašt valjka
+                
                 napuniSpremnike();
+                //umjesto napuniSpremnike(), koristi ovo;
+                
+        
 
                 //@ts-expect-error
                 gl.viewport(0, 0, platno1.width, platno1.height);
