@@ -4,6 +4,9 @@ class MT3D {
     _matrica;
     _kamera;
     _projekcija;
+    _kamera_poz;
+    _svijetlo_poz;
+    _boja_svjetla;
     constructor() {
         this._matrica = [[1, 0, 0, 0],
             [0, 1, 0, 0],
@@ -19,9 +22,32 @@ class MT3D {
             [0, 0, 1, 0],
             [0, 0, 0, 1]
         ];
+        this._kamera_poz = [0, 0, 0];
+        this._svijetlo_poz = [0, 0, 0];
+        this._boja_svjetla = [1, 1, 1];
     }
     get matrica() {
         return this.multMatrice(this._projekcija, this.multMatrice(this._kamera, this._matrica));
+    }
+    postaviSvjetlo(x, y, z) {
+        this._svijetlo_poz = [x, y, z];
+    }
+    vratiPozicijuSvjetla() {
+        return this._svijetlo_poz;
+    }
+    postaviBojuSvjetla(r, g, b) {
+        this._boja_svjetla = [r, g, b];
+    }
+    vratiBojuSvjetla() {
+        return this._boja_svjetla;
+    }
+    viewProjLista() {
+        const VP = this.multMatrice(this._projekcija, this._kamera);
+        const out = [];
+        for (let j = 0; j < 4; j++)
+            for (let i = 0; i < 4; i++)
+                out.push(VP[i][j]);
+        return out;
     }
     lista() {
         let lista = [];
@@ -40,6 +66,9 @@ class MT3D {
             }
         }
         return out;
+    }
+    vratiPozicijuKamere() {
+        return this._kamera_poz;
     }
     projekcijaLista() {
         const PK = this.multMatrice(this._projekcija, this._kamera);
@@ -197,6 +226,7 @@ class MT3D {
         return res;
     }
     postaviKameru(x0, y0, z0, x1, y1, z1, Vx, Vy, Vz) {
+        this._kamera_poz = [x0, y0, z0];
         //x0 y0 z0 : globalni ks
         // x1 y1 z1 : kamera gleda prema tocki
         //Vx Vy Vz: view up vektor
