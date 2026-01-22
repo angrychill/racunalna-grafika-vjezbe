@@ -8,6 +8,8 @@ function WebGL2aplikacija() {
         alert("WebGL2 nije dostupan!");
     var GPUprog1 = pripremiGPUprogram(gl, "vertex-shader", "fragment-shader");
     gl.useProgram(GPUprog1); // možemo imati više GPU programa
+    GPUprog1.u_viewProj = gl.getUniformLocation(GPUprog1, "u_viewProj");
+    gl.disable(gl.CULL_FACE);
     // povezivanje s uniform varijablama u programu za sjenčanje
     GPUprog1.u_mTrans = gl.getUniformLocation(GPUprog1, "u_mTrans");
     GPUprog1.u_izvorXYZ = gl.getUniformLocation(GPUprog1, "u_izvorXYZ");
@@ -16,11 +18,11 @@ function WebGL2aplikacija() {
     var crtac = new CrtanjeWebGL();
     var matKamera = new MT3D();
     var matModel = new MT3D();
-    gl.enable(gl.DEPTH_TEST);
+    //gl.enable(gl.DEPTH_TEST);
     var meshValjak;
     var drawModesValjak;
     function napuniSpremnike() {
-        meshValjak = crtac.vratiMeshValjak(0.5, 1, n);
+        meshValjak = crtac.vratiSupliMeshValjak(5, 0.5, 2.5, n);
         drawModesValjak = crtac.napuniBuffer(gl, GPUprog1, meshValjak);
     }
     function iscrtaj() {
@@ -31,11 +33,16 @@ function WebGL2aplikacija() {
         gl.viewport(0, 0, platno1.width, platno1.height);
         // 1. Model transform
         matModel.identitet();
-        matModel.rotirajX(alpha);
+        matModel.rotirajZ(Utility.degToRad(90));
+        matModel.rotirajY(Utility.degToRad(90));
+        matModel.pomakni(-2.5, 0, 0);
+        //matModel.rotirajX(alpha);
+        matModel.postaviBojuSvjetla(0.6, 0.8, 1);
         // 2. Camera + Projection
-        matKamera.postaviKameru(2, 2, 2, 0, 0, 0, 0, 1, 0);
-        matKamera.postaviSvjetlo(10, 0, 10);
-        matKamera.persp(-1, 1, -1, 1, 1, 10);
+        matKamera.postaviKameru(10, 5, 5, 0, 0, 0, 0, 1, 0);
+        matKamera.postaviSvjetlo(5, 0, 10);
+        matKamera.postaviBojuSvjetla(1.0, 1.0, 0.0);
+        matKamera.persp(-1, 1, -1, 1, 1, 50);
         gl.uniformMatrix4fv(GPUprog1.u_viewProj, false, new Float32Array(matKamera.viewProjLista()));
         gl.uniformMatrix4fv(GPUprog1.u_mTrans, false, new Float32Array(matModel.modelLista()));
         // 3. Light & Camera
@@ -50,7 +57,7 @@ function WebGL2aplikacija() {
         requestAnimationFrame(iscrtaj);
     } // iscrtaj
     var alpha = 0; // kut rotacije koji se koristi kod animacije
-    var n = 16; // broj stranica koje čine plašt valjka
+    var n = 32; // broj stranica koje čine plašt valjka
     napuniSpremnike();
     //umjesto napuniSpremnike(), koristi ovo;
     //@ts-expect-error

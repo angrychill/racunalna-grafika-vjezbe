@@ -319,6 +319,117 @@ class CrtanjeWebGL {
             return mesh.drawModes;
         }
 
+        vratiSupliMeshValjak(
+    r: number,
+    h: number,
+    r_inner: number,
+    n: number
+): Mesh3D {
+
+    let vrhovi: number[] = [];
+    let offset = 0;
+    let drawModes: { mode: number, count: number, offset: number }[] = [];
+
+    const phiStep = 2 * Math.PI / n;
+
+    // ======================
+    // DONJA BAZA (PRSTEN)
+    // ======================
+    for (let i = 0; i <= n; i++) {
+        let phi = i * phiStep;
+
+        // vanjski rub
+        vrhovi.push(
+            r * Math.cos(phi), r * Math.sin(phi), -h / 2,
+            0, 0, -1
+        );
+
+        // unutarnji rub
+        vrhovi.push(
+            r_inner * Math.cos(phi), r_inner * Math.sin(phi), -h / 2,
+            0, 0, -1
+        );
+    }
+    drawModes.push({
+        mode: WebGL2RenderingContext.TRIANGLE_STRIP,
+        count: 2 * (n + 1),
+        offset: offset
+    });
+    offset += 2 * (n + 1);
+
+    // ======================
+    // GORNJA BAZA (PRSTEN)
+    // ======================
+    for (let i = 0; i <= n; i++) {
+        let phi = i * phiStep;
+
+        // vanjski rub
+        vrhovi.push(
+            r * Math.cos(phi), r * Math.sin(phi), h / 2,
+            0, 0, 1
+        );
+
+        // unutarnji rub
+        vrhovi.push(
+            r_inner * Math.cos(phi), r_inner * Math.sin(phi), h / 2,
+            0, 0, 1
+        );
+    }
+    drawModes.push({
+        mode: WebGL2RenderingContext.TRIANGLE_STRIP,
+        count: 2 * (n + 1),
+        offset: offset
+    });
+    offset += 2 * (n + 1);
+
+    // ======================
+    // VANJSKI PLAŠT
+    // ======================
+    for (let i = 0; i <= n; i++) {
+        let phi = i * phiStep;
+        let nx = Math.cos(phi);
+        let ny = Math.sin(phi);
+
+        let x = r * nx;
+        let y = r * ny;
+
+        vrhovi.push(x, y, -h / 2, nx, ny, 0);
+        vrhovi.push(x, y,  h / 2, nx, ny, 0);
+    }
+    drawModes.push({
+        mode: WebGL2RenderingContext.TRIANGLE_STRIP,
+        count: 2 * (n + 1),
+        offset: offset
+    });
+    offset += 2 * (n + 1);
+
+    // ======================
+    // UNUTARNJI PLAŠT (normale prema unutra)
+    // ======================
+    for (let i = 0; i <= n; i++) {
+        let phi = i * phiStep;
+        let nx = -Math.cos(phi);
+        let ny = -Math.sin(phi);
+
+        let x = r_inner * Math.cos(phi);
+        let y = r_inner * Math.sin(phi);
+
+        vrhovi.push(x, y, -h / 2, nx, ny, 0);
+        vrhovi.push(x, y,  h / 2, nx, ny, 0);
+    }
+    drawModes.push({
+        mode: WebGL2RenderingContext.TRIANGLE_STRIP,
+        count: 2 * (n + 1),
+        offset: offset
+    });
+
+    return {
+        vertices: new Float32Array(vrhovi),
+        drawModes
+    };
+}
+
+
 
 
     }

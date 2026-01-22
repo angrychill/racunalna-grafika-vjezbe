@@ -22,25 +22,27 @@
         in vec4 a_vrhXYZ;
         in vec3 a_normala;
 
-        uniform mat4 u_mTrans;      // Model matrix
-        uniform mat4 u_viewProj;    // Camera * Projection
+        uniform mat4 u_mTrans;      
+        uniform mat4 u_viewProj;    
         uniform vec3 u_izvorXYZ;
         uniform vec3 u_kameraXYZ;
 
           out float v_svjetlina;
 
     void main() {
-        // Transform vertex by model matrix
+        
+      float refleksija = 0.0;
         vec4 vrh_model = u_mTrans * a_vrhXYZ;
 
-        // Transform normals
-        vec3 normala = mat3(u_mTrans) * a_normala;
-
-        // Lambert lighting
         vec3 premaIzvoru = normalize(u_izvorXYZ - vec3(vrh_model));
+        vec3 normala = a_normala;
+        float lambert = max(dot(premaIzvoru, normala), 0.0);
+        v_svjetlina = lambert * 0.5 + refleksija * 0.5;
+
+        
+        
         v_svjetlina = dot(premaIzvoru, normala);
 
-        float refleksija = 0.0;
         if(v_svjetlina > 0.0) {
             vec3 premaKameri = normalize(u_kameraXYZ - vec3(vrh_model));
             vec3 reflektiranaZraka = reflect(-premaIzvoru, normala);
@@ -49,7 +51,7 @@
 
         v_svjetlina = v_svjetlina * 0.5 + refleksija * 0.5;
 
-        // APPLY VIEW-PROJECTION MATRIX HERE
+       
         gl_Position = u_viewProj * vrh_model;
 }
     </script>
@@ -70,7 +72,7 @@
 	<body>
 		<h1>Lambertov zakon</h1>
 		<div>
-			<canvas id="slika1" width="500" height="500" style="border:5px solid black">
+			<canvas id="slika1" width="800" height="600" style="border:5px solid black">
 				Vaš preglednik ne podržava HTML5 canvas.
       </canvas>
 		</div>
