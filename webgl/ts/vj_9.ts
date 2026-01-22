@@ -21,9 +21,16 @@ window.onload = WebGL2aplikacija;
         var matModel = new MT3D();
       
         function napuniSpremnike() {
-            const meshValjak = crtac.vratiMeshValjak(0.5, 1, n);
-            const drawModesValjak = crtac.napuniBuffer(gl, GPUprog1, meshValjak);
+            GPUprog1.a_vrhXYZ = gl.getAttribLocation(GPUprog1, "a_vrhXYZ");
+            GPUprog1.a_normala = gl.getAttribLocation(GPUprog1, "a_normala");
+            gl.enable(gl.DEPTH_TEST);
 
+            gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+            gl.enableVertexAttribArray(GPUprog1.a_vrhXYZ);
+            gl.enableVertexAttribArray(GPUprog1.a_normala);
+            gl.vertexAttribPointer(GPUprog1.a_vrhXYZ, 3, gl.FLOAT, false, 24, 0);
+            gl.vertexAttribPointer(GPUprog1.a_normala, 3, gl.FLOAT, false, 24, 12);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(crtac.vratiVrhoveValjka(0.5, 1, n)), gl.STATIC_DRAW);
         } // napuni spremnike
        
 
@@ -40,23 +47,22 @@ window.onload = WebGL2aplikacija;
             
 
             // 2. Camera + Projection
-            matKamera.postaviKameru(2,2,2,0,0,0,0,1,0);
-            matKamera.postaviSvjetlo(10, 0, 10);
-            matKamera.persp(-1,1,-1,1,1,10);
+            //matKamera.postaviKameru(2,2,2,0,0,0,0,1,0);
+            //matKamera.postaviSvjetlo(10, 0, 10);
+            //matKamera.persp(-1,1,-1,1,1,10);
 
             gl.uniformMatrix4fv(GPUprog1.u_mTrans, false, matModel.modelLista());
             gl.uniformMatrix4fv(GPUprog1.u_viewProj, false, matKamera.viewProjLista());
 
-
             // 3. Light & Camera
             gl.uniform3fv(GPUprog1.u_izvorXYZ, matKamera.vratiPozicijuSvjetla());
             gl.uniform3fv(GPUprog1.u_kameraXYZ, matKamera.vratiPozicijuKamere());
-            gl.uniform3fv(GPUprog1.u_boja, matKamera.vratiBojuSvjetla());
+            gl.uniform3fv(GPUprog1.u_boja, [1.0, 1.0, 1.0]); // Set a default white color for light
 
             // 4. Draw cylinder
-            for (const dm of drawModesValjak) {
-                gl.drawArrays(dm.mode, dm.offset, dm.count);
-            }
+            gl.drawArrays(gl.TRIANGLE_FAN, 0, n+2); // Draw bottom base
+            gl.drawArrays(gl.TRIANGLE_FAN, n+2, n+2); // Draw top base
+            gl.drawArrays(gl.TRIANGLE_STRIP, 2*(n+2), 2*(n+1)); // Draw cylinder sides
 
 
             alpha += Math.PI / 180;
