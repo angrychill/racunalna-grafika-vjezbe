@@ -7,7 +7,10 @@ function WebGL2aplikacija() {
     if (!gl)
         alert("WebGL2 nije dostupan!");
     var GPUprog1 = pripremiGPUprogram(gl, "vertex-shader", "fragment-shader");
+    var GPUprogKugla = pripremiGPUprogram(gl, "vertex-shader", "fragment-shader");
     gl.useProgram(GPUprog1); // možemo imati više GPU programa
+    GPUprogKugla.u_viewProj = gl.getUniformLocation(GPUprogKugla, "u_viewProj");
+    gl.disable(gl.CULL_FACE);
     GPUprog1.u_viewProj = gl.getUniformLocation(GPUprog1, "u_viewProj");
     gl.disable(gl.CULL_FACE);
     // povezivanje s uniform varijablama u programu za sjenčanje
@@ -18,12 +21,21 @@ function WebGL2aplikacija() {
     var crtac = new CrtanjeWebGL();
     var matKamera = new MT3D();
     var matModel = new MT3D();
+    var matModelKugla = new MT3D();
     //gl.enable(gl.DEPTH_TEST);
+    GPUprogKugla.u_mTrans = gl.getUniformLocation(GPUprogKugla, "u_mTrans");
+    GPUprogKugla.u_izvorXYZ = gl.getUniformLocation(GPUprogKugla, "u_izvorXYZ");
+    GPUprogKugla.u_kameraXYZ = gl.getUniformLocation(GPUprogKugla, "u_kameraXYZ");
+    GPUprogKugla.u_boja = gl.getUniformLocation(GPUprogKugla, "u_boja");
     var meshValjak;
     var drawModesValjak;
+    var meshKugla;
+    var drawModesKugla;
     function napuniSpremnike() {
-        meshValjak = crtac.vratiSupliMeshValjak(5, 0.5, 2.5, n);
+        meshValjak = crtac.vratiSupliMeshValjak(5, 0.75, 3.0, n);
         drawModesValjak = crtac.napuniBuffer(gl, GPUprog1, meshValjak);
+        meshKugla = crtac.vratiMeshKugla(0.5, n, n);
+        drawModesKugla = crtac.napuniBuffer(gl, GPUprogKugla, meshKugla);
     }
     function iscrtaj() {
         gl.clearColor(0.5, 0.5, 0.5, 1);
@@ -37,11 +49,10 @@ function WebGL2aplikacija() {
         matModel.rotirajY(Utility.degToRad(90));
         matModel.pomakni(-2.5, 0, 0);
         //matModel.rotirajX(alpha);
-        matModel.postaviBojuSvjetla(0.6, 0.8, 1);
         // 2. Camera + Projection
         matKamera.postaviKameru(10, 5, 5, 0, 0, 0, 0, 1, 0);
-        matKamera.postaviSvjetlo(5, 0, 10);
-        matKamera.postaviBojuSvjetla(1.0, 1.0, 0.0);
+        matKamera.postaviSvjetlo(-10, -10, 10);
+        matKamera.postaviBojuSvjetla(0.6, 0.8, 1);
         matKamera.persp(-1, 1, -1, 1, 1, 50);
         gl.uniformMatrix4fv(GPUprog1.u_viewProj, false, new Float32Array(matKamera.viewProjLista()));
         gl.uniformMatrix4fv(GPUprog1.u_mTrans, false, new Float32Array(matModel.modelLista()));
@@ -49,8 +60,19 @@ function WebGL2aplikacija() {
         gl.uniform3fv(GPUprog1.u_izvorXYZ, matKamera.vratiPozicijuSvjetla());
         gl.uniform3fv(GPUprog1.u_kameraXYZ, matKamera.vratiPozicijuKamere());
         gl.uniform3fv(GPUprog1.u_boja, matKamera.vratiBojuSvjetla()); // Set a default white color for light
+        // Set a default white color for light
         // 4. Draw cylinder
         for (const dm of drawModesValjak) {
+            gl.drawArrays(dm.mode, dm.offset, dm.count);
+        }
+        gl.useProgram(GPUprogKugla);
+        matModelKugla.postaviBojuSvjetla(0.6, 0.8, 1);
+        gl.uniformMatrix4fv(GPUprogKugla.u_viewProj, false, new Float32Array(matKamera.viewProjLista()));
+        gl.uniformMatrix4fv(GPUprogKugla.u_mTrans, false, new Float32Array(matModelKugla.modelLista()));
+        gl.uniform3fv(GPUprogKugla.u_izvorXYZ, matKamera.vratiPozicijuSvjetla());
+        gl.uniform3fv(GPUprogKugla.u_kameraXYZ, matKamera.vratiPozicijuKamere());
+        gl.uniform3fv(GPUprogKugla.u_boja, matModelKugla.vratiBojuSvjetla());
+        for (const dm of drawModesKugla) {
             gl.drawArrays(dm.mode, dm.offset, dm.count);
         }
         alpha += Math.PI / 180;
@@ -67,6 +89,6 @@ function WebGL2aplikacija() {
     gl.clearColor(0.5, 0.5, 0.5, 1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     // omogući selektivno odbacivanje
-    gl.enable(gl.CULL_FACE);
+    // gl.enable(gl.CULL_FACE);
     iscrtaj();
 } // WebGL2Aplikacija
