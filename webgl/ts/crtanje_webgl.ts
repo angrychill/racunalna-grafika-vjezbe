@@ -54,13 +54,6 @@ class CrtanjeWebGL {
         }
 
 
-        vratiVrhovePravokutnikaUTrokutima(a:number, b:number){}
-
-        vratiVrhovePravokutnikaUQuads(a:number, b:number){}
-
-        vratiVrhoveTrokuta(velicina_str : number) {}
-
-        
 
        
 
@@ -300,6 +293,38 @@ class CrtanjeWebGL {
             return {vertices: new Float32Array(vrhovi), drawModes};
         }
 
+        vratiMeshPoluKugla(r: number, nLat: number, nLon: number): Mesh3D {
+            let vrhovi: number[] = [];
+            let offset = 0;
+            let drawModes: {mode: number, count: number, offset: number}[] = [];
+
+            for(let i=0; i<nLat; i++){
+                let lat0 = Math.PI * (-0.5 + i/nLat);
+                let lat1 = Math.PI * (-0.5 + (i+1)/nLat);
+                let z0 = r * Math.sin(lat0);
+                let z1 = r * Math.sin(lat1);
+                let r0 = r * Math.cos(lat0);
+                let r1 = r * Math.cos(lat1);
+
+                for(let j=0; j<=nLon; j++){
+                    let lon = 2*Math.PI*j/nLon;
+                    let x0 = r0 * Math.cos(lon);
+                    let y0 = r0 * Math.sin(lon);
+                    let x1 = r1 * Math.cos(lon);
+                    let y1 = r1 * Math.sin(lon);
+
+                    let nx0 = x0/r, ny0=y0/r, nz0=z0/r;
+                    let nx1 = x1/r, ny1=y1/r, nz1=z1/r;
+
+                    vrhovi.push(x0, y0, z0, nx0, ny0, nz0);
+                    vrhovi.push(x1, y1, z1, nx1, ny1, nz1);
+                }
+                drawModes.push({mode: WebGL2RenderingContext.TRIANGLE_STRIP, count: 2*(nLon+1), offset: offset});
+                offset += 2*(nLon+1);
+            }
+
+            return {vertices: new Float32Array(vrhovi), drawModes};
+        }
 
 
        napuniBuffer(gl: WebGL2RenderingContext, program: WebGLProgram, mesh: Mesh3D) {
