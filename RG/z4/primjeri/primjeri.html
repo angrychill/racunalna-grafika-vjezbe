@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="hr">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta charset="UTF-8" />
+    <title>Primjeri</title>
+    <script src="otho.js"></script>
+    <script src="persp.js"></script>
+    <script src="mt3d.js"></script>
+    <style>
+      body {
+        font-family: system-ui, Arial, sans-serif;
+        margin: 0;
+        padding: 16px;
+      }
+      .page-nav {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin: 8px 0 16px;
+      }
+      .page-nav a {
+        color: #06c;
+        text-decoration: none;
+        font-weight: 600;
+      }
+      .page-nav a:hover {
+        text-decoration: underline;
+      }
+      h2 {
+        margin: 12px 0 8px;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+      @media (min-width: 1100px) {
+        .row {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      canvas {
+        border: 4px solid #000;
+        width: 100%;
+        max-width: 640px;
+        height: auto;
+      }
+      .hint {
+        color: #555;
+        font-size: 0.9rem;
+        margin: 0 0 8px;
+      }
+    </style>
+    <script>
+      function linija3D(ort, x1, y1, z1, x2, y2, z2, boja) {
+        if (boja) ort.koristiBoju(boja);
+        ort.postaviNa(x1, y1, z1);
+        ort.linijaDo(x2, y2, z2);
+        ort.povuciLiniju();
+      }
+
+      function kockaNa(ort, a, ox, oy, oz, boja) {
+        const V = [
+          [ox, oy, oz],
+          [ox + a, oy, oz],
+          [ox + a, oy + a, oz],
+          [ox, oy + a, oz],
+          [ox, oy, oz + a],
+          [ox + a, oy, oz + a],
+          [ox + a, oy + a, oz + a],
+          [ox, oy + a, oz + a],
+        ];
+        const E = [
+          [0, 1],
+          [1, 2],
+          [2, 3],
+          [3, 0],
+          [4, 5],
+          [5, 6],
+          [6, 7],
+          [7, 4],
+          [0, 4],
+          [1, 5],
+          [2, 6],
+          [3, 7],
+        ];
+        ort.koristiBoju("black");
+        for (const [i, j] of E) {
+          const [x1, y1, z1] = V[i],
+            [x2, y2, z2] = V[j];
+          ort.postaviNa(x1, y1, z1);
+          ort.linijaDo(x2, y2, z2);
+          ort.povuciLiniju();
+        }
+      }
+
+      function animatedY(t, amplitude = 1, offset = 0) {
+        const float = Math.sin(t * 0.8) * 0.5;
+        const wobble = Math.sin(t * 3.1) * 0.12;
+        const drift = Math.sin(t * 0.23) * Math.sin(t * 0.07) * 0.4;
+
+        return offset + amplitude * (float + wobble + drift);
+      }
+
+      function initZadatak1() {
+        const platno = document.getElementById("c1");
+        if (!platno) {
+          alert("Greška - nema platna!");
+          return;
+        }
+
+        let canvasSize = 10;
+        const ortho = Ortho.EqualX(platno, -canvasSize, canvasSize);
+        const a = 1;
+        const mt3d = new MT3D();
+
+        let gridDim = 8;
+        let cMin = -gridDim + 0.5;
+        let cMax = gridDim - 0.5;
+        let speed = 16;
+        let last = performance.now();
+        let ax = 32;
+
+        function frame(now) {
+          const dt = (now - last) / 1000;
+          last = now;
+          const t = last / 1000;
+          const zeros = Array(4).fill(0);
+
+          mt3d.postaviKameru(
+            Math.sin(t) * 32,
+            animatedY(t, 16, 8),
+            Math.cos(t) * 32,
+            ...zeros,
+            1,
+            0
+          );
+
+          ortho.ocistiCanvas();
+          for (let s = -gridDim; s < gridDim; s++) {
+            linija3D(ortho, cMin, 0, s + 0.5, cMax, 0, s + 0.5, "red");
+            linija3D(ortho, s + 0.5, 0, cMin, s + 0.5, 0, cMax, "red");
+          }
+
+          for (let i = 0; i < 5; i++) {
+            kockaNa(ortho, a, -0.5, i, -0.5, "black");
+          }
+          for (let j = 0; j < 2; j++) {
+            kockaNa(ortho, a, 0.5 + j, 4, -0.5, "black");
+          }
+          kockaNa(ortho, a, 0.5, 2, -0.5);
+          ortho.trans(mt3d);
+          requestAnimationFrame(frame);
+        }
+
+        requestAnimationFrame(frame);
+      }
+
+      function initZadatak2() {
+        const platno = document.getElementById("c2");
+        if (!platno) {
+          alert("Greška - nema platna!");
+          return;
+        }
+
+        let canvasSize = 10;
+        let camDist = 12;
+        const persp = Persp.EqualX(
+          platno,
+          -canvasSize,
+          canvasSize,
+          camDist / 2
+        );
+        const a = 1;
+        const mt3d = new MT3D();
+
+        let gridDim = 8;
+        let cMin = -gridDim + 0.5;
+        let cMax = gridDim - 0.5;
+        let speed = 16;
+        let last = performance.now();
+        let ax = 32;
+
+        function frame(now) {
+          const dt = (now - last) / 1000;
+          last = now;
+          const t = last / 1000;
+          const zeros = Array(4).fill(0);
+
+          mt3d.postaviKameru(
+            Math.sin(t) * camDist,
+            animatedY(t, 16, 4),
+            Math.cos(t) * camDist,
+            ...zeros,
+            1,
+            0
+          );
+
+          persp.ocistiCanvas();
+          for (let s = -gridDim; s < gridDim; s++) {
+            linija3D(persp, cMin, 0, s + 0.5, cMax, 0, s + 0.5, "red");
+            linija3D(persp, s + 0.5, 0, cMin, s + 0.5, 0, cMax, "red");
+          }
+
+          for (let i = 0; i < 5; i++) {
+            kockaNa(persp, a, -0.5, i, -0.5, "black");
+          }
+          for (let j = 0; j < 2; j++) {
+            kockaNa(persp, a, 0.5 + j, 4, -0.5, "black");
+          }
+          kockaNa(persp, a, 0.5, 2, -0.5);
+          persp.trans(mt3d);
+          requestAnimationFrame(frame);
+        }
+
+        requestAnimationFrame(frame);
+      }
+
+      window.onload = () => {
+        initZadatak1();
+        initZadatak2();
+      };
+    </script>
+  </head>
+  <body>
+    <h1>Zadaća 3</h1>
+    <nav class="page-nav">
+      <a href="#primjer2">Primjer 2</a>
+      <a href="#primjer3">Primjer 3</a>
+    </nav>
+    <div class="row">
+      <section id="primjer2">
+        <h2>Primjer 2 – Slovo F u Ortho klasi</h2>
+        <canvas id="c1" width="700" height="700"></canvas>
+      </section>
+      <section id="primjer3">
+        <h2>Primjer 3 – Slovo F u perspektivnoj projekciji</h2>
+        <canvas id="c2" width="700" height="700"></canvas>
+      </section>
+    </div>
+  </body>
+</html>

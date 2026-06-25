@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="hr">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta charset="UTF-8" />
+    <title>Primjeri 8.2 i 8.3</title>
+    <script src="RG-WebGL.js"></script>
+    <script src="mt3d.js"></script>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        margin: 0;
+        padding: 16px;
+        background: #f5f5f5;
+      }
+      h1 {
+        margin: 0 0 16px;
+      }
+      h2 {
+        margin: 16px 0 8px;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+      @media (min-width: 1150px) {
+        .row {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      canvas {
+        border: 4px solid #000;
+        width: 100%;
+        max-width: 640px;
+        height: auto;
+        background: #000;
+      }
+      .hint {
+        font-size: 0.9rem;
+        color: #555;
+        margin: 0 0 8px;
+      }
+    </style>
+
+    <script>
+      // Mreza xy-ravnine
+      function stvoriMrezuXY(gridDim = 8, boja = [0.4, 0.4, 0.4]) {
+        const vrhovi = [];
+        const c = boja;
+        const cMin = -gridDim;
+        const cMax = gridDim;
+
+        for (let s = -gridDim; s <= gridDim; s++) {
+          vrhovi.push(cMin, s, 0, c[0], c[1], c[2]);
+          vrhovi.push(cMax, s, 0, c[0], c[1], c[2]);
+          vrhovi.push(s, cMin, 0, c[0], c[1], c[2]);
+          vrhovi.push(s, cMax, 0, c[0], c[1], c[2]);
+        }
+
+        return new Float32Array(vrhovi);
+      }
+
+      // Kocka s raznobojnim stranicama (kao u zadaci 7)
+      function stvoriKockuSaStranicama(a = 1) {
+        const v = [];
+        const h = a / 2;
+
+        const CRVENA = [1, 0, 0];
+        const MAGENTA = [1, 0, 1];
+        const PLAVA = [0, 0, 1];
+        const Cijan = [0, 1, 1];
+        const ZELENA = [0, 1, 0];
+        const ZUTA = [1, 1, 0];
+
+        function dodajTrokut(x1, y1, z1, c1, x2, y2, z2, c2, x3, y3, z3, c3) {
+          v.push(
+            x1,
+            y1,
+            z1,
+            c1[0],
+            c1[1],
+            c1[2],
+            x2,
+            y2,
+            z2,
+            c2[0],
+            c2[1],
+            c2[2],
+            x3,
+            y3,
+            z3,
+            c3[0],
+            c3[1],
+            c3[2]
+          );
+        }
+
+        // prednja (z = -h)
+        dodajTrokut(-h, -h, -h, CRVENA, h, -h, -h, CRVENA, h, h, -h, CRVENA);
+        dodajTrokut(-h, -h, -h, CRVENA, h, h, -h, CRVENA, -h, h, -h, CRVENA);
+
+        // straznja (z = +h)
+        dodajTrokut(-h, -h, h, MAGENTA, -h, h, h, MAGENTA, h, h, h, MAGENTA);
+        dodajTrokut(-h, -h, h, MAGENTA, h, h, h, MAGENTA, h, -h, h, MAGENTA);
+
+        // lijeva (x = -h)
+        dodajTrokut(-h, -h, h, PLAVA, -h, -h, -h, PLAVA, -h, h, -h, PLAVA);
+        dodajTrokut(-h, -h, h, PLAVA, -h, h, -h, PLAVA, -h, h, h, PLAVA);
+
+        // desna (x = +h)
+        dodajTrokut(h, -h, h, Cijan, h, h, h, Cijan, h, h, -h, Cijan);
+        dodajTrokut(h, -h, h, Cijan, h, h, -h, Cijan, h, -h, -h, Cijan);
+
+        // gornja (y = +h)
+        dodajTrokut(-h, h, h, ZELENA, -h, h, -h, ZELENA, h, h, -h, ZELENA);
+        dodajTrokut(-h, h, h, ZELENA, h, h, -h, ZELENA, h, h, h, ZELENA);
+
+        // donja (y = -h)
+        dodajTrokut(-h, -h, h, ZUTA, h, -h, h, ZUTA, h, -h, -h, ZUTA);
+        dodajTrokut(-h, -h, h, ZUTA, h, -h, -h, ZUTA, -h, -h, -h, ZUTA);
+
+        return new Float32Array(v);
+      }
+
+      function pripremiScene(gl) {
+        const program = pripremiGPUprogram(
+          gl,
+          "vertex-shader",
+          "fragment-shader"
+        );
+        gl.useProgram(program);
+
+        program.a_vrhXYZ = gl.getAttribLocation(program, "a_vrhXYZ");
+        program.a_boja = gl.getAttribLocation(program, "a_boja");
+        program.u_mTrans = gl.getUniformLocation(program, "u_mTrans");
+
+        gl.enable(gl.DEPTH_TEST);
+        gl.enable(gl.CULL_FACE);
+        gl.cullFace(gl.BACK);
+        gl.frontFace(gl.CCW);
+
+        return program;
+      }
+
+      function napuniSpremnik(gl, data) {
+        const buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+        return buffer;
+      }
+
+      function postaviAtribute(gl, program) {
+        gl.enableVertexAttribArray(program.a_vrhXYZ);
+        gl.enableVertexAttribArray(program.a_boja);
+        const stride = 6 * 4;
+        gl.vertexAttribPointer(program.a_vrhXYZ, 3, gl.FLOAT, false, stride, 0);
+        gl.vertexAttribPointer(
+          program.a_boja,
+          3,
+          gl.FLOAT,
+          false,
+          stride,
+          3 * 4
+        );
+      }
+
+      // 8.2 - ortogonalna projekcija
+      function pokreniZadatak8_2_ortho() {
+        const platno = document.getElementById("slika8_2_ortho");
+        if (!platno) return;
+        const gl = platno.getContext("webgl2");
+        if (!gl) {
+          alert("WebGL2 nije dostupan!");
+          return;
+        }
+
+        const program = pripremiScene(gl);
+
+        const mrezaData = stvoriMrezuXY(8, [0.4, 0.4, 0.4]);
+        const kockaData = stvoriKockuSaStranicama(1);
+        const mrezaBuffer = napuniSpremnik(gl, mrezaData);
+        const kockaBuffer = napuniSpremnik(gl, kockaData);
+        const brojMrezaVrhova = mrezaData.length / 6;
+        const brojKockaVrhova = kockaData.length / 6;
+
+        const mt = new MT3D();
+
+        let kutX = 0;
+        let kutY = 0;
+        let kutZ = 0;
+        let prosloVrijeme = 0;
+
+        function iscrtaj(vrijeme) {
+          if (!vrijeme) vrijeme = 0;
+          const dt = (vrijeme - prosloVrijeme) / 1000;
+          prosloVrijeme = vrijeme;
+
+          kutX = (kutX + 20 * dt) % 360;
+          kutY = (kutY + 30 * dt) % 360;
+          kutZ = (kutZ + 15 * dt) % 360;
+
+          mt.identitet();
+          mt.rotirajX(kutX);
+          mt.rotirajY(kutY);
+          mt.rotirajZ(kutZ);
+
+          mt.postaviKameru(8, 8, 12, 0, 0, 0, 0, 1, 0);
+          mt.ortho(-10, 10, -10, 10, 1, 30);
+
+          const lista = new Float32Array(mt.lista());
+          gl.uniformMatrix4fv(program.u_mTrans, false, lista);
+
+          gl.viewport(0, 0, platno.width, platno.height);
+          gl.clearColor(0.1, 0.1, 0.1, 1);
+          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+          gl.bindBuffer(gl.ARRAY_BUFFER, mrezaBuffer);
+          postaviAtribute(gl, program);
+          gl.drawArrays(gl.LINES, 0, brojMrezaVrhova);
+
+          gl.bindBuffer(gl.ARRAY_BUFFER, kockaBuffer);
+          postaviAtribute(gl, program);
+          gl.drawArrays(gl.TRIANGLES, 0, brojKockaVrhova);
+
+          requestAnimationFrame(iscrtaj);
+        }
+
+        requestAnimationFrame(iscrtaj);
+      }
+
+      // 8.3 - perspektivna projekcija
+      function pokreniZadatak8_3_persp() {
+        const platno = document.getElementById("slika8_3_persp");
+        if (!platno) return;
+        const gl = platno.getContext("webgl2");
+        if (!gl) {
+          alert("WebGL2 nije dostupan!");
+          return;
+        }
+
+        const program = pripremiScene(gl);
+
+        const mrezaData = stvoriMrezuXY(8, [0.4, 0.4, 0.4]);
+        const kockaData = stvoriKockuSaStranicama(1);
+        const mrezaBuffer = napuniSpremnik(gl, mrezaData);
+        const kockaBuffer = napuniSpremnik(gl, kockaData);
+        const brojMrezaVrhova = mrezaData.length / 6;
+        const brojKockaVrhova = kockaData.length / 6;
+
+        const mt = new MT3D();
+
+        let kutX = 0;
+        let kutY = 0;
+        let kutZ = 0;
+        let prosloVrijeme = 0;
+
+        function iscrtaj(vrijeme) {
+          if (!vrijeme) vrijeme = 0;
+          const dt = (vrijeme - prosloVrijeme) / 1000;
+          prosloVrijeme = vrijeme;
+
+          kutX = (kutX + 20 * dt) % 360;
+          kutY = (kutY + 30 * dt) % 360;
+          kutZ = (kutZ + 15 * dt) % 360;
+
+          mt.identitet();
+          mt.rotirajX(kutX);
+          mt.rotirajY(kutY);
+          mt.rotirajZ(kutZ);
+
+          const camDist = 18;
+          mt.postaviKameru(
+            Math.sin(vrijeme * 0.0004) * camDist,
+            8,
+            Math.cos(vrijeme * 0.0004) * camDist,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0
+          );
+
+          mt.persp(-10, 10, -10, 10, 4, 40);
+
+          const lista = new Float32Array(mt.lista());
+          gl.uniformMatrix4fv(program.u_mTrans, false, lista);
+
+          gl.viewport(0, 0, platno.width, platno.height);
+          gl.clearColor(0.1, 0.1, 0.1, 1);
+          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+          gl.bindBuffer(gl.ARRAY_BUFFER, mrezaBuffer);
+          postaviAtribute(gl, program);
+          gl.drawArrays(gl.LINES, 0, brojMrezaVrhova);
+
+          gl.bindBuffer(gl.ARRAY_BUFFER, kockaBuffer);
+          postaviAtribute(gl, program);
+          gl.drawArrays(gl.TRIANGLES, 0, brojKockaVrhova);
+
+          requestAnimationFrame(iscrtaj);
+        }
+
+        requestAnimationFrame(iscrtaj);
+      }
+
+      window.onload = function () {
+        pokreniZadatak8_2_ortho();
+        pokreniZadatak8_3_persp();
+      };
+    </script>
+
+    <script id="vertex-shader" type="x-shader/x-vertex">
+      #version 300 es
+      in vec3 a_vrhXYZ;
+      in vec3 a_boja;
+      uniform mat4 u_mTrans;
+      out vec3 v_boja;
+
+      void main() {
+        gl_Position = u_mTrans * vec4(a_vrhXYZ, 1.0);
+        v_boja = a_boja;
+      }
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+      #version 300 es
+      precision highp float;
+      in vec3 v_boja;
+      out vec4 bojaPiksela;
+
+      void main() {
+        bojaPiksela = vec4(v_boja, 1.0);
+      }
+    </script>
+  </head>
+
+  <body>
+    <h1>Primjeri 8.2 i 8.3</h1>
+    <div class="row">
+      <section>
+        <h2>8.2 - Ortogonalna projekcija</h2>
+        <p class="hint">
+          Mreza xy-ravnine i kocka s raznobojnim stranicama, rotacija oko sve
+          tri osi, kamera + ortogonalna projekcija.
+        </p>
+        <canvas id="slika8_2_ortho" width="500" height="500">
+          Vas preglednik ne podrzava HTML5 canvas.
+        </canvas>
+      </section>
+      <section>
+        <h2>8.3 - Perspektivna projekcija</h2>
+        <p class="hint">
+          Ista scena kao u 8.2, ali prikazana perspektivnom projekcijom (metoda
+          <code>persp</code> u klasi MT3D).
+        </p>
+        <canvas id="slika8_3_persp" width="500" height="500">
+          Vas preglednik ne podrzava HTML5 canvas.
+        </canvas>
+      </section>
+    </div>
+  </body>
+</html>

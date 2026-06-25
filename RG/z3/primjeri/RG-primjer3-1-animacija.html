@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="hr">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta charset="UTF-8" />
+    <title>Animacija</title>
+    <script>
+      window.onload = slikaj;
+
+      function slikaj() {
+        var platno1 = document.getElementById("slika1");
+        if (!platno1) alert("Greška - nema platna!");
+        var w = platno1.width;
+        var h = platno1.height;
+        var g = platno1.getContext("2d");
+
+        var y = 0;
+        var korak = 2;
+
+        function iscrtaj() {
+          g.clearRect(0, 0, w, h);
+
+          g.beginPath();
+          g.moveTo(0, y);
+          g.lineTo(w, y);
+          g.strokeStyle = "red";
+          g.stroke();
+
+          y += korak;
+          if (y > h || y < 0) korak = -korak;
+          requestAnimationFrame(iscrtaj);
+        }
+
+        iscrtaj();
+      }
+    </script>
+  </head>
+
+  <body>
+    <h1>Animacija</h1>
+    <div>
+      <canvas
+        id="slika1"
+        width="500"
+        height="500"
+        style="border: 5px solid black"
+      >
+        Vaš preglednik ne podržava HTML5 canvas.
+      </canvas>
+    </div>
+  </body>
+</html>

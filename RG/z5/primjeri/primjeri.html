@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="hr">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta charset="UTF-8" />
+    <title>Primjeri</title>
+    <script src="persp.js"></script>
+    <script src="mt3d.js"></script>
+    <style>
+      body {
+        font-family: system-ui, Arial, sans-serif;
+        margin: 0;
+        padding: 16px;
+      }
+      .page-nav {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin: 8px 0 16px;
+      }
+      .page-nav a {
+        color: #06c;
+        text-decoration: none;
+        font-weight: 600;
+      }
+      .page-nav a:hover {
+        text-decoration: underline;
+      }
+      h2 {
+        margin: 12px 0 8px;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+      @media (min-width: 1100px) {
+        .row {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      canvas {
+        border: 4px solid #000;
+        width: 100%;
+        max-width: 640px;
+        height: auto;
+      }
+      .hint {
+        color: #555;
+        font-size: 0.9rem;
+        margin: 0 0 8px;
+      }
+    </style>
+    <script>
+      function linija3D(ort, x1, y1, z1, x2, y2, z2, boja) {
+        if (boja) ort.koristiBoju(boja);
+        ort.postaviNa(x1, y1, z1);
+        ort.linijaDo(x2, y2, z2);
+        ort.povuciLiniju();
+      }
+      function initPrimjer1() {
+        const platno = document.getElementById("c1");
+        if (!platno) {
+          alert("Greška - nema platna!");
+          return;
+        }
+
+        let canvasSize = 10;
+        let camDist = 12;
+        const persp = Persp.EqualX(
+          platno,
+          -canvasSize,
+          canvasSize,
+          camDist / 2
+        );
+        const a = 3;
+        const mt3d = new MT3D();
+
+        let gridDim = 8;
+        let cMin = -gridDim + 0.5;
+        let cMax = gridDim - 0.5;
+        let speed = 16;
+        let last = performance.now();
+        let ax = 32;
+        let height = 2;
+        let heightDir = 1;
+        let rotIndex = Math.floor(last / 1000 / (2 * Math.PI));
+        const stepPerRotation = 1;
+        const zeros = Array(4).fill(0);
+
+        function frame(now) {
+          const dt = (now - last) / 1000;
+          last = now;
+          const t = last / 1000;
+
+          const curRot = Math.floor(t / (2 * Math.PI));
+          if (curRot !== rotIndex) {
+            rotIndex = curRot;
+            height += heightDir * stepPerRotation;
+            if (height >= 6) {
+              height = 6;
+              heightDir = -1;
+            } else if (height <= 2) {
+              height = 2;
+              heightDir = 1;
+            }
+          }
+
+          const x = Math.sin(t);
+          const z = Math.cos(t);
+          mt3d.postaviKameru(x * a, 4, z * a, ...zeros, 1, 0);
+
+          persp.trans(mt3d);
+          persp.ocistiCanvas();
+          for (let s = -gridDim; s < gridDim; s++) {
+            linija3D(persp, cMin, 0, s + 0.5, cMax, 0, s + 0.5, "red");
+            linija3D(persp, s + 0.5, 0, cMin, s + 0.5, 0, cMax, "red");
+          }
+          persp.koristiBoju("blue");
+          persp.stozac(3, height, 16);
+          requestAnimationFrame(frame);
+        }
+
+        requestAnimationFrame(frame);
+      }
+
+      function initPrimjer2() {
+        const platno = document.getElementById("c2");
+        if (!platno) {
+          alert("Greška - nema platna!");
+          return;
+        }
+
+        let canvasSize = 10;
+        let camDist = 12;
+        const persp = Persp.EqualX(
+          platno,
+          -canvasSize,
+          canvasSize,
+          camDist / 2
+        );
+        const a = 3;
+        const mt3d = new MT3D();
+
+        let gridDim = 8;
+        let cMin = -gridDim + 0.5;
+        let cMax = gridDim - 0.5;
+        let speed = 16;
+        let last = performance.now();
+        let ax = 32;
+        let height = 2;
+        let heightDir = 1;
+        let rotIndex = Math.floor(last / 1000 / (2 * Math.PI));
+        const stepPerRotation = 1;
+        const zeros = Array(4).fill(0);
+
+        function frame(now) {
+          const dt = (now - last) / 1000;
+          last = now;
+          const t = last / 1000;
+
+          const curRot = Math.floor(t / (2 * Math.PI));
+          if (curRot !== rotIndex) {
+            rotIndex = curRot;
+            height += heightDir * stepPerRotation;
+            if (height >= 6) {
+              height = 6;
+              heightDir = -1;
+            } else if (height <= 2) {
+              height = 2;
+              heightDir = 1;
+            }
+          }
+
+          const x = Math.sin(t);
+          const z = Math.cos(t);
+          mt3d.postaviKameru(x * a, 4, z * a, ...zeros, 1, 0);
+
+          persp.trans(mt3d);
+          persp.ocistiCanvas();
+          for (let s = -gridDim; s < gridDim; s++) {
+            linija3D(persp, cMin, 0, s + 0.5, cMax, 0, s + 0.5, "red");
+            linija3D(persp, s + 0.5, 0, cMin, s + 0.5, 0, cMax, "red");
+          }
+          persp.koristiBoju("blue");
+          persp.valjak(0.5, height, 16);
+          requestAnimationFrame(frame);
+        }
+        requestAnimationFrame(frame);
+      }
+      function initPrimjer3() {
+        const platno = document.getElementById("c3");
+        if (!platno) {
+          alert("Greška - nema platna!");
+          return;
+        }
+
+        let canvasSize = 10;
+        let camDist = 12;
+        const persp = Persp.EqualX(
+          platno,
+          -canvasSize,
+          canvasSize,
+          camDist / 2
+        );
+        const a = 3;
+        const mt3d = new MT3D();
+
+        let gridDim = 8;
+        let cMin = -gridDim + 0.5;
+        let cMax = gridDim - 0.5;
+        let speed = 16;
+        let last = performance.now();
+        let ax = 32;
+        let height = 2;
+        let heightDir = 1;
+        let rotIndex = Math.floor(last / 1000 / (2 * Math.PI));
+        const stepPerRotation = 1;
+        const zeros = Array(4).fill(0);
+
+        function frame(now) {
+          const dt = (now - last) / 1000;
+          last = now;
+          const t = last / 1000;
+
+          const x = Math.sin(t);
+          const z = Math.cos(t);
+          mt3d.postaviKameru(x * a, 4, z * a, ...zeros, 1, 0);
+
+          persp.trans(mt3d);
+          persp.ocistiCanvas();
+          for (let s = -gridDim; s < gridDim; s++) {
+            linija3D(persp, cMin, 0, s + 0.5, cMax, 0, s + 0.5, "red");
+            linija3D(persp, s + 0.5, 0, cMin, s + 0.5, 0, cMax, "red");
+          }
+          persp.koristiBoju("blue");
+          persp.kugla(2, 16, 32, false);
+          requestAnimationFrame(frame);
+        }
+        requestAnimationFrame(frame);
+      }
+      function initPrimjer4() {
+        const platno = document.getElementById("c4");
+        if (!platno) {
+          alert("Greška - nema platna!");
+          return;
+        }
+
+        let canvasSize = 10;
+        let camDist = 12;
+        const persp = Persp.EqualX(
+          platno,
+          -canvasSize,
+          canvasSize,
+          camDist / 2
+        );
+        const a = 3;
+        const mt3d = new MT3D();
+
+        let gridDim = 8;
+        let cMin = -gridDim + 0.5;
+        let cMax = gridDim - 0.5;
+        let speed = 16;
+        let last = performance.now();
+        let ax = 32;
+        let height = 2;
+        let heightDir = 1;
+        let rotIndex = Math.floor(last / 1000 / (2 * Math.PI));
+        const stepPerRotation = 1;
+        const zeros = Array(4).fill(0);
+
+        function frame(now) {
+          const dt = (now - last) / 1000;
+          last = now;
+          const t = last / 1000;
+
+          const x = Math.sin(t);
+          const z = Math.cos(t);
+          mt3d.postaviKameru(x * a, 4, z * a, ...zeros, 1, 0);
+
+          persp.trans(mt3d);
+          persp.ocistiCanvas();
+          for (let s = -gridDim; s < gridDim; s++) {
+            linija3D(persp, cMin, 0, s + 0.5, cMax, 0, s + 0.5, "red");
+            linija3D(persp, s + 0.5, 0, cMin, s + 0.5, 0, cMax, "red");
+          }
+          persp.koristiBoju("blue");
+          persp.kugla(2, 8, 8, true);
+          requestAnimationFrame(frame);
+        }
+        requestAnimationFrame(frame);
+      }
+      window.onload = () => {
+        initPrimjer1();
+        initPrimjer2();
+        initPrimjer3();
+        initPrimjer4();
+      };
+    </script>
+  </head>
+  <body>
+    <div class="row">
+      <section id="primjer1">
+        <h2>Primjer 1</h2>
+        <canvas id="c1" width="700" height="700"></canvas>
+      </section>
+      <section id="primjer2">
+        <h2>Primjer 2</h2>
+        <canvas id="c2" width="700" height="700"></canvas>
+      </section>
+      <section id="primjer3">
+        <h2>Primjer 3</h2>
+        <canvas id="c3" width="700" height="700"></canvas>
+      </section>
+      <section id="primjer4">
+        <h2>Primjer 4</h2>
+        <canvas id="c4" width="700" height="700"></canvas>
+      </section>
+    </div>
+  </body>
+</html>

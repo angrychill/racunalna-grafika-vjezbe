@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="hr">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta charset="UTF-8" />
+    <title>Primjer 5 – Animacija rotacije kocke</title>
+    <script src="otho.js"></script>
+    <script src="mt3d.js"></script>
+    <style>
+      body {
+        font-family: system-ui, Arial, sans-serif;
+      }
+      .hint {
+        color: #555;
+        font-size: 0.9rem;
+      }
+    </style>
+    <script>
+      window.onload = () => {
+        const platno = document.getElementById("slika5");
+        if (!platno) {
+          alert("Greška - nema platna!");
+          return;
+        }
+
+        const ortho = Ortho.EqualX(platno, -2, 2);
+        const a = 1; // duljina stranice kocke
+
+        function nacrtajKocku(ort, a, boja) {
+          const h = a / 2;
+          const V = [
+            [-h, -h, -h],
+            [h, -h, -h],
+            [h, h, -h],
+            [-h, h, -h],
+            [-h, -h, h],
+            [h, -h, h],
+            [h, h, h],
+            [-h, h, h],
+          ];
+          const E = [
+            [0, 1],
+            [1, 2],
+            [2, 3],
+            [3, 0],
+            [4, 5],
+            [5, 6],
+            [6, 7],
+            [7, 4],
+            [0, 4],
+            [1, 5],
+            [2, 6],
+            [3, 7],
+          ];
+          ort.koristiBoju(boja);
+          for (const [i, j] of E) {
+            const [x1, y1, z1] = V[i];
+            const [x2, y2, z2] = V[j];
+            ort.postaviNa(x1, y1, z1);
+            ort.linijaDo(x2, y2, z2);
+            ort.povuciLiniju();
+          }
+        }
+
+        const mt = new MT3D();
+        let ax = 0,
+          ay = 0,
+          az = 0; // kutovi u stupnjevima
+        const speedX = 30,
+          speedY = 45,
+          speedZ = 60; // °/s po osi
+        let paused = false;
+        let last = performance.now();
+
+        document.addEventListener("keydown", (e) => {
+          if (e.code === "Space") {
+            paused = !paused;
+          } else if (e.key === "r" || e.key === "R") {
+            ax = ay = az = 0;
+          }
+        });
+
+        function frame(now) {
+          const dt = (now - last) / 1000;
+          last = now;
+          if (!paused) {
+            ax = (ax + speedX * dt) % 360;
+            ay = (ay + speedY * dt) % 360;
+            az = (az + speedZ * dt) % 360;
+          }
+
+          ortho.ocistiCanvas();
+          // Osi za referencu
+          ortho.crtajOsi({ boja: "#999", sirina: 1, oznake: true });
+
+          // Sastavi transformaciju. Budući da mult radi M = M * T i točke se
+          // transformiraju kao p' = M p, da bismo dobili redoslijed X→Y→Z nad p,
+          // pozive radimo obrnutim redoslijedom Z, Y, X:
+          mt.identitet();
+          mt.rotirajZ(az);
+          mt.rotirajY(ay);
+          mt.rotirajX(ax);
+          ortho.trans(mt);
+
+          nacrtajKocku(ortho, a, "black");
+
+          requestAnimationFrame(frame);
+        }
+
+        requestAnimationFrame(frame);
+      };
+    </script>
+  </head>
+  <body>
+    <h1>Primjer 5 – Animacija rotacije kocke</h1>
+    <p class="hint">Razmaknica: pauza/nastavak • R: reset kuteva</p>
+    <div>
+      <canvas
+        id="slika5"
+        width="600"
+        height="600"
+        style="border: 4px solid black"
+      >
+        Vaš preglednik ne podržava HTML5 canvas.
+      </canvas>
+    </div>
+  </body>
+</html>

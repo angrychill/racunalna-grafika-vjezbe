@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="hr">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta charset="UTF-8" />
+    <title>
+      Ekvidistantne horizontalne i vertikalne linije s međusobnim razmakom od 40
+      točaka
+    </title>
+  </head>
+
+  <body>
+    <h1>
+      Ekvidistantne horizontalne i vertikalne linije s međusobnim razmakom od 40
+      točaka
+    </h1>
+    <canvas
+      id="canvas1"
+      width="500"
+      height="500"
+      style="border: 5px solid black"
+    >
+      Vaš preglednik ne podržava HTML5 canvas.
+    </canvas>
+
+    <script>
+      window.onload = function () {
+        // priprema
+        var platno1 = document.getElementById("canvas1");
+        if (!platno1) alert("Greška - nema platna!");
+        var w = platno1.width;
+        var h = platno1.height;
+        var g = platno1.getContext("2d");
+
+        // iscrtavanje
+        g.strokeStyle = "red";
+        for (var i = 0; i < w / 40; i++) {
+          g.beginPath();
+          g.moveTo(i * 40, 0);
+          g.lineTo(i * 40, h);
+          g.stroke();
+        }
+        for (var i = 0; i < h / 40; i++) {
+          g.beginPath();
+          g.moveTo(0, i * 40);
+          g.lineTo(w, i * 40);
+          g.stroke();
+        }
+      };
+    </script>
+  </body>
+</html>

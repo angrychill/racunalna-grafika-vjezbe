@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="hr">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta charset="UTF-8" />
+    <title>Animacija</title>
+    <script src="gks.js"></script>
+    <script src="mt2d.js"></script>
+    <script>
+      window.onload = slikaj;
+      function slikaj() {
+        var platno1 = document.getElementById("slika1");
+        if (!platno1) alert("Greška - nema platna!");
+
+        let gks = GKS.EqualX(platno1, -20, 20);
+        let mt2d = new MT2D();
+        let kut = 0;
+
+        elipsaNa(gks, 1, 1, "black", 0.01);
+        function iscrtaj() {
+          gks.ocistiCanvas();
+          for (let i = 0; i < 3; i++) {
+            mt2d.identitet();
+            mt2d.rotiraj(kut + i * 120);
+            mt2d.pomakni(7, 0);
+            gks.trans(mt2d);
+            elipsaNa(gks, 8, 2.5, "black", 0.1);
+          }
+          kut += 1;
+          requestAnimationFrame(iscrtaj);
+        }
+
+        iscrtaj();
+      }
+
+      function elipsaNa(g, a, b, boja, delta = 0.01) {
+        if (boja) g.koristiBoju(boja);
+        g.postaviNa(a, 0);
+        for (let t = 0; t <= 2 * Math.PI; t += delta) {
+          const x = a * Math.cos(t);
+          const y = b * Math.sin(t);
+          g.linijaDo(x, y);
+        }
+        g.povuciLiniju();
+      }
+    </script>
+  </head>
+
+  <body>
+    <h1>Animacija</h1>
+    <div>
+      <canvas
+        id="slika1"
+        width="500"
+        height="500"
+        style="border: 5px solid black"
+      >
+        Vaš preglednik ne podržava HTML5 canvas.
+      </canvas>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="hr">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta charset="UTF-8" />
+    <title>Zadaća 6</title>
+    <script src="./RG-WebGL.js"></script>
+    <script src="./mt2d.js"></script>
+    <script>
+      window.onload = WebGLaplikacija;
+
+      function elipsaNa(a, b, delta = 0.01) {
+        var vrhovi = [];
+        for (let t = 0; t <= 2 * Math.PI; t += delta) {
+          const x = a * Math.cos(t);
+          const y = b * Math.sin(t);
+          vrhovi.push(x);
+          vrhovi.push(y);
+        }
+
+        return vrhovi;
+      }
+
+      function crtajElipseNaPlatnu(idPlatna) {
+        var platno = document.getElementById(idPlatna);
+        var gl = platno.getContext("webgl2");
+        if (!gl) {
+          alert("WebGL2 nije dostupan!");
+          return;
+        }
+
+        var GPUprogram = pripremiGPUprogram(
+          gl,
+          "vertex-shader",
+          "fragment-shader"
+        );
+        gl.useProgram(GPUprogram);
+
+        // povezivanje s uniform varijablama u programima za sjenčanje
+        GPUprogram.u_mTrans = gl.getUniformLocation(GPUprogram, "u_mTrans");
+        GPUprogram.u_boja = gl.getUniformLocation(GPUprogram, "u_boja");
+
+        // definiranje geometrije preko javascript polja
+        var vrhovi = elipsaNa(0.9, 0.2);
+
+        var mTrans = new MT2D();
+
+        function napuniSpremnike() {
+          var spremnikVrhova = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, spremnikVrhova);
+
+          // povezivanje s atribut varijablom a_vrhXY u programu za sjenčanje
+          GPUprogram.a_vrhXY = gl.getAttribLocation(GPUprogram, "a_vrhXY");
+          gl.enableVertexAttribArray(GPUprogram.a_vrhXY);
+          gl.vertexAttribPointer(GPUprogram.a_vrhXY, 2, gl.FLOAT, false, 0, 0);
+          // punjenje spremnika - podaci koji se šalju na GPU
+          gl.bufferData(
+            gl.ARRAY_BUFFER,
+            new Float32Array(vrhovi),
+            gl.STATIC_DRAW
+          );
+        } // napuniSpremnike
+
+        function iscrtaj() {
+          gl.clearColor(0.4, 0.4, 0.4, 1);
+          gl.clear(gl.COLOR_BUFFER_BIT);
+          gl.viewport(0, 0, platno.width, platno.height);
+
+          // zelena elipsa - rotacija
+          mTrans.identitet();
+          mTrans.projekcija2D(-1, 1, -1, 1);
+          mTrans.rotiraj(30); // 30 stupnjeva
+          gl.uniformMatrix3fv(
+            GPUprogram.u_mTrans,
+            false,
+            new Float32Array(mTrans.lista())
+          );
+          gl.uniform4fv(GPUprogram.u_boja, [0.0, 1.0, 0.0, 1.0]); // zelena boja
+          gl.drawArrays(gl.TRIANGLE_FAN, 0, vrhovi.length / 2);
+
+          // žuta elipsa - pomak udesno i gore
+          mTrans.identitet();
+          mTrans.projekcija2D(-1, 1, -1, 1);
+          mTrans.pomakni(0.9, 0.3);
+          gl.uniformMatrix3fv(
+            GPUprogram.u_mTrans,
+            false,
+            new Float32Array(mTrans.lista())
+          );
+          gl.uniform4fv(GPUprogram.u_boja, [1.0, 1.0, 0.0, 1.0]); // žuta boja
+          gl.drawArrays(gl.TRIANGLE_FAN, 0, vrhovi.length / 2);
+
+          // crvena elipsa - pomak lijevo i dolje
+          mTrans.identitet();
+          mTrans.projekcija2D(-1, 1, -1, 1);
+          mTrans.pomakni(-0.9, -0.3);
+          gl.uniformMatrix3fv(
+            GPUprogram.u_mTrans,
+            false,
+            new Float32Array(mTrans.lista())
+          );
+          gl.uniform4fv(GPUprogram.u_boja, [1.0, 0.0, 0.0, 1.0]); // crvena boja
+          gl.drawArrays(gl.TRIANGLE_FAN, 0, vrhovi.length / 2);
+        } // iscrtaj
+
+        napuniSpremnike();
+        iscrtaj();
+      }
+
+      function crtajElipseNaPlatnu2(idPlatna) {
+        var platno = document.getElementById(idPlatna);
+        var gl = platno.getContext("webgl2");
+        if (!gl) {
+          alert("WebGL2 nije dostupan!");
+          return;
+        }
+
+        var GPUprogram = pripremiGPUprogram(
+          gl,
+          "vertex-shader",
+          "fragment-shader"
+        );
+        gl.useProgram(GPUprogram);
+
+        GPUprogram.u_mTrans = gl.getUniformLocation(GPUprogram, "u_mTrans");
+        GPUprogram.u_boja = gl.getUniformLocation(GPUprogram, "u_boja");
+
+        const circleR = 0.1;
+        const R = 0.5; // radius od manjeg kruga do centara elipsi
+        const ellipseA = 0.4; // poluosa elipse u smjeru radijala
+        const ellipseB = 0.12; // poluosa elipse popreko
+        // krug i elipsa u jednom spremniku, koristimo offset
+        const vrhoviKrug = elipsaNa(circleR, circleR); // manji krug
+        const vrhoviElipsa = elipsaNa(ellipseA, ellipseB); // elipsa
+        const countKrug = vrhoviKrug.length / 2;
+        const countElipsa = vrhoviElipsa.length / 2;
+        const offsetElipsa = countKrug; // u broju vrhova
+        var vrhovi = vrhoviKrug.concat(vrhoviElipsa);
+
+        var mTrans = new MT2D();
+
+        function napuniSpremnike() {
+          var spremnikVrhova = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, spremnikVrhova);
+          GPUprogram.a_vrhXY = gl.getAttribLocation(GPUprogram, "a_vrhXY");
+          gl.enableVertexAttribArray(GPUprogram.a_vrhXY);
+          gl.vertexAttribPointer(GPUprogram.a_vrhXY, 2, gl.FLOAT, false, 0, 0);
+          gl.bufferData(
+            gl.ARRAY_BUFFER,
+            new Float32Array(vrhovi),
+            gl.STATIC_DRAW
+          );
+        }
+
+        function iscrtaj() {
+          gl.clearColor(0.4, 0.7, 1.0, 1);
+          gl.clear(gl.COLOR_BUFFER_BIT);
+          gl.viewport(0, 0, platno.width, platno.height);
+
+          // manji krug u sredini
+          mTrans.identitet();
+          mTrans.projekcija2D(-1, 1, -1, 1);
+          gl.uniformMatrix3fv(
+            GPUprogram.u_mTrans,
+            false,
+            new Float32Array(mTrans.lista())
+          );
+          gl.uniform4fv(GPUprogram.u_boja, [1.0, 0.4, 0.7, 1.0]); // krug u sredini
+          gl.drawArrays(gl.TRIANGLE_FAN, 0, countKrug);
+
+          // 8 elipsi raspoređenih oko manjeg kruga na radijusu R
+          const brojElipsi = 8;
+          for (let i = 0; i < brojElipsi; i++) {
+            const kut = (2 * Math.PI * i) / brojElipsi;
+            const cx = R * Math.cos(kut);
+            const cy = R * Math.sin(kut);
+
+            mTrans.identitet();
+            mTrans.projekcija2D(-1, 1, -1, 1);
+
+            mTrans.pomakni(cx, cy);
+            mTrans.rotiraj(-(kut * 180) / Math.PI);
+
+            gl.uniformMatrix3fv(
+              GPUprogram.u_mTrans,
+              false,
+              new Float32Array(mTrans.lista())
+            );
+            gl.uniform4fv(GPUprogram.u_boja, [1.0, 1.0, 0.0, 1.0]); // elipse oko kruga
+            gl.drawArrays(gl.TRIANGLE_FAN, offsetElipsa, countElipsa);
+          }
+        }
+
+        napuniSpremnike();
+        iscrtaj();
+      }
+
+      function WebGLaplikacija() {
+        crtajElipseNaPlatnu("slika1");
+        crtajElipseNaPlatnu2("slika2");
+      } // WebGLaplikacija
+    </script>
+
+    <script id="vertex-shader" type="x-shader/x-vertex">
+      #version 300 es
+      in vec2 a_vrhXY;
+      uniform mat3 u_mTrans;
+
+      void main() {
+        gl_Position = vec4(u_mTrans * vec3(a_vrhXY, 1), 1); // primijeni matricu transformacije
+      }
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+      #version 300 es
+      precision mediump float;
+      uniform vec4 u_boja;
+      out vec4 bojaPiksela;
+
+      void main() {
+        bojaPiksela = u_boja; // boja se postavlja preko uniform varijable u_boja
+      }
+    </script>
+  </head>
+
+  <body>
+    <div style="display: flex; gap: 20px">
+      <canvas
+        id="slika1"
+        width="500"
+        height="500"
+        style="border: 5px solid black"
+      >
+        Vaš preglednik ne podržava HTML5 canvas.
+      </canvas>
+      <canvas
+        id="slika2"
+        width="500"
+        height="500"
+        style="border: 5px solid black"
+      >
+        Vaš preglednik ne podržava HTML5 canvas.
+      </canvas>
+    </div>
+  </body>
+</html>

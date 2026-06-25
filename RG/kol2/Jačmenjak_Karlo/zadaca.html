@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="hr">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta charset="UTF-8" />
+    <title>Kolokvij 2 – predložak</title>
+    <script src="RG-WebGL.js"></script>
+    <script src="mt3d.js"></script>
+    <script src="shapes3d.js"></script>
+    <style>
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        margin: 0;
+        padding: 16px;
+        background: #f5f5f5;
+      }
+      h1 {
+        margin: 0 0 16px;
+      }
+      canvas {
+        border: 4px solid #000;
+        width: 100%;
+        max-width: 640px;
+        height: auto;
+        background: #000;
+        display: block;
+      }
+    </style>
+
+    <script>
+      window.onload = WebGL2aplikacija;
+
+      function WebGL2aplikacija() {
+        const platno1 = document.getElementById("slika1");
+        const gl = platno1.getContext("webgl2");
+        if (!gl) {
+          alert("WebGL2 nije dostupan!");
+          return;
+        }
+
+        const GPUprog1 = pripremiGPUprogram(
+          gl,
+          "vertex-shader",
+          "fragment-shader",
+        );
+        gl.useProgram(GPUprog1);
+
+        // atributi
+        GPUprog1.a_vrhXYZ = gl.getAttribLocation(GPUprog1, "a_vrhXYZ");
+        GPUprog1.a_normala = gl.getAttribLocation(GPUprog1, "a_normala");
+
+        // uniform varijable
+        GPUprog1.u_mTrans = gl.getUniformLocation(GPUprog1, "u_mTrans"); // view-projection
+        GPUprog1.u_model = gl.getUniformLocation(GPUprog1, "u_model"); // model matrix
+        GPUprog1.u_izvorXYZ = gl.getUniformLocation(GPUprog1, "u_izvorXYZ");
+        GPUprog1.u_kameraXYZ = gl.getUniformLocation(GPUprog1, "u_kameraXYZ");
+        GPUprog1.u_boja = gl.getUniformLocation(GPUprog1, "u_boja");
+        GPUprog1.u_objColor = gl.getUniformLocation(GPUprog1, "u_objColor");
+
+        const mt = new MT3D();
+        const shapes = createShapes3D(mt);
+
+        // postavi kameru i projekciju
+        const kamera = { x: 0, y: 3, z: 8 };
+        const radijusKamere =
+          Math.hypot(kamera.x, kamera.z) || Math.abs(kamera.z) || 8;
+        mt.postaviKameru(kamera.x, kamera.y, kamera.z, 0, 0, 0, 0, 1, 0);
+
+        const omjer = platno1.width / platno1.height;
+        const fovStupnjevi = 60;
+        const near = 1;
+        const far = 50;
+        const top = Math.tan((fovStupnjevi * Math.PI) / 360) * near;
+        const bottom = -top;
+        const right = top * omjer;
+        const left = -right;
+        mt.persp(left, right, bottom, top, near, far);
+
+        const radijusPrstena = 3;
+        const radijustPrstenaUnutarnji = radijusPrstena * 0.6;
+        const radijus = 1;
+        const visinaCilindra = 2.25;
+        const segmenti = 32;
+
+        const orbitR = (1.1 * (radijusPrstena + radijustPrstenaUnutarnji)) / 2;
+        const orbitA = 1.1 * radijus;
+        const orbitK = 4;
+
+        gl.enable(gl.DEPTH_TEST);
+        gl.enable(gl.CULL_FACE);
+
+        const plaviSupljiCilindarBaza = shapes.createHollowCylinder(
+          1.05 * radijusPrstena,
+          radijustPrstenaUnutarnji,
+          0.4,
+          segmenti,
+        );
+        const polukuglaZuta = shapes.createHemisphere(
+          radijus / 2,
+          16,
+          segmenti,
+        );
+        const kuglaRoza = shapes.createSphere(radijus / 8, 16, segmenti);
+        const putanjaLinija = shapes.createOrbitPathLine(
+          orbitR,
+          orbitA,
+          orbitK,
+          512,
+        );
+
+        const polucijev = shapes.createHollowHalfCylinder(
+          2.6 * radijus,
+          2.6 * radijus * 0.9,
+          0.5,
+          segmenti,
+        );
+
+        plaviSupljiCilindarBaza.setColor(0.6, 0.8, 1);
+        polukuglaZuta.setColor(1, 0.65, 0);
+        kuglaRoza.setColor(1, 0.4, 0.7);
+        putanjaLinija.setColor(1, 1, 0);
+        polucijev.setColor(0.6, 0.8, 1);
+
+        function iscrtaj(time) {
+          // time dolazi iz requestAnimationFrame u milisekundama
+          const t = (time || 0) * 0.001;
+
+          gl.clearColor(0, 0, 0, 1);
+          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+          gl.viewport(0, 0, platno1.width, platno1.height);
+
+          // animacija kamere: kružna putanja u xz-ravnini oko ishodišta
+          const brzinaKamere = 0.3; // radijani u sekundi
+          const kutKamere = t * brzinaKamere;
+          kamera.x = radijusKamere * Math.sin(kutKamere);
+          kamera.z = radijusKamere * Math.cos(kutKamere);
+          mt.postaviKameru(kamera.x, kamera.y, kamera.z, 0, 0, 0, 0, 1, 0);
+
+          // postavke svjetla i kamere (izvor svjetla u poziciji kamere)
+          gl.uniform3f(GPUprog1.u_izvorXYZ, kamera.x, kamera.y, kamera.z);
+          gl.uniform3f(GPUprog1.u_kameraXYZ, kamera.x, kamera.y, kamera.z);
+          // jače svjetlo (intenzitet > 1.0)
+          gl.uniform3f(GPUprog1.u_boja, 1.7, 1.7, 1.7);
+
+          const vpLista = new Float32Array(mt.viewProjLista());
+          gl.uniformMatrix4fv(GPUprog1.u_mTrans, false, vpLista);
+
+          gl.disable(gl.CULL_FACE);
+
+          plaviSupljiCilindarBaza.draw(gl, GPUprog1, function (mt) {
+            mt.pomakni(0, -0.25, 0);
+          });
+
+          const brPoluKugli = 4;
+          const poluOffset = Math.PI / 12; // mali kutni pomak (~15°)
+          for (let i = 0; i < brPoluKugli; i++) {
+            const step = poluOffset + (i * Math.PI) / 2;
+            polukuglaZuta.draw(gl, GPUprog1, function (mt) {
+              mt.pomakni(orbitR * Math.sin(step), 0, orbitR * Math.cos(step));
+            });
+          }
+
+          // linija koja prikazuje putanju kugle
+          putanjaLinija.draw(gl, GPUprog1, function (mt) {
+            mt.pomakni(0, 1, 0);
+          });
+
+          kuglaRoza.draw(gl, GPUprog1, function (mt) {
+            const x = (orbitR + orbitA * Math.sin(orbitK * t)) * Math.cos(t);
+            const z = (orbitR + orbitA * Math.sin(orbitK * t)) * Math.sin(t);
+
+            // kugla se giba u xz-ravnini oko središta prstena
+            mt.pomakni(x, 1, z);
+          });
+
+          const skalirajFaktor = 1.1;
+          const kut = 60;
+          polucijev.draw(gl, GPUprog1, function (mt) {
+            mt.rotirajX(-90);
+            mt.rotirajZ(kut);
+            mt.skaliraj(1.15, 1, 1.5);
+          });
+
+          polucijev.draw(gl, GPUprog1, function (mt) {
+            mt.rotirajX(-90);
+            mt.rotirajZ(90 + kut);
+            mt.skaliraj(1.15, 1, 1.5);
+          });
+
+          requestAnimationFrame(iscrtaj);
+        }
+
+        requestAnimationFrame(iscrtaj);
+      }
+    </script>
+
+    <script id="vertex-shader" type="x-shader/x-vertex">
+      #version 300 es
+      in vec4 a_vrhXYZ;
+      in vec3 a_normala;
+      uniform mat4 u_mTrans;   // view-projection (P * K)
+      uniform mat4 u_model;    // model matrica (M)
+      uniform vec3 u_izvorXYZ;
+      uniform vec3 u_kameraXYZ;
+      out float v_svjetlina;
+
+      void main() {
+        // pozicija vrha u svjetskom koordinatnom sustavu
+        vec4 worldPos = u_model * a_vrhXYZ;
+        vec3 normala = mat3(u_model) * a_normala; // transformacija normale u svijetu
+
+        // Lambertov zakon
+        vec3 premaIzvoru = normalize(u_izvorXYZ - worldPos.xyz);
+        v_svjetlina = dot(premaIzvoru, normala);
+
+        // zakon refleksije
+        float refleksija = 0.0;
+        if (v_svjetlina > 0.0) {
+          vec3 premaKameri = normalize(u_kameraXYZ - worldPos.xyz);
+          vec3 reflektiranaZraka = reflect(-premaIzvoru, normala);
+          refleksija = max(dot(reflektiranaZraka, premaKameri), 0.0);
+          refleksija = pow(refleksija, 8.0);
+        }
+
+        v_svjetlina = v_svjetlina * 0.5 + refleksija * 0.5;
+        gl_Position = u_mTrans * worldPos;
+      }
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+      #version 300 es
+      precision highp float;
+      uniform vec3 u_boja;
+      uniform vec3 u_objColor;
+      in float v_svjetlina;
+      out vec4 bojaFragmenta;
+
+      void main() {
+        vec3 boja = v_svjetlina * u_boja * u_objColor;
+        bojaFragmenta = vec4(boja, 1.0); // postavlja se boja fragmenta
+      }
+    </script>
+  </head>
+
+  <body>
+    <h1>Kolokvij 2 – predložak</h1>
+    <canvas
+      id="slika1"
+      width="500"
+      height="500"
+      style="border: 4px solid black"
+    >
+      Vaš preglednik ne podržava HTML5 canvas.
+    </canvas>
+  </body>
+</html>

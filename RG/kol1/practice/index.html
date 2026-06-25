@@ -1,0 +1,106 @@
+﻿<!DOCTYPE html>
+<html lang="hr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>MT3D / Persp vježbe</title>
+    <!-- Reuse your existing classes from your assignment folder -->
+    <script src="persp.js"></script>
+    <script src="mt3d.js"></script>
+    <style>
+      body {
+        font-family: system-ui, Arial, sans-serif;
+        margin: 0;
+        padding: 16px;
+        background: #f7f7f7;
+      }
+      h1 {
+        margin-top: 0;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+      @media (min-width: 1000px) {
+        .grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      section {
+        background: #fff;
+        border-radius: 8px;
+        padding: 12px 16px 16px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      }
+      h2 {
+        margin: 0 0 4px;
+      }
+      .theme {
+        margin: 0 0 8px;
+        font-size: 0.9rem;
+        color: #555;
+      }
+      canvas {
+        border: 3px solid #000;
+        width: 100%;
+        max-width: 640px;
+        height: auto;
+        display: block;
+      }
+      .controls {
+        margin-top: 8px;
+        display: flex;
+        gap: 8px;
+      }
+      button {
+        padding: 4px 10px;
+        font-size: 0.9rem;
+        cursor: pointer;
+      }
+    </style>
+    <script src="practice.js" defer></script>
+  </head>
+  <body>
+    <h1>Vježbe s MT3D i Persp</h1>
+    <p>
+      Stranica za vježbanje rada s klasama <code>MT3D</code> i
+      <code>Persp</code>. Svako platno ima svoju temu i gumb za pauzu.
+    </p>
+
+    <div class="grid">
+      <section>
+        <h2>Platno 1</h2>
+        <p class="theme">
+          Tema: "Robotska ruka" - vise zglobova od stozaca, cilindara i kugli.
+        </p>
+        <canvas id="c1" width="700" height="700"></canvas>
+        <div class="controls">
+          <button data-toggle="c1">Nastavi</button>
+        </div>
+      </section>
+
+      <section>
+        <h2>Platno 2</h2>
+        <p class="theme">
+          Tema: "Svemirski brod sa satelitima" - tijelo od primitiva i vise
+          orbita.
+        </p>
+        <canvas id="c2" width="700" height="700"></canvas>
+        <div class="controls">
+          <button data-toggle="c2">Nastavi</button>
+        </div>
+      </section>
+
+      <section>
+        <h2>Platno 3</h2>
+        <p class="theme">
+          Tema: "Valoviti lanac" - niz kugli na 3D putanji sa stupovima.
+        </p>
+        <canvas id="c3" width="700" height="700"></canvas>
+        <div class="controls">
+          <button data-toggle="c3">Nastavi</button>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

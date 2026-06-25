@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="hr">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta charset="UTF-8" />
+    <title>
+      Ekvidistantne horizontalne i vertikalne linije s međusobnim razmakom od 40
+      točaka
+    </title>
+  </head>
+
+  <body>
+    <h1>
+      Ekvidistantne horizontalne i vertikalne linije s međusobnim razmakom od 40
+      točaka
+    </h1>
+    <canvas
+      id="canvas1"
+      width="500"
+      height="500"
+      style="border: 5px solid black"
+    >
+      Vaš preglednik ne podržava HTML5 canvas.
+    </canvas>
+
+    <script>
+      window.onload = function () {
+        // priprema
+        var platno1 = document.getElementById("canvas1");
+        if (!platno1) alert("Greška - nema platna!");
+        var w = platno1.width;
+        var h = platno1.height;
+        var g = platno1.getContext("2d");
+        // iscrtavanje
+        g.strokeStyle = "black";
+        g.strokeWidth = 2;
+        g.beginPath();
+        g.moveTo(0, h / 2);
+        g.lineTo(w, h / 2);
+        g.stroke();
+        g.beginPath();
+        g.moveTo(w / 2, 0);
+        g.lineTo(w / 2, h);
+        g.stroke();
+
+        var tickerDist = 20;
+        var tickerHeight = 5;
+        for (let i = 1; i < h / tickerDist; i++) {
+          g.beginPath();
+          g.moveTo(w / 2 - tickerHeight, tickerDist * i);
+          g.lineTo(w / 2 + tickerHeight, tickerDist * i);
+          g.stroke();
+        }
+
+        for (let j = 1; j < w / tickerDist; j++) {
+          g.beginPath();
+          g.moveTo(tickerDist * j, h / 2 - tickerHeight);
+          g.lineTo(tickerDist * j, h / 2 + tickerHeight);
+          g.stroke();
+        }
+
+        var xos = h / 2;
+        var yos = w / 2;
+        var scale = h / 20;
+        let delta = 0.05;
+        let first = true;
+        for (let i = 0; i <= 2 * Math.PI; i = delta + i) {
+          let x = i;
+          let y = Math.sin(x);
+          let canvasX = xos + scale * x;
+          let canvasY = yos - scale * y;
+
+          if (first) {
+            first = false;
+            g.moveTo(canvasX, canvasY);
+          } else {
+            g.lineTo(canvasX, canvasY);
+          }
+        }
+        g.strokeStyle = "red";
+        g.stroke();
+      };
+    </script>
+  </body>
+</html>

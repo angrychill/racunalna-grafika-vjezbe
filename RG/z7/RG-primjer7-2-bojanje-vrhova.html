@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="hr">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta charset="UTF-8" />
+    <title>WebGL2 - bojanje vrhova</title>
+    <script src="RG-primjer7-2-bojanje-vrhova_files/RG-WebGL.js"></script>
+    <script src="mt3d.js"></script>
+
+    <script>
+      window.onload = WebGLaplikacija;
+
+      function WebGLaplikacija() {
+        const platno1 = document.getElementById("slika1");
+        gl = platno1.getContext("webgl2");
+        if (!gl) {
+          alert("WebGL2 nije dostupan!");
+          return;
+        }
+
+        GPUprogram1 = pripremiGPUprogram(
+          gl,
+          "vertex-shader",
+          "fragment-shader"
+        );
+        gl.useProgram(GPUprogram1);
+
+        // Spremnik dubine
+        gl.enable(gl.DEPTH_TEST);
+        gl.depthFunc(gl.LEQUAL);
+
+        // geometrija: 4 trokuta iste veli0dine
+        const a = 0.5;
+        vrhovi = [
+          // XY ravnina, trokut 1 (crveni)
+          [0, 0, 0, 1, 0, 0],
+          [-a, -a, 0, 1, 0, 0],
+          [a, -a, 0, 1, 0, 0],
+
+          // XY ravnina, trokut 2 (7du0dasti)
+          [0, 0, 0, 1, 1, 0],
+          [a, a, 0, 1, 1, 0],
+          [-a, a, 0, 1, 1, 0],
+
+          // YZ ravnina, trokut 3 (zeleni)
+          [0, 0, 0, 0, 1, 0],
+          [0, -a, -a, 0, 1, 0],
+          [0, -a, a, 0, 1, 0],
+
+          // YZ ravnina, trokut 4 (plavi)
+          [0, 0, 0, 0, 0, 1],
+          [0, a, a, 0, 0, 1],
+          [0, a, -a, 0, 0, 1],
+        ];
+
+        function napuniSpremnike() {
+          // povezivanje s atribut i uniform varijablama
+          GPUprogram1.a_vrhXY = gl.getAttribLocation(GPUprogram1, "a_vrhXY");
+          GPUprogram1.a_boja = gl.getAttribLocation(GPUprogram1, "a_boja");
+          GPUprogram1.u_mTrans = gl.getUniformLocation(GPUprogram1, "u_mTrans");
+
+          spremnikVrhova = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, spremnikVrhova);
+          gl.enableVertexAttribArray(GPUprogram1.a_vrhXY);
+          gl.enableVertexAttribArray(GPUprogram1.a_boja);
+          gl.vertexAttribPointer(
+            GPUprogram1.a_vrhXY,
+            3,
+            gl.FLOAT,
+            false,
+            24,
+            0
+          );
+          gl.vertexAttribPointer(
+            GPUprogram1.a_boja,
+            3,
+            gl.FLOAT,
+            false,
+            24,
+            12
+          );
+
+          // podaci o vrhovima
+          gl.bufferData(
+            gl.ARRAY_BUFFER,
+            new Float32Array(vrhovi.flat()),
+            gl.STATIC_DRAW
+          );
+        } // napuniSpremnike
+
+        const mt = new MT3D();
+        let kutX = 0;
+        let kutY = 0;
+        let kutZ = 0;
+        const brzinaY = 20; // stupnjeva u sekundi
+        const brzinaX = 2 * brzinaY;
+        const brzinaZ = 3 * brzinaY;
+        let prosloVrijeme = 0;
+
+        function iscrtaj(vrijeme) {
+          if (!vrijeme) vrijeme = 0;
+          const dt = (vrijeme - prosloVrijeme) / 1000;
+          prosloVrijeme = vrijeme;
+
+          // rotacija: y polako, x dvostruko br7ee, z tri puta br7ee
+          kutY = (kutY + brzinaY * dt) % 360;
+          kutX = (kutX + brzinaX * dt) % 360;
+          kutZ = (kutZ + brzinaZ * dt) % 360;
+
+          mt.identitet();
+          mt.rotirajZ(kutZ);
+          mt.rotirajX(kutX);
+          mt.rotirajY(kutY);
+
+          const lista = mt.lista();
+          gl.uniformMatrix4fv(GPUprogram1.u_mTrans, false, lista);
+
+          gl.clearColor(0.5, 0.5, 0.5, 1);
+          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+          gl.viewport(0, 0, platno1.width, platno1.height);
+
+          gl.drawArrays(gl.TRIANGLES, 0, vrhovi.length);
+
+          requestAnimationFrame(iscrtaj);
+        } // iscrtaj
+
+        napuniSpremnike();
+        requestAnimationFrame(iscrtaj);
+      } // WebGLaplikacija
+    </script>
+
+    <script id="vertex-shader" type="x-shader/x-vertex">
+      #version 300 es
+      in vec3 a_vrhXY;
+      in vec3 a_boja;
+      uniform mat4 u_mTrans;
+      out vec3 v_boja;
+
+      void main() {
+        gl_Position = u_mTrans * vec4(a_vrhXY, 1.0);
+        v_boja = a_boja;
+      }
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+      #version 300 es
+      precision highp float;
+      in vec3 v_boja;
+      out vec4 bojaPiksela;
+
+      void main() {
+        bojaPiksela = vec4(v_boja, 1.0);
+      }
+    </script>
+  </head>
+
+  <body>
+    <h1>WebGL2 - bojanje vrhova</h1>
+    <div>
+      <canvas
+        id="slika1"
+        width="500"
+        height="500"
+        style="border: 5px solid black"
+      >
+        Va61 preglednik ne podr7eava HTML5 canvas.
+      </canvas>
+    </div>
+  </body>
+</html>

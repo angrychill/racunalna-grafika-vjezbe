@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="hr">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta charset="UTF-8" />
+    <title>Ortogon. projekcija kocke</title>
+    <script src="otho.js"></script>
+    <script src="mt3d.js"></script>
+    <style>
+      body { font-family: system-ui, Arial, sans-serif; }
+    </style>
+    <script>
+      window.onload = () => {
+        const platno = document.getElementById('slika1');
+        if (!platno) {
+          alert('Greška - nema platna!');
+          return;
+        }
+
+        // Jednake skale po osima na temelju x-raspona
+        const ortho = Ortho.EqualX(platno, -2, 2);
+        const a = 1; // duljina stranice
+
+        function nacrtajKocku(ort, a, boja) {
+          const h = a / 2;
+          const V = [
+            [-h, -h, -h], [ h, -h, -h], [ h,  h, -h], [-h,  h, -h],
+            [-h, -h,  h], [ h, -h,  h], [ h,  h,  h], [-h,  h,  h],
+          ];
+          const E = [
+            [0,1], [1,2], [2,3], [3,0],
+            [4,5], [5,6], [6,7], [7,4],
+            [0,4], [1,5], [2,6], [3,7],
+          ];
+          ort.koristiBoju(boja);
+          for (const [i, j] of E) {
+            const [x1, y1, z1] = V[i];
+            const [x2, y2, z2] = V[j];
+            ort.postaviNa(x1, y1, z1);
+            ort.linijaDo(x2, y2, z2);
+            ort.povuciLiniju();
+          }
+        }
+
+        const mt = new MT3D();
+
+        // Crvena: rotacija oko x-osi 30°
+        mt.identitet();
+        mt.rotirajX(30);
+        ortho.trans(mt);
+        nacrtajKocku(ortho, a, 'red');
+
+        // Zelena: rotacija oko y-osi 30°
+        mt.identitet();
+        mt.rotirajY(30);
+        ortho.trans(mt);
+        nacrtajKocku(ortho, a, 'green');
+
+        // Plava: rotacija oko z-osi 30°
+        mt.identitet();
+        mt.rotirajZ(30);
+        ortho.trans(mt);
+        nacrtajKocku(ortho, a, 'blue');
+
+        // Crna: oko x, zatim y, zatim z; paziti na poredak transformacija.
+        // Budući da je množenje M = M * mat, za stvarni redoslijed X→Y→Z
+        // pozivi moraju biti obrnutim redom Z, Y, X:
+        mt.identitet();
+        mt.rotirajZ(30);
+        mt.rotirajY(30);
+        mt.rotirajX(30);
+        ortho.trans(mt);
+        nacrtajKocku(ortho, a, 'black');
+      };
+    </script>
+  </head>
+  <body>
+    <h1>Ortogon. projekcija kocke</h1>
+    <div>
+      <canvas
+        id="slika1"
+        width="600"
+        height="600"
+        style="border: 4px solid black"
+      >
+        Vaš preglednik ne podržava HTML5 canvas.
+      </canvas>
+    </div>
+  </body>
+  </html>
+

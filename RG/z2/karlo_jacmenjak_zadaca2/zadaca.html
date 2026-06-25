@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="hr">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta charset="UTF-8" />
+    <title>Zadaca 2</title>
+    <style>
+      body {
+        font-family: system-ui, Arial, sans-serif;
+      }
+      #zadaci {
+        display: flex;
+        gap: 24px;
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+      .task {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .task h2 {
+        margin: 0 0 8px 0;
+        text-align: center;
+      }
+      nav {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .btn {
+        cursor: pointer;
+        padding: 6px 10px;
+        border: 1px solid #444;
+        background: #f7f7f7;
+        border-radius: 4px;
+      }
+      .btn.active {
+        background: #e0eaff;
+        border-color: #2b5ad8;
+      }
+      #controls {
+        margin: 10px 0 12px;
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .ctl {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .ctl label {
+        font-weight: 600;
+      }
+      .ctl output {
+        min-width: 60px;
+        display: inline-block;
+        text-align: right;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="zadaci">
+      <section class="task">
+        <h2>Zadatak 1</h2>
+        <canvas
+          id="canvasZ2"
+          width="600"
+          height="600"
+          style="border: 4px solid black"
+        >
+          Vaš preglednik ne podržava HTML5 canvas.
+        </canvas>
+      </section>
+      <section class="task">
+        <h2>Zadatak 2</h2>
+        <canvas
+          id="canvasZ2b"
+          width="600"
+          height="600"
+          style="border: 4px solid black"
+        >
+          Vaš preglednik ne podržava HTML5 canvas.
+        </canvas>
+      </section>
+    </div>
+    <script src="gks.js"></script>
+    <script src="mt2d.js"></script>
+    <script>
+      function zadatak1() {
+        const platno = document.getElementById("canvasZ2");
+        if (!platno) {
+          alert("Greška - nema platna!");
+          return;
+        }
+        const xmin = -20,
+          xmax = 20;
+        const gks = GKS.EqualX(platno, xmin, xmax);
+        crtajOsiNa(gks);
+
+        const mPravac = 3,
+          bPravac = 6;
+        crtajPravacNa(gks, xmin, xmax, mPravac, bPravac, "red");
+
+        const Cx = -6,
+          Cy = 6;
+        let matMainBody = new MT2D();
+        matMainBody.pomakni(Cx, Cy);
+        matMainBody.rotiraj(-90 - Math.atan(mPravac) * (180 / Math.PI));
+        gks.trans(matMainBody);
+        pravokutnikNa(gks, 5, 2.5, "black");
+
+        const L = Math.hypot(mPravac, -1);
+        const ux = mPravac / L,
+          uy = -1 / L;
+        const phiDeg = Math.atan2(uy, ux) * (180 / Math.PI);
+        const razmak = 2.5;
+        const pozicije = [-razmak, 0, razmak];
+        const windows = [];
+        for (const t of pozicije) {
+          const px = Cx + 1 + t * ux;
+          const py = Cy + 0.25 + t * uy;
+          const matWindow = new MT2D();
+          matWindow.pomakni(px, py);
+          matWindow.rotiraj(-phiDeg);
+          windows.push(matWindow);
+          gks.trans(matWindow);
+          pravokutnikNa(gks, 0.75, 1.1, "black");
+        }
+
+        let matDoor = new MT2D();
+        matDoor.pomakni(-9.5, 7);
+        matDoor.rotiraj(-phiDeg);
+        gks.trans(matDoor);
+        pravokutnikNa(gks, 0.95, 2, "black");
+
+        // Kotači
+        const rWheel = 1.25;
+        const razmakGl = 5; // kao glavni pravokutnik
+        const udaljenostKotaca = 1.95; // udaljenost od ruba
+        const spustiDolje = 2.6; // pomak prema dolje
+        const pomakKotaca = [
+          -(razmakGl - udaljenostKotaca) - 1,
+          razmakGl - udaljenostKotaca - 1,
+        ];
+        const wheels = [];
+        for (const t of pomakKotaca) {
+          const wx = Cx + t * ux;
+          const wy = Cy + t * uy - spustiDolje;
+          const matWheel = new MT2D();
+          matWheel.pomakni(wx, wy);
+          matWheel.rotiraj(-phiDeg);
+          wheels.push(matWheel);
+          gks.trans(matWheel);
+          polukrugNa(gks, rWheel, "black", 0.01);
+        }
+
+        // Zrcaljenje svega i crtanje u plavoj boji
+        const thetaDeg = Math.atan(mPravac) * (180 / Math.PI);
+        const matMirror = new MT2D();
+        matMirror.pomakni(0, 6);
+        matMirror.rotiraj(-thetaDeg);
+        matMirror.zrcaliNaX();
+        matMirror.rotiraj(thetaDeg);
+        matMirror.pomakni(0, -6);
+
+        gks.trans(compose(matMirror, matMainBody));
+        pravokutnikNa(gks, 5, 2.5, "blue");
+        for (const mw of windows) {
+          gks.trans(compose(matMirror, mw));
+          pravokutnikNa(gks, 0.75, 1.1, "blue");
+        }
+        gks.trans(compose(matMirror, matDoor));
+        pravokutnikNa(gks, 0.95, 2, "blue");
+        for (const w of wheels) {
+          gks.trans(compose(matMirror, w));
+          polukrugNa(gks, rWheel, "blue", 0.01);
+        }
+      }
+
+      function zadatak2() {
+        const platno2 = document.getElementById("canvasZ2b");
+        if (!platno2) return;
+        const xmin = -30,
+          xmax = 30;
+        const g2 = GKS.EqualX(platno2, xmin, xmax);
+
+        const baseX = 0,
+          baseY = -16;
+
+        const P = new MT2D();
+        P.pomakni(baseX, baseY);
+        const phiBase = Math.atan2(baseY, baseX) * (180 / Math.PI) + 22.5;
+        P.rotiraj(phiBase);
+
+        for (let i = 0; i < 3; i++) {
+          const R = new MT2D();
+          R.rotiraj_oko_tocke(0, 0, i * 120);
+
+          g2.trans(compose(R, P));
+          g2.koristiBoju("blue");
+          cvijetNa(g2, 6, 4, 8, 0.85, 180);
+
+          g2.trans(R);
+          linijaNa(g2, 0, 0, baseX, baseY, "blue");
+        }
+
+        const B1 = new MT2D();
+        B1.rotiraj(-30);
+        B1.skaliraj(2, 1.25);
+        B1.pomakni(3, -13);
+        g2.trans(B1);
+        leptirNa(g2, 3, 3, "red", 0.1);
+
+        const B2 = new MT2D();
+        B2.zrcaliNaY();
+        g2.trans(compose(B2, B1));
+        leptirNa(g2, 3, 3, "red", 0.1);
+
+        const B3 = new MT2D();
+        g2.trans(B3);
+        B3.rotiraj(-45);
+        B3.skaliraj(3, 1.25);
+        B3.pomakni(-4, 1);
+        g2.trans(B3);
+        leptirNa(g2, -3, -3, "black", 0.1);
+
+        const B4 = new MT2D();
+        B4.zrcaliNaY();
+        g2.trans(compose(B4, B3));
+        leptirNa(g2, -3, -3, "black", 0.1);
+      }
+
+      // Pomoćne funkcije za ponovnu upotrebu (zadatak1 i zadatak2)
+      function compose(A, B) {
+        const M = new MT2D();
+        M.mult(A.matrica);
+        M.mult(B.matrica);
+        return M;
+      }
+      function crtajOsiNa(g) {
+        g.crtajOsi("black", 1);
+      }
+      function linijaNa(g, x1, y1, x2, y2, boja) {
+        if (boja) g.koristiBoju(boja);
+        g.postaviNa(x1, y1);
+        g.linijaDo(x2, y2);
+        g.povuciLiniju();
+      }
+      function pravokutnikNa(g, a, b, boja) {
+        if (boja) g.koristiBoju(boja);
+        g.postaviNa(-a, -b);
+        g.linijaDo(a, -b);
+        g.linijaDo(a, b);
+        g.linijaDo(-a, b);
+        g.linijaDo(-a, -b);
+        g.povuciLiniju();
+      }
+      function polukrugNa(g, r, boja, delta = 0.01) {
+        if (boja) g.koristiBoju(boja);
+        const start = 0,
+          end = -Math.PI;
+        const x0 = r * Math.cos(start);
+        const y0 = r * Math.sin(start);
+        g.postaviNa(x0, y0);
+        const seg = Math.max(1, Math.ceil(Math.abs(end - start) / delta));
+        for (let i = 1; i <= seg; i++) {
+          const t = start + ((end - start) * i) / seg;
+          const x = r * Math.cos(t);
+          const y = r * Math.sin(t);
+          g.linijaDo(x, y);
+        }
+        g.povuciLiniju();
+      }
+      function elipsaNa(g, a, b, boja, delta = 0.01) {
+        if (boja) g.koristiBoju(boja);
+        g.postaviNa(a, 0);
+        for (let t = 0; t <= 2 * Math.PI; t += delta) {
+          const x = a * Math.cos(t);
+          const y = b * Math.sin(t);
+          g.linijaDo(x, y);
+        }
+        g.povuciLiniju();
+      }
+      function crtajPravacNa(g, xmin, xmax, m, b, boja = "red") {
+        if (boja) g.koristiBoju(boja);
+        g.postaviNa(xmin, m * xmin + b);
+        g.linijaDo(xmax, m * xmax + b);
+        g.povuciLiniju();
+      }
+      function cvijetNa(g, a = 1, k = 4, slojevi = 8, pad = 0.85, steps = 180) {
+        const ctx = g.ctx;
+        const zeros = Array.from(
+          { length: 2 * k },
+          (_, m) => Math.PI / (2 * k) + (m * Math.PI) / k
+        );
+        const nacrtajJedan = (amp) => {
+          for (let i = 0; i < zeros.length; i++) {
+            const t0 = zeros[i];
+            const t1 =
+              i + 1 < zeros.length ? zeros[i + 1] : zeros[0] + 2 * Math.PI;
+            const dt = (t1 - t0) / steps;
+            let first = true;
+            for (let s = 0; s <= steps; s++) {
+              const t = t0 + s * dt;
+              const r = amp * Math.cos(k * t);
+              const x = r * Math.cos(t);
+              const y = r * Math.sin(t);
+              if (first) {
+                first = false;
+                g.postaviNa(x, y);
+              } else {
+                g.linijaDo(x, y);
+              }
+            }
+            g.povuciLiniju();
+          }
+        };
+        const oldLW = ctx.lineWidth;
+        ctx.lineWidth = 1;
+        for (let j = 0; j < slojevi; j++) {
+          nacrtajJedan(Math.pow(pad, j) * a);
+        }
+        ctx.lineWidth = oldLW;
+      }
+
+      function leptirNa(g, x0, y0, boja = "red", delta = 0.01) {
+        const R = (t) =>
+          Math.exp(Math.cos(t)) -
+          2 * Math.cos(4 * t) +
+          Math.pow(Math.sin(t / 12), 5);
+        const funcX = (t) => R(t) * Math.sin(t);
+        const funcY = (t) => R(t) * Math.cos(t);
+        const tMin = 0;
+        const tMax = 12 * Math.PI;
+        if (boja) g.koristiBoju(boja);
+        let first = true;
+        for (let t = tMin; t <= tMax; t += delta) {
+          const x = funcX(t) + x0;
+          const y = funcY(t) + y0;
+          if (first) {
+            first = false;
+            g.postaviNa(x, y);
+          } else {
+            g.linijaDo(x, y);
+          }
+        }
+        g.povuciLiniju();
+      }
+      window.addEventListener("load", function () {
+        zadatak1();
+        zadatak2();
+      });
+    </script>
+  </body>
+</html>

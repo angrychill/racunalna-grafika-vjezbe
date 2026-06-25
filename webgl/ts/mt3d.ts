@@ -66,7 +66,7 @@ class MT3D {
         let lista = []
         for (let i = 0; i<4; i++){
             for (let j = 0; j<4; j++){
-                lista.push(this._matrica[j][i]);
+                lista.push(this.matrica[j][i]);
             }
         }
         return lista;

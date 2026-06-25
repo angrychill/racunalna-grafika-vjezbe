@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="hr">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta charset="UTF-8" />
+    <title>Zadaća 7</title>
+    <script src="RG-WebGL.js"></script>
+    <script src="mt3d.js"></script>
+
+    <script>
+      window.onload = WebGLaplikacija;
+
+      function WebGLaplikacija() {
+        const platno1 = document.getElementById("slika1");
+        gl = platno1.getContext("webgl2");
+        if (!gl) {
+          alert("WebGL2 nije dostupan!");
+          return;
+        }
+
+        GPUprogram1 = pripremiGPUprogram(
+          gl,
+          "vertex-shader",
+          "fragment-shader"
+        );
+        gl.useProgram(GPUprogram1);
+
+        gl.enable(gl.CULL_FACE);
+        gl.cullFace(gl.BACK);
+        gl.frontFace(gl.CCW);
+
+        const a = 0.5;
+        vrhovi = [
+          // Prednja strana (z = -a, crvena)
+          [-a, -a, -a, 1, 0, 0],
+          [a, -a, -a, 1, 0, 0],
+          [a, a, -a, 1, 0, 0],
+          [-a, -a, -a, 1, 0, 0],
+          [a, a, -a, 1, 0, 0],
+          [-a, a, -a, 1, 0, 0],
+
+          // Stražnja strana (z =  a, magenta)
+          [-a, -a, a, 1, 0, 1],
+          [-a, a, a, 1, 0, 1],
+          [a, a, a, 1, 0, 1],
+          [-a, -a, a, 1, 0, 1],
+          [a, a, a, 1, 0, 1],
+          [a, -a, a, 1, 0, 1],
+
+          // Lijeva strana (x = -a, plava)
+          [-a, -a, a, 0, 0, 1],
+          [-a, -a, -a, 0, 0, 1],
+          [-a, a, -a, 0, 0, 1],
+          [-a, -a, a, 0, 0, 1],
+          [-a, a, -a, 0, 0, 1],
+          [-a, a, a, 0, 0, 1],
+
+          // Desna strana (x =  a, cijan)
+          [a, -a, a, 0, 1, 1],
+          [a, a, a, 0, 1, 1],
+          [a, a, -a, 0, 1, 1],
+          [a, -a, a, 0, 1, 1],
+          [a, a, -a, 0, 1, 1],
+          [a, -a, -a, 0, 1, 1],
+
+          // Gornja strana (y =  a, zelena)
+          [-a, a, a, 0, 1, 0],
+          [-a, a, -a, 0, 1, 0],
+          [a, a, -a, 0, 1, 0],
+          [-a, a, a, 0, 1, 0],
+          [a, a, -a, 0, 1, 0],
+          [a, a, a, 0, 1, 0],
+
+          // Donja strana (y = -a, žuta)
+          [-a, -a, a, 1, 1, 0],
+          [a, -a, a, 1, 1, 0],
+          [a, -a, -a, 1, 1, 0],
+          [-a, -a, a, 1, 1, 0],
+          [a, -a, -a, 1, 1, 0],
+          [-a, -a, -a, 1, 1, 0],
+        ];
+
+        function napuniSpremnike() {
+          // povezivanje s atribut i uniform varijablama
+          GPUprogram1.a_vrhXY = gl.getAttribLocation(GPUprogram1, "a_vrhXY");
+          GPUprogram1.a_boja = gl.getAttribLocation(GPUprogram1, "a_boja");
+          GPUprogram1.u_mTrans = gl.getUniformLocation(GPUprogram1, "u_mTrans");
+
+          spremnikVrhova = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, spremnikVrhova);
+          gl.enableVertexAttribArray(GPUprogram1.a_vrhXY);
+          gl.enableVertexAttribArray(GPUprogram1.a_boja);
+          gl.vertexAttribPointer(
+            GPUprogram1.a_vrhXY,
+            3,
+            gl.FLOAT,
+            false,
+            24,
+            0
+          );
+          gl.vertexAttribPointer(
+            GPUprogram1.a_boja,
+            3,
+            gl.FLOAT,
+            false,
+            24,
+            12
+          );
+
+          // podaci o vrhovima
+          gl.bufferData(
+            gl.ARRAY_BUFFER,
+            new Float32Array(vrhovi.flat()),
+            gl.STATIC_DRAW
+          );
+        } // napuniSpremnike
+
+        const mt = new MT3D();
+        mt.pomakni(0, 0, -0.275);
+
+        const factor = 15;
+        const brzinaY = -3;
+        const brzinaX = -2;
+        const brzinaZ = 2;
+        let kutX = 0;
+        let kutY = 0;
+        let kutZ = 0;
+        let prosloVrijeme = 0;
+
+        function iscrtaj(vrijeme) {
+          if (!vrijeme) vrijeme = 0;
+          const dt = (vrijeme - prosloVrijeme) / 1000;
+          prosloVrijeme = vrijeme;
+
+          kutY = (kutY + factor * brzinaY * dt) % 360;
+          kutX = (kutX + factor * brzinaX * dt) % 360;
+          kutZ = (kutZ + factor * brzinaZ * dt) % 360;
+
+          mt.identitet();
+          mt.pomakni(0, 0, -0.3);
+          mt.rotirajX(kutX);
+          mt.rotirajZ(kutZ);
+          mt.rotirajY(kutY);
+
+          const lista = mt.lista();
+          gl.uniformMatrix4fv(GPUprogram1.u_mTrans, false, lista);
+
+          gl.clearColor(0, 0, 0, 1);
+          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+          gl.viewport(0, 0, platno1.width, platno1.height);
+
+          gl.drawArrays(gl.TRIANGLES, 0, vrhovi.length);
+
+          requestAnimationFrame(iscrtaj);
+        } // iscrtaj
+
+        napuniSpremnike();
+        requestAnimationFrame(iscrtaj);
+      } // WebGLaplikacija
+    </script>
+
+    <script id="vertex-shader" type="x-shader/x-vertex">
+      #version 300 es
+      in vec3 a_vrhXY;
+      in vec3 a_boja;
+      uniform mat4 u_mTrans;
+      out vec3 v_boja;
+
+      void main() {
+        gl_Position = u_mTrans * vec4(a_vrhXY, 1.0);
+        v_boja = a_boja;
+      }
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+      #version 300 es
+      precision highp float;
+      in vec3 v_boja;
+      out vec4 bojaPiksela;
+
+      void main() {
+        bojaPiksela = vec4(v_boja, 1.0);
+      }
+    </script>
+  </head>
+
+  <body>
+    <div>
+      <canvas
+        id="slika1"
+        width="500"
+        height="500"
+        style="border: 5px solid black"
+      >
+        Vaš preglednik ne podržava HTML5 canvas.
+      </canvas>
+    </div>
+  </body>
+</html>

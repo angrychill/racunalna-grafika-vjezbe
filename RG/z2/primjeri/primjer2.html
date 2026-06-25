@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="hr">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta charset="UTF-8" />
+    <title>Primjer 2</title>
+    <style>
+      body {
+        font-family: system-ui, Arial, sans-serif;
+      }
+      nav {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .btn {
+        cursor: pointer;
+        padding: 6px 10px;
+        border: 1px solid #444;
+        background: #f7f7f7;
+        border-radius: 4px;
+      }
+      .btn.active {
+        background: #e0eaff;
+        border-color: #2b5ad8;
+      }
+      #controls {
+        margin: 10px 0 12px;
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .ctl {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .ctl label {
+        font-weight: 600;
+      }
+      .ctl output {
+        min-width: 60px;
+        display: inline-block;
+        text-align: right;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas
+      id="canvasZ2"
+      width="600"
+      height="600"
+      style="border: 4px solid black"
+    >
+      Vaš preglednik ne podržava HTML5 canvas.
+    </canvas>
+    <script src="gks.js"></script>
+    <script src="mt2d.js"></script>
+    <script>
+      window.addEventListener("load", function () {
+        const platno = document.getElementById("canvasZ2");
+        if (!platno) {
+          alert("Greška - nema platna!");
+          return;
+        }
+        const xmin = -7,
+          xmax = 10;
+        const gks = GKS.EqualX(platno, xmin, xmax);
+        let mt2d = new MT2D();
+
+        gks.koristiBoju("black");
+        gks.postaviNa(0, -10);
+        gks.linijaDo(0, xmax);
+        gks.povuciLiniju();
+        gks.postaviNa(-10, 0);
+        gks.linijaDo(xmax, 0);
+        gks.povuciLiniju();
+
+        let elipsa = (a, b, boja) => {
+          let delta = 0.01;
+          gks.koristiBoju(boja);
+          gks.postaviNa(a, 0);
+          for (let i = 0; i <= 2 * Math.PI; i += delta) {
+            let x = a * Math.cos(i);
+            let y = b * Math.sin(i);
+            gks.linijaDo(x, y);
+          }
+          gks.povuciLiniju();
+        };
+
+        mt2d.pomakni(4, 2);
+        gks.trans(mt2d);
+        elipsa(4, 2, "red");
+
+        mt2d = new MT2D();
+        mt2d.rotiraj(30);
+        gks.trans(mt2d);
+        elipsa(4, 2, "blue");
+      });
+    </script>
+  </body>
+</html>

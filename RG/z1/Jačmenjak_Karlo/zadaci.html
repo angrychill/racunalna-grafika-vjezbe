@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="hr">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta charset="UTF-8" />
+    <title>Zadaća 1 - Zadaci</title>
+    <style>
+      body {
+        font-family: system-ui, Arial, sans-serif;
+      }
+      nav {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .btn {
+        cursor: pointer;
+        padding: 6px 10px;
+        border: 1px solid #444;
+        background: #f7f7f7;
+        border-radius: 4px;
+      }
+      .btn.active {
+        background: #e0eaff;
+        border-color: #2b5ad8;
+      }
+      #controls {
+        margin: 10px 0 12px;
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .ctl {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .ctl label {
+        font-weight: 600;
+      }
+      .ctl output {
+        min-width: 60px;
+        display: inline-block;
+        text-align: right;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Zadatak 2</h1>
+    <nav id="navbar"></nav>
+    <div id="controls"></div>
+    <canvas
+      id="canvasZ2"
+      width="600"
+      height="600"
+      style="border: 4px solid black"
+    >
+      Vaš preglednik ne podržava HTML5 canvas.
+    </canvas>
+
+    <script src="gks.js"></script>
+    <script>
+      // ——— Zadatci (2–6) ———
+      function zadatak2(platno) {
+        const xmin = -10,
+          xmax = 10,
+          ymin = -10,
+          ymax = 10;
+        const gks = new GKS(platno, xmin, xmax, ymin, ymax);
+
+        gks.koristiBoju("black");
+        gks.postaviNa(0, ymin);
+        gks.linijaDo(0, ymax);
+        gks.povuciLiniju();
+        gks.postaviNa(xmin, 0);
+        gks.linijaDo(xmax, 0);
+        gks.povuciLiniju();
+
+        let a = 4;
+        let b = 2;
+        let delta = 0.05;
+        gks.koristiBoju("red");
+        let isFirst = true;
+        let firstPair = null;
+        for (let t = 0; t <= 2 * Math.PI; t += delta) {
+          let x = a * Math.cos(t);
+          let y = b * Math.sin(t);
+          if (isFirst) {
+            isFirst = false;
+            gks.postaviNa(x, y);
+            firstPair = [x, y];
+          } else {
+            gks.linijaDo(x, y);
+          }
+        }
+        if (firstPair) gks.linijaDo(...firstPair);
+        gks.povuciLiniju();
+      }
+
+      function zadatak3(platno) {
+        const xmin = -10,
+          xmax = 10,
+          ymin = -10,
+          ymax = 10;
+        const gks = new GKS(platno, xmin, xmax, ymin, ymax);
+        const controls = document.getElementById("controls");
+        const ctx = gks.ctx;
+        const W = gks.canvas.width,
+          H = gks.canvas.height;
+
+        const delta = 0.01;
+
+        // Parametric function
+        const R = (t) =>
+          Math.exp(Math.cos(t)) -
+          2 * Math.cos(4 * t) +
+          Math.pow(Math.sin(t / 12), 5);
+        const funcX = (t) => R(t) * Math.sin(t);
+        const funcY = (t) => R(t) * Math.cos(t);
+
+        function nacrtaj(tMin, tMax) {
+          ocisti(ctx, W, H);
+          gks.koristiBoju("red");
+          let first = true;
+          for (let t = tMin; t <= tMax; t += delta) {
+            const x = funcX(t);
+            const y = funcY(t);
+            if (first) {
+              first = false;
+              gks.postaviNa(x, y);
+            } else {
+              gks.linijaDo(x, y);
+            }
+          }
+          gks.povuciLiniju();
+        }
+
+        ocistiKontrole(controls);
+        const minBound = -12 * Math.PI;
+        const maxBound = 12 * Math.PI;
+        const startMin = 0;
+        const startMax = 12 * Math.PI;
+
+        let tMinSlider = dodajSlider(controls, {
+          id: "t-min",
+          label: "t min",
+          min: minBound,
+          max: maxBound,
+          step: 0.01,
+          value: startMin,
+          onInput: (val) => {
+            // Keep tMin <= tMax
+            if (val > tMaxSlider.value) tMaxSlider.value = val;
+            nacrtaj(tMinSlider.value, tMaxSlider.value);
+          },
+        });
+        let tMaxSlider = dodajSlider(controls, {
+          id: "t-max",
+          label: "t max",
+          min: minBound,
+          max: maxBound,
+          step: 0.01,
+          value: startMax,
+          onInput: (val) => {
+            // Keep tMax >= tMin
+            if (val < tMinSlider.value) tMinSlider.value = val;
+            nacrtaj(tMinSlider.value, tMaxSlider.value);
+          },
+        });
+
+        // Initial draw
+        nacrtaj(tMinSlider.value, tMaxSlider.value);
+      }
+
+      function zadatak4(platno) {
+        const xmin = -0.8,
+          xmax = 8,
+          ymin = -1.5,
+          ymax = 1.5;
+        const gks = new GKS(platno, xmin, xmax, ymin, ymax);
+
+        nacrtajOs(gks, "y");
+        nacrtajOs(gks, "x");
+        const xTicks = generirajTickove(xmin, xmax, 10).ticks;
+        const yTicks = generirajTickove(ymin, ymax, 8).ticks;
+        nacrtajTickoveIOznake(gks, "x", xTicks, {
+          tickPx: 8,
+          labelOffsetPx: 4,
+          skipZeroLabel: true,
+        });
+        nacrtajTickoveIOznake(gks, "y", yTicks, {
+          tickPx: 8,
+          labelOffsetPx: 4,
+          skipZeroLabel: true,
+        });
+
+        let func = (x) => Math.sin(x);
+        let delta = 0.01;
+        gks.postaviNa(0, 0);
+        gks.koristiBoju("red");
+        for (let i = 0; i < 2 * Math.PI; i = delta + i) {
+          gks.linijaDo(i, func(i));
+        }
+        gks.povuciLiniju();
+      }
+
+      function zadatak5(platno) {
+        const xmin = -1.2,
+          xmax = 1.2,
+          ymin = -1.2,
+          ymax = 1.2;
+        const gks = new GKS(platno, xmin, xmax, ymin, ymax);
+        const ctx = gks.ctx;
+
+        ocisti(ctx, platno.width, platno.height);
+        nacrtajOs(gks, "y");
+        nacrtajOs(gks, "x");
+        const xTicks = generirajTickove(xmin, xmax, 6).ticks;
+        const yTicks = generirajTickove(ymin, ymax, 6).ticks;
+        nacrtajTickoveIOznake(gks, "x", xTicks, {
+          tickPx: 8,
+          labelOffsetPx: 4,
+          skipZeroLabel: true,
+        });
+        nacrtajTickoveIOznake(gks, "y", yTicks, {
+          tickPx: 8,
+          labelOffsetPx: 4,
+          skipZeroLabel: true,
+        });
+
+        gks.koristiBoju("red");
+
+        const zeros = Array.from(
+          { length: 8 },
+          (_, m) => Math.PI / 8 + (m * Math.PI) / 4
+        );
+
+        function nacrtajCvijet(a) {
+          for (let i = 0; i < zeros.length; i++) {
+            const t0 = zeros[i];
+            const t1 =
+              i + 1 < zeros.length ? zeros[i + 1] : zeros[0] + 2 * Math.PI;
+            const steps = 180;
+            const dt = (t1 - t0) / steps;
+            let first = true;
+            for (let s = 0; s <= steps; s++) {
+              const t = t0 + s * dt;
+              const r = a * Math.cos(4 * t);
+              const x = r * Math.cos(t);
+              const y = r * Math.sin(t);
+              if (first) {
+                first = false;
+                gks.postaviNa(x, y);
+              } else {
+                gks.linijaDo(x, y);
+              }
+            }
+            gks.povuciLiniju();
+          }
+        }
+
+        const slojevi = 8;
+        const pad = 0.85;
+        const lw = ctx.lineWidth;
+        ctx.save();
+        ctx.lineWidth = 1;
+        for (let j = 0; j < slojevi; j++) {
+          const a = Math.pow(pad, j);
+          nacrtajCvijet(a);
+        }
+        ctx.restore();
+      }
+
+      function ocisti(ctx, w, h) {
+        ctx.clearRect(0, 0, w, h);
+      }
+
+      function postaviNav(navEl, labels, onClick) {
+        navEl.innerHTML = "";
+        labels.forEach((label, idx) => {
+          const btn = document.createElement("button");
+          btn.textContent = label;
+          btn.className = "btn";
+          btn.addEventListener("click", () => onClick(idx));
+          navEl.appendChild(btn);
+        });
+      }
+
+      function oznaciAktivni(navEl, index) {
+        const children = Array.from(navEl.children);
+        children.forEach((el, i) => {
+          el.classList.toggle("active", i === index);
+        });
+      }
+
+      function ocistiKontrole(container) {
+        container.innerHTML = "";
+      }
+
+      function niceKorak(min, max, approxTicks = 10) {
+        const range = Math.abs(max - min);
+        if (range === 0 || !isFinite(range)) return 1;
+        const rough = range / approxTicks;
+        const power = Math.pow(10, Math.floor(Math.log10(rough)));
+        const frac = rough / power;
+        let nice;
+        if (frac <= 1) nice = 1;
+        else if (frac <= 2) nice = 2;
+        else if (frac <= 2.5) nice = 2.5;
+        else if (frac <= 5) nice = 5;
+        else nice = 10;
+        return nice * power;
+      }
+
+      function generirajTickove(min, max, approxTicks = 10) {
+        const step = niceKorak(min, max, approxTicks);
+        const start = Math.ceil(min / step) * step;
+        const end = Math.floor(max / step) * step;
+        const ticks = [];
+        for (let v = start; v <= end + step * 1e-9; v += step) {
+          const r = Math.round(v / step) * step;
+          ticks.push(+r.toFixed(12));
+        }
+        return { ticks, step };
+      }
+
+      function pikselUTikGlobal(gks, osa, tickPx) {
+        if (osa === "x") return tickPx / 2 / gks.sy;
+        else return tickPx / 2 / gks.sx;
+      }
+
+      function formatirajTick(v, step) {
+        const absStep = Math.abs(step || 0);
+        let dec = 0;
+        if (absStep > 0 && absStep < 1) {
+          dec = Math.min(3, Math.max(0, Math.ceil(-Math.log10(absStep))));
+        }
+        if (dec === 0) return Number.isInteger(v) ? String(v) : v.toFixed(0);
+        return v.toFixed(dec);
+      }
+
+      function nacrtajOs(gks, osa, boja = "black") {
+        const { xmin, xmax, ymin, ymax } = gks;
+        gks.koristiBoju(boja);
+        if (osa === "x") {
+          if (ymin <= 0 && ymax >= 0) {
+            gks.postaviNa(xmin, 0);
+            gks.linijaDo(xmax, 0);
+            gks.povuciLiniju();
+          }
+        } else {
+          if (xmin <= 0 && xmax >= 0) {
+            gks.postaviNa(0, ymin);
+            gks.linijaDo(0, ymax);
+            gks.povuciLiniju();
+          }
+        }
+      }
+
+      function nacrtajTickoveIOznake(gks, osa, tickVrijednosti, opt = {}) {
+        const {
+          tickPx = 6,
+          labelOffsetPx = 4,
+          boja = "black",
+          skipZeroLabel = true,
+        } = opt;
+        const { xmin, xmax, ymin, ymax } = gks;
+        const ctx = gks.ctx;
+        const halfGlobal = pikselUTikGlobal(gks, osa, tickPx);
+        const step =
+          tickVrijednosti.length > 1
+            ? Math.abs(tickVrijednosti[1] - tickVrijednosti[0])
+            : 1;
+
+        gks.koristiBoju(boja);
+        ctx.save();
+        ctx.fillStyle = boja;
+        ctx.font = "12px Arial, sans-serif";
+
+        if (osa === "x" && ymin <= 0 && ymax >= 0) {
+          for (const x of tickVrijednosti) {
+            gks.postaviNa(x, +halfGlobal);
+            gks.linijaDo(x, -halfGlobal);
+            gks.povuciLiniju();
+            if (!(skipZeroLabel && Math.abs(x) < 1e-12)) {
+              const p = gks._toCanvas(x, 0);
+              ctx.textAlign = "center";
+              ctx.textBaseline = "top";
+              ctx.fillText(formatirajTick(x, step), p.x, p.y + labelOffsetPx);
+            }
+          }
+        }
+
+        if (osa === "y" && xmin <= 0 && xmax >= 0) {
+          for (const y of tickVrijednosti) {
+            gks.postaviNa(+halfGlobal, y);
+            gks.linijaDo(-halfGlobal, y);
+            gks.povuciLiniju();
+            if (!(skipZeroLabel && Math.abs(y) < 1e-12)) {
+              const p = gks._toCanvas(0, y);
+              ctx.textAlign = "right";
+              ctx.textBaseline = "middle";
+              ctx.fillText(formatirajTick(y, step), p.x - labelOffsetPx, p.y);
+            }
+          }
+        }
+
+        ctx.restore();
+      }
+
+      function dodajSlider(
+        container,
+        { id, label, min, max, step, value, onInput }
+      ) {
+        const wrap = document.createElement("div");
+        wrap.className = "ctl";
+
+        const lab = document.createElement("label");
+        lab.setAttribute("for", id);
+        lab.textContent = label;
+
+        const out = document.createElement("output");
+        out.id = id + "-out";
+        out.value = value.toFixed(2);
+        out.textContent = value.toFixed(2);
+
+        const rng = document.createElement("input");
+        rng.type = "range";
+        rng.id = id;
+        rng.min = String(min);
+        rng.max = String(max);
+        rng.step = String(step);
+        rng.value = String(value);
+        rng.addEventListener("input", () => {
+          const v = parseFloat(rng.value);
+          out.value = v.toFixed(2);
+          out.textContent = v.toFixed(2);
+          onInput?.(v);
+        });
+
+        wrap.appendChild(lab);
+        wrap.appendChild(rng);
+        wrap.appendChild(out);
+        container.appendChild(wrap);
+
+        return {
+          get value() {
+            return parseFloat(rng.value);
+          },
+          set value(v) {
+            rng.value = String(v);
+            out.value = v.toFixed(2);
+            out.textContent = v.toFixed(2);
+          },
+        };
+      }
+      const zadaci = [zadatak2, zadatak3, zadatak4, zadatak5];
+
+      window.onload = function () {
+        const nav = document.getElementById("navbar");
+        const platno = document.getElementById("canvasZ2");
+        if (!platno) {
+          alert("Greška - nema platna!");
+          return;
+        }
+        const controls = document.getElementById("controls");
+
+        // Generiraj navigaciju: Zadatak 2–6
+        const labels = ["Zadatak 2", "Zadatak 3", "Zadatak 4", "Zadatak 5"];
+        postaviNav(nav, labels, (idx) => {
+          // idx: 0..4 → zadaci[0]..zadaci[4] => Zadatak 2..6
+          const ctx = platno.getContext("2d");
+          ocisti(ctx, platno.width, platno.height);
+          ocistiKontrole(controls);
+          oznaciAktivni(nav, idx);
+          const fn = zadaci[idx];
+          if (typeof fn === "function") fn(platno);
+        });
+
+        const startIndex = 0; // 0=Zadatak 2
+        nav.children[startIndex]?.click();
+      };
+    </script>
+  </body>
+</html>

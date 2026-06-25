@@ -1,0 +1,211 @@
+// Persp – Perspektivna projekcija 3D linija na xy-ravninu
+
+class Persp {
+  constructor(platno, xmin, xmax, ymin, ymax, distance) {
+    if (!platno || !platno.getContext) {
+      throw new Error("Neispravno platno predano u Persp konstruktor.");
+    }
+    if (xmax === xmin) {
+      throw new Error("xmax i xmin ne smiju biti jednaki.");
+    }
+    if (ymax === ymin) {
+      throw new Error("ymax i ymin ne smiju biti jednaki.");
+    }
+
+    this.distance = distance;
+    this.canvas = platno;
+    this.ctx = platno.getContext("2d");
+    this.width = platno.width;
+    this.height = platno.height;
+    this._matrica = Persp._identitet(4);
+    this.near = Math.max(1e-4, Math.abs(distance) * 1e-2);
+    this._prevCam = null;
+    this._hasMoved = false;
+    this.setRaspon(xmin, xmax, ymin, ymax);
+  }
+
+  setRaspon(xmin, xmax, ymin, ymax) {
+    if (xmax === xmin) {
+      throw new Error("xmax i xmin ne smiju biti jednaki.");
+    }
+    if (ymax === ymin) {
+      throw new Error("ymax i ymin ne smiju biti jednaki.");
+    }
+    this.xmin = xmin;
+    this.xmax = xmax;
+    this.ymin = ymin;
+    this.ymax = ymax;
+
+    this.sx = this.width / (xmax - xmin);
+    this.sy = this.height / (ymax - ymin);
+  }
+
+  static EqualX(platno, xmin, xmax, distance) {
+    if (!platno || !platno.getContext) {
+      throw new Error("Neispravno platno predano u Persp.EqualX.");
+    }
+    if (xmax === xmin) {
+      throw new Error("xmax i xmin ne smiju biti jednaki.");
+    }
+    const width = platno.width;
+    const height = platno.height;
+    const sx = width / (xmax - xmin);
+    const yRange = height / sx;
+    const ymin = -yRange / 2;
+    const ymax = yRange / 2;
+    return new Persp(platno, xmin, xmax, ymin, ymax, distance);
+  }
+
+  static EqualY(platno, ymin, ymax, distance) {
+    if (!platno || !platno.getContext) {
+      throw new Error("Neispravno platno predano u Persp.EqualY.");
+    }
+    if (ymax === ymin) {
+      throw new Error("ymax i ymin ne smiju biti jednaki.");
+    }
+    const width = platno.width;
+    const height = platno.height;
+    const sy = height / (ymax - ymin);
+    const xRange = width / sy;
+    const xmin = -xRange / 2;
+    const xmax = xRange / 2;
+    return new Persp(platno, xmin, xmax, ymin, ymax, distance);
+  }
+
+  ocistiCanvas() {
+    this.ctx.clearRect(0, 0, this.width, this.height);
+  }
+
+  static _identitet(n) {
+    const m = Array.from({ length: n }, () => Array(n).fill(0));
+    for (let i = 0; i < n; i++) m[i][i] = 1;
+    return m;
+  }
+
+  trans(m) {
+    if (!m) return;
+    if (typeof m.matrica !== "undefined") {
+      this._matrica = m.matrica;
+    } else if (typeof m._matrica !== "undefined") {
+      this._matrica = m._matrica;
+    }
+  }
+
+  _transformCamera(x, y, z) {
+    const a = this._matrica;
+    const tx = a[0][0] * x + a[0][1] * y + a[0][2] * z + a[0][3];
+    const ty = a[1][0] * x + a[1][1] * y + a[1][2] * z + a[1][3];
+    const tz = a[2][0] * x + a[2][1] * y + a[2][2] * z + a[2][3];
+    return { x: tx, y: ty, z: tz };
+  }
+
+  _project(tx, ty, tz) {
+    const zc = Math.min(tz, -this.near);
+    const xpr = -(this.distance / zc) * tx;
+    const ypr = -(this.distance / zc) * ty;
+    return { x: xpr, y: ypr };
+  }
+
+  _toCanvas(xpr, ypr) {
+    const cx = (xpr - this.xmin) * this.sx;
+    const cy = this.height - (ypr - this.ymin) * this.sy;
+    return { x: cx, y: cy };
+  }
+
+  postaviNa(x, y, z) {
+    const cam = this._transformCamera(x, y, z);
+    const nearZ = -this.near;
+    this._prevCam = cam;
+    this._hasMoved = false;
+    this.ctx.beginPath();
+    if (cam.z < nearZ) {
+      const pr = this._project(cam.x, cam.y, cam.z);
+      const p = this._toCanvas(pr.x, pr.y);
+      this.ctx.moveTo(p.x, p.y);
+      this._hasMoved = true;
+    }
+  }
+
+  linijaDo(x, y, z) {
+    const cam2 = this._transformCamera(x, y, z);
+    const nearZ = -this.near;
+    const cam1 = this._prevCam;
+
+    if (!cam1) {
+      this.postaviNa(x, y, z);
+      this._prevCam = cam2;
+      return;
+    }
+
+    const z1 = cam1.z;
+    const z2 = cam2.z;
+    const p1Visible = z1 < nearZ;
+    const p2Visible = z2 < nearZ;
+
+    const intersectNear = () => {
+      const denom = z2 - z1;
+      if (denom === 0) return { x: cam1.x, y: cam1.y, z: nearZ };
+      let t = (nearZ - z1) / denom;
+      if (!isFinite(t)) t = 0;
+      t = Math.max(0, Math.min(1, t));
+      const ix = cam1.x + t * (cam2.x - cam1.x);
+      const iy = cam1.y + t * (cam2.y - cam1.y);
+      return { x: ix, y: iy, z: nearZ };
+    };
+
+    const lineToProjected = (tx, ty, tz) => {
+      const pr = this._project(tx, ty, tz);
+      const c = this._toCanvas(pr.x, pr.y);
+      if (!this._hasMoved) {
+        this.ctx.moveTo(c.x, c.y);
+        this._hasMoved = true;
+        return { x: c.x, y: c.y };
+      } else {
+        this.ctx.lineTo(c.x, c.y);
+        return { x: c.x, y: c.y };
+      }
+    };
+
+    if (p1Visible && p2Visible) {
+      if (!this._hasMoved) {
+        lineToProjected(cam1.x, cam1.y, cam1.z); // this will moveTo
+      }
+      lineToProjected(cam2.x, cam2.y, cam2.z);
+    } else if (p1Visible && !p2Visible) {
+      const icam = intersectNear();
+      if (!this._hasMoved) {
+        lineToProjected(cam1.x, cam1.y, cam1.z);
+      }
+      lineToProjected(icam.x, icam.y, icam.z);
+    } else if (!p1Visible && p2Visible) {
+      const icam = intersectNear();
+      this.ctx.moveTo(
+        this._toCanvas(
+          this._project(icam.x, icam.y, icam.z).x,
+          this._project(icam.x, icam.y, icam.z).y
+        ).x,
+        this._toCanvas(
+          this._project(icam.x, icam.y, icam.z).x,
+          this._project(icam.x, icam.y, icam.z).y
+        ).y
+      );
+      this._hasMoved = true;
+      lineToProjected(cam2.x, cam2.y, cam2.z);
+    } else {
+    }
+
+    this._prevCam = cam2;
+  }
+
+  koristiBoju(c) {
+    this.ctx.strokeStyle = c;
+  }
+
+  povuciLiniju() {
+    this.ctx.stroke();
+  }
+}
+
+if (typeof window !== "undefined") {
+  window.Persp = Persp;
+}

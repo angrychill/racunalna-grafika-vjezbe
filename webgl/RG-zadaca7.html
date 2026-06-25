@@ -28,54 +28,27 @@
         // definiranje geometrije preko javascript polja
         let a = 0.7;
 
-        vrhovi = [
-          // prednja strana (z = +a)
-          [-a,-a, a,  1,0,0],
-          [ a,-a, a,  1,0,0],
-          [ a, a, a,  1,0,0],
-          [-a,-a, a,  1,0,0],
-          [ a, a, a,  1,0,0],
-          [-a, a, a,  1,0,0],
+          vrhovi = [
+          // XY ravnina, trokut 1 (crveni)
+          [0, 0, 0, 1, 0, 0],
+          [-a, -a, 0, 1, 0, 0],
+          [a, -a, 0, 1, 0, 0],
 
-          // stražnja (z = -a)
-          [-a,-a,-a,  0,1,0],
-          [ a,-a,-a,  0,1,0],
-          [ a, a,-a,  0,1,0],
-          [-a,-a,-a,  0,1,0],
-          [ a, a,-a,  0,1,0],
-          [-a, a,-a,  0,1,0],
+          // XY ravnina, trokut 2 (7du0dasti)
+          [0, 0, 0, 1, 1, 0],
+          [a, a, 0, 1, 1, 0],
+          [-a, a, 0, 1, 1, 0],
 
-          // lijeva
-          [-a,-a,-a,  0,0,1],
-          [-a,-a, a,  0,0,1],
-          [-a, a, a,  0,0,1],
-          [-a,-a,-a,  0,0,1],
-          [-a, a, a,  0,0,1],
-          [-a, a,-a,  0,0,1],
+          // YZ ravnina, trokut 3 (zeleni)
+          [0, 0, 0, 0, 1, 0],
+          [0, -a, -a, 0, 1, 0],
+          [0, -a, a, 0, 1, 0],
 
-          // desna
-          [ a,-a,-a,  1,1,0],
-          [ a,-a, a,  1,1,0],
-          [ a, a, a,  1,1,0],
-          [ a,-a,-a,  1,1,0],
-          [ a, a, a,  1,1,0],
-          [ a, a,-a,  1,1,0],
-
-          // gornja
-          [-a, a,-a,  1,0,1],
-          [-a, a, a,  1,0,1],
-          [ a, a, a,  1,0,1],
-          [-a, a,-a,  1,0,1],
-          [ a, a, a,  1,0,1],
-          [ a, a,-a,  1,0,1],
-
-          // donja
-          [-a,-a,-a,  0,1,1],
-          [-a,-a, a,  0,1,1],
-          [ a,-a, a,  0,1,1],
-          [-a,-a,-a,  0,1,1],
-          [ a,-a, a,  0,1,1],
-          [ a,-a,-a,  0,1,1],
+          // YZ ravnina, trokut 4 (plavi)
+          [0, 0, 0, 0, 0, 1],
+          [0, a, a, 0, 0, 1],
+          [0, a, -a, 0, 0, 1],
+        
         ];
           
         function napuniSpremnike() {
@@ -99,10 +72,8 @@
 
     function animacija() {
             kut += 0.01;
-          gl.enable(gl.DEPTH_TEST);
-          gl.enable(gl.CULL_FACE);
-          gl.cullFace(gl.BACK);
-          gl.frontFace(gl.CCW);
+
+ 
 
             let m = new MT3D();
             m.rotirajY(kut);
@@ -113,26 +84,14 @@
             gl.uniformMatrix4fv(GPUprogram1.u_mTrans, false, m.lista());
 
             gl.clearColor(0.5, 0.5, 0.5, 1);
-            gl.clear(gl.COLOR_BUFFER_BIT);
-
+            gl.enable(gl.DEPTH_TEST);
+          
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            gl.viewport(0, 0, platno1.width, platno1.height);
             gl.drawArrays(gl.TRIANGLES,  0, vrhovi.length);
 
             requestAnimationFrame(animacija);
           }
-     
-
-
-        function iscrtaj() {
-          
-      
-          gl.clearColor(0.5, 0.5, 0.5, 1);
-          gl.clear(gl.COLOR_BUFFER_BIT);
-          gl.viewport(0, 0, platno1.width, platno1.height);
-
-          //gl.drawArrays(gl.TRIANGLES, 0, vrhovi.length);
-
-          
-        } // iscrtaj
 
         napuniSpremnike();
         animacija();

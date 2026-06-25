@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="hr">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta charset="UTF-8" />
+    <title>Kolokvij 1</title>
+    <script src="persp.js"></script>
+    <script src="mt3d.js"></script>
+    <style>
+      body {
+        font-family: system-ui, Arial, sans-serif;
+        margin: 0;
+        padding: 16px;
+      }
+      h2 {
+        margin: 12px 0 8px;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+      canvas {
+        border: 4px solid #000;
+        width: 100%;
+        max-width: 640px;
+        height: auto;
+        display: block;
+      }
+    </style>
+    <script>
+      function linija3D(ort, x1, y1, z1, x2, y2, z2, boja) {
+        if (boja) ort.koristiBoju(boja);
+        ort.postaviNa(x1, y1, z1);
+        ort.linijaDo(x2, y2, z2);
+        ort.povuciLiniju();
+      }
+      function crtanjeMreze(persp, gridDim, boja) {
+        for (let s = -gridDim; s <= gridDim; s++) {
+          linija3D(persp, -gridDim, 0, s, gridDim, 0, s, boja);
+          linija3D(persp, s, 0, -gridDim, s, 0, gridDim, boja);
+        }
+      }
+
+      function initPrimjer2() {
+        const platno = document.getElementById("c2");
+        if (!platno) {
+          alert("Greška - nema platna!");
+          return;
+        }
+
+        const canvasSize = 10;
+        const camDist = 14;
+        const persp = Persp.EqualX(platno, -canvasSize, canvasSize, camDist);
+        const lineSize = 8;
+        const radiusTop = 0.5;
+        const rTorus = 0.125;
+        const rTorusR = 4;
+        const mt3d = new MT3D();
+        const stringH = -0.128;
+        const sphereR = 0.25;
+        function frame(now) {
+          const t = now / 4000;
+          const t2 = now / 1000;
+
+          persp.ocistiCanvas();
+
+          linija3D(persp, 0, 0, 0, lineSize, 0, 0, "green");
+          linija3D(persp, 0, 0, 0, 0, lineSize, 0, "blue");
+          linija3D(persp, 0, 0, 0, 0, 0, lineSize, "red");
+          //crtanjeMreze(persp, camDist, "red");
+          mt3d.postaviKameru(4, 4, 8, 0, 0, 0, 0, 1, 0);
+          mt3d.pomakni(0, -3, 0);
+          persp.trans(mt3d);
+          persp.koristiBoju("#00ADEF");
+          persp.krnji_stozac(2, radiusTop, 5, 24, 360);
+          mt3d.pomakni(0, 3, 0);
+          persp.trans(mt3d);
+
+          mt3d.pomakni(0, 2, 0);
+          mt3d.rotirajY(15 * t);
+          persp.trans(mt3d);
+          for (let i = 0; i < 2 * Math.PI; i += (2 * Math.PI) / 20) {
+            linija3D(
+              persp,
+              radiusTop * Math.sin(i),
+              0,
+              radiusTop * Math.cos(i),
+              (rTorusR - rTorus) * Math.sin(i),
+              0,
+              (rTorusR - rTorus) * Math.cos(i),
+              "#FA003F"
+            );
+          }
+          persp.koristiBoju("black");
+          persp.torus(0.125, rTorusR, 48, 16);
+          mt3d.pomakni(0, -2, 0);
+          persp.trans(mt3d);
+
+          for (let i = 0; i < 2 * Math.PI; i += Math.PI / 2) {
+            let baseX = rTorusR * Math.sin(i);
+            let baseZ = rTorusR * Math.cos(i);
+            persp.koristiBoju("black");
+            linija3D(
+              persp,
+              baseX,
+              2 - rTorus,
+              baseZ,
+              baseX,
+              stringH - sphereR,
+              baseZ
+            );
+            mt3d.pomakni(baseX, stringH, baseZ);
+            persp.trans(mt3d);
+            persp.koristiBoju("magenta");
+            persp.kugla(sphereR, 8, 8);
+            mt3d.pomakni(-baseX, -stringH, -baseZ);
+            persp.trans(mt3d);
+          }
+          mt3d.identitet();
+          persp.trans(mt3d);
+          requestAnimationFrame(frame);
+        }
+
+        requestAnimationFrame(frame);
+      }
+
+      window.addEventListener("load", initPrimjer2);
+    </script>
+  </head>
+  <body>
+    <div class="row">
+      <section id="primjer2">
+        <canvas id="c2" width="800" height="600"></canvas>
+      </section>
+    </div>
+  </body>
+</html>
