@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="hr">
+	<head>
+		<meta charset="UTF-8">
+		<title>WebGL2 - bojanje vrhova</title>
+		<script src="js/RG-WebGL.js"></script>
+        <script src="js/gks2d.js"></script>
+        <script src="js/mt2d.js"></script>
+		<script src="js/utility.js"></script>
+        <script src="js/crtanje_3d.js"></script>
+        <script src="js/gks3d.js"></script>
+        <script src="js/mt3d.js"></script>
+        <script src="js/gks3d_pers.js"></script>
+
+      <script src="js/crtanje_webgl.js"></script>
+
+		<script>
+		  window.onload = WebGLaplikacija;
+
+		  function WebGLaplikacija() {
+        var platno1 = document.getElementById("slika1");
+        gl = platno1.getContext("webgl2");
+        if (!gl) alert("WebGL2 nije dostupan!");
+
+        GPUprogram1 = pripremiGPUprogram(gl, "vertex-shader", "fragment-shader");
+        gl.useProgram(GPUprogram1); // možemo imati više GPU programa
+
+        // definiranje geometrije preko javascript polja
+        let a = 0.7;
+
+        vrhovi = [
+          // prednja strana (z = +a)
+          [-a,-a, a,  1,0,0],
+          [ a,-a, a,  1,0,0],
+          [ a, a, a,  1,0,0],
+          [-a,-a, a,  1,0,0],
+          [ a, a, a,  1,0,0],
+          [-a, a, a,  1,0,0],
+
+          // stražnja (z = -a)
+          [-a,-a,-a,  0,1,0],
+          [ a,-a,-a,  0,1,0],
+          [ a, a,-a,  0,1,0],
+          [-a,-a,-a,  0,1,0],
+          [ a, a,-a,  0,1,0],
+          [-a, a,-a,  0,1,0],
+
+          // lijeva
+          [-a,-a,-a,  0,0,1],
+          [-a,-a, a,  0,0,1],
+          [-a, a, a,  0,0,1],
+          [-a,-a,-a,  0,0,1],
+          [-a, a, a,  0,0,1],
+          [-a, a,-a,  0,0,1],
+
+          // desna
+          [ a,-a,-a,  1,1,0],
+          [ a,-a, a,  1,1,0],
+          [ a, a, a,  1,1,0],
+          [ a,-a,-a,  1,1,0],
+          [ a, a, a,  1,1,0],
+          [ a, a,-a,  1,1,0],
+
+          // gornja
+          [-a, a,-a,  1,0,1],
+          [-a, a, a,  1,0,1],
+          [ a, a, a,  1,0,1],
+          [-a, a,-a,  1,0,1],
+          [ a, a, a,  1,0,1],
+          [ a, a,-a,  1,0,1],
+
+          // donja
+          [-a,-a,-a,  0,1,1],
+          [-a,-a, a,  0,1,1],
+          [ a,-a, a,  0,1,1],
+          [-a,-a,-a,  0,1,1],
+          [ a,-a, a,  0,1,1],
+          [ a,-a,-a,  0,1,1],
+        ];
+          
+        function napuniSpremnike() {
+          // povezivanje s atribut varijablama u programu za sjenčanje
+          GPUprogram1.a_vrhXY = gl.getAttribLocation(GPUprogram1, "a_vrhXY");
+          GPUprogram1.a_boja = gl.getAttribLocation(GPUprogram1, "a_boja");
+          GPUprogram1.u_mTrans = gl.getUniformLocation(GPUprogram1, "u_mTrans");
+          
+          spremnikVrhova = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, spremnikVrhova);
+          gl.enableVertexAttribArray(GPUprogram1.a_vrhXY);
+          gl.enableVertexAttribArray(GPUprogram1.a_boja);
+          gl.vertexAttribPointer(GPUprogram1.a_vrhXY, 3, gl.FLOAT, false, 24, 0);
+          gl.vertexAttribPointer(GPUprogram1.a_boja, 3, gl.FLOAT, false, 24, 12);
+          // punjenje spremnika - podaci koji se šalju na GPU
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vrhovi.flat()), gl.STATIC_DRAW);
+        } // napuniSpremnike
+
+        let kut = 0;
+       
+
+    function animacija() {
+            kut += 0.01;
+          gl.enable(gl.DEPTH_TEST);
+          gl.enable(gl.CULL_FACE);
+          gl.cullFace(gl.BACK);
+          gl.frontFace(gl.CCW);
+
+            let m = new MT3D();
+            m.rotirajY(kut);
+            m.rotirajX(2*kut);
+            m.rotirajZ(3*kut);
+  
+
+            gl.uniformMatrix4fv(GPUprogram1.u_mTrans, false, m.lista());
+
+            gl.clearColor(0.5, 0.5, 0.5, 1);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            gl.drawArrays(gl.TRIANGLES,  0, vrhovi.length);
+
+            requestAnimationFrame(animacija);
+          }
+     
+
+
+        function iscrtaj() {
+          
+      
+          gl.clearColor(0.5, 0.5, 0.5, 1);
+          gl.clear(gl.COLOR_BUFFER_BIT);
+          gl.viewport(0, 0, platno1.width, platno1.height);
+
+          //gl.drawArrays(gl.TRIANGLES, 0, vrhovi.length);
+
+          
+        } // iscrtaj
+
+        napuniSpremnike();
+        animacija();
+   
+      } // WebGLaplikacija
+	</script>
+
+	<script id="vertex-shader" type="x-shader/x-vertex">
+      #version 300 es
+          in vec3 a_vrhXY;
+          in vec3 a_boja;
+
+          uniform mat4 u_mTrans;
+
+          out vec3 v_boja;
+
+          void main() {
+            gl_Position = u_mTrans * vec4(a_vrhXY, 1.0);
+            v_boja = a_boja;
+      }
+
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+      #version 300 es
+      precision highp float;
+      in vec3 v_boja;
+      out vec4 bojaPiksela;
+
+      void main() {
+        bojaPiksela = vec4(v_boja, 1);
+      }
+    </script>
+	</head>
+
+	<body>
+		<h1>WebGL2 - bojanje vrhova</code></h1>
+		<div>
+			<canvas id="slika1" width="500" height="500" style="border:5px solid black">
+				Vaš preglednik ne podržava HTML5 canvas.
+      </canvas>
+		</div>
+	</body>
+</html>

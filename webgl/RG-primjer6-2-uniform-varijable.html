@@ -5,7 +5,7 @@
 	<title>WebGL2 - Primjena uniform varijable</title>
 	<script src="js/RG-WebGL.js"></script>
 	
-        <script src="js/crtanje_2d.js"></script>
+        <script src="js/crtanje_webgl.js"></script>
         <script src="js/gks2d.js"></script>
         <script src="js/mt2d.js"></script>
 		<script src="js/utility.js"></script>
@@ -29,23 +29,21 @@
         GPUprogram1.u_mTrans = gl.getUniformLocation(GPUprogram1, "u_mTrans");
         GPUprogram1.u_boja = gl.getUniformLocation(GPUprogram1, "u_boja");
 
-        // definiranje geometrije preko javascript polja
-        var vrhovi = [ 0.0,  0.0,   // sredina
-                      -0.5, -0.5,   // lijevi donji vrh
-                       0.5, -0.5,   // desni donji vrh
-                       0.5,  0.5,   // desni gornji vrh
-                      -0.5,  0.5,   // lijevi gornji vrh
-                       0.0,  0.0 ]; // sredina
+        var novi_vrhovi_1 = [0.0, 0.0];
+        var novi_vrhovi_2 = [0.0, 0.0];
+        var novi_vrhovi_3 = [0.0, 0.0];
 
-        var novi_vrhovi = [0.0, 0.0];
+        let mat = new MT2D();
+        // constructor(platno, xmin, xmax, ymin = 0, ymax = 0)
+        let gks = new GKS2D(platno1, -10, 10);
 
-        for (let i = 0; i<=Math.PI*2; i+=Math.PI/12){
-          let x = 1.0 * Math.cos(i);
-          let y = 0.2 * Math.sin(i);
-          novi_vrhovi.push(x);
-          novi_vrhovi.push(y);
-        }
-          
+        let crtac = new CrtanjeWebGL();
+
+        novi_vrhovi_1 = crtac.vratiVrhoveElipse(0.9, 0.2)
+      
+        console.log(novi_vrhovi_1)
+        // to su svi vrhovi, sada trebamo napraviti 3 razlicita trokuta
+      
         function napuniSpremnike() {
           spremnikVrhova = gl.createBuffer();
           gl.bindBuffer(gl.ARRAY_BUFFER, spremnikVrhova);
@@ -55,7 +53,7 @@
           gl.enableVertexAttribArray(GPUprogram1.a_vrhXY);
           gl.vertexAttribPointer(GPUprogram1.a_vrhXY, 2, gl.FLOAT, false, 0, 0);
           // punjenje spremnika - podaci koji se šalju na GPU
-          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(novi_vrhovi), gl.STATIC_DRAW);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(novi_vrhovi_1), gl.STATIC_DRAW);
         } // napuniSpremnike
 
         function iscrtaj() {
@@ -67,28 +65,68 @@
           let mat = new MT2D();
           // constructor(platno, xmin, xmax, ymin = 0, ymax = 0)
           let gks = new GKS2D(platno1, -10, 10);
-          mat.pomakni(-0.0, 0.3);
 
-          let crtac = new Crtanje2D();
-          
-          gl.uniformMatrix3fv(GPUprogram1.u_mTrans, false,
-           mat.lista()); // jedinična matrica
-          gl.uniform4fv(GPUprogram1.u_boja, [0.0, 1.0, 0.0, 1.0]); // zelena boja
-          gl.drawArrays(gl.TRIANGLE_FAN, 0, novi_vrhovi.length/2);
-    
+          elipsa1(mat, gks);
+          elipsa2(mat, gks);
+          elipsa3(mat, gks);
+         
+        }
 
-          let kut = Math.PI / 6.0; // 30 stupnjeva
-          /***gl.uniformMatrix2fv(GPUprogram1.u_mTrans, false,
-            [Math.cos(kut), Math.sin(kut), -Math.sin(kut), Math.cos(kut)]);
-          gl.uniform4fv(GPUprogram1.u_boja, [1.0, 1.0, 0.0, 1.0]); // žuta boja
-          gl.drawArrays(gl.TRIANGLE_FAN, 0, novi_vrhovi.length/2);
+        function elipsa1(mat, gks){
+          mat.identitet();
+          gl.uniformMatrix3fv(
+              GPUprogram1.u_mTrans,
+              false,
+              mat.lista()
+          );
 
-          kut = Math.PI / 3.0;  // 60 stupnjeva
-          gl.uniformMatrix2fv(GPUprogram1.u_mTrans, false,
-            [Math.cos(kut), Math.sin(kut), -Math.sin(kut), Math.cos(kut)]);
-          gl.uniform4fv(GPUprogram1.u_boja, [1.0, 0.0, 0.0, 1.0]); // crvena boja
-          gl.drawArrays(gl.TRIANGLE_FAN, 0, novi_vrhovi.length/2); ***/
-        } // iscrtaj
+          gl.uniform4fv(
+              GPUprogram1.u_boja,
+              [0, 1, 0, 1]
+          );
+
+          gl.drawArrays(gl.TRIANGLE_FAN, 0, novi_vrhovi_1.length / 2);
+
+        }
+
+        function elipsa2(mat, gks){
+          mat.identitet();
+          mat.rotiraj(Math.PI / 3);
+
+          gl.uniformMatrix3fv(
+              GPUprogram1.u_mTrans,
+              false,
+              mat.lista()
+          );
+
+          gl.uniform4fv(
+              GPUprogram1.u_boja,
+              [1, 1, 0, 1]
+          );
+
+          gl.drawArrays(gl.TRIANGLE_FAN, 0, novi_vrhovi_1.length / 2);
+
+        }
+
+        function elipsa3(mat, gks){
+          mat.identitet();
+          mat.rotiraj(2 * Math.PI / 3);
+
+          gl.uniformMatrix3fv(
+                GPUprogram1.u_mTrans,
+                false,
+                mat.lista()
+             );
+
+          gl.uniform4fv(
+                GPUprogram1.u_boja,
+                 [1, 0, 0, 1]
+              );
+
+          gl.drawArrays(gl.TRIANGLE_FAN, 0, novi_vrhovi_1.length / 2);
+
+
+        }
 
         napuniSpremnike();
         iscrtaj();

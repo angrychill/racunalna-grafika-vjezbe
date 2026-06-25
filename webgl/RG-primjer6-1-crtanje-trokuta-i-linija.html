@@ -41,7 +41,7 @@
           gl.clear(gl.COLOR_BUFFER_BIT);
           gl.viewport(0, 0, platno1.width, platno1.height);
 
-          gl.drawArrays(gl.TRIANGLES, 0, vrhovi.length / 2);
+          gl.drawArrays(gl.LINE_STRIP, 0, vrhovi.length / 2);
         } // iscrtaj
 
         napuniSpremnike();

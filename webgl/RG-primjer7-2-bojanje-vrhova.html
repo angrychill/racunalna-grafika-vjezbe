@@ -28,30 +28,46 @@
 
         // definiranje geometrije preko javascript polja
         let a = 0.5;
-        vrhovi = [[ 0,  0,  1, 0, 0],  // crveno
-                  [-a, -a,  1, 0, 0],  // crveno
-                  [ a, -a,  1, 0, 0],  // crveno
-                  [ 0,  0,  1, 0, 0],  // crveno
-                  [ a,  a,  1, 1, 0],  // žuto
-                  [-a,  a,  0.5, 0, 1]]; // ljubičasto
+        vrhovi = [
+          // XY ravnina, trokut 1 (crveni)
+          [0, 0, 0, 1, 0, 0],
+          [-a, -a, 0, 1, 0, 0],
+          [a, -a, 0, 1, 0, 0],
+
+         
+          [0, 0, 0, 1, 1, 0],
+          [a, a, 0, 1, 1, 0],
+          [-a, a, 0, 1, 1, 0],
+
+          // YZ ravnina, trokut 3 (zeleni)
+          [0, 0, 0, 0, 1, 0],
+          [0, -a, -a, 0, 1, 0],
+          [0, -a, a, 0, 1, 0],
+
+          // YZ ravnina, trokut 4 (plavi)
+          [0, 0, 0, 0, 0, 1],
+          [0, a, a, 0, 0, 1],
+          [0, a, -a, 0, 0, 1],
+        ]
           
         function napuniSpremnike() {
           // povezivanje s atribut varijablama u programu za sjenčanje
           GPUprogram1.a_vrhXY = gl.getAttribLocation(GPUprogram1, "a_vrhXY");
           GPUprogram1.a_boja = gl.getAttribLocation(GPUprogram1, "a_boja");
+          GPUprogram1.u_mTrans = gl.getUniformLocation(GPUprogram1, "u_mTrans");
           
           spremnikVrhova = gl.createBuffer();
           gl.bindBuffer(gl.ARRAY_BUFFER, spremnikVrhova);
           gl.enableVertexAttribArray(GPUprogram1.a_vrhXY);
           gl.enableVertexAttribArray(GPUprogram1.a_boja);
-          gl.vertexAttribPointer(GPUprogram1.a_vrhXY, 2, gl.FLOAT, false, 20, 0);
-          gl.vertexAttribPointer(GPUprogram1.a_boja, 3, gl.FLOAT, false, 20, 8);
+          gl.vertexAttribPointer(GPUprogram1.a_vrhXY, 3, gl.FLOAT, false, 24, 0);
+          gl.vertexAttribPointer(GPUprogram1.a_boja, 3, gl.FLOAT, false, 24, 12);
           // punjenje spremnika - podaci koji se šalju na GPU
           gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vrhovi.flat()), gl.STATIC_DRAW);
         } // napuniSpremnike
 
         let kut = 0;
-GPUprogram1.u_mTrans = gl.getUniformLocation(GPUprogram1, "u_mTrans");
+       
 
     function animacija() {
             kut += 0.01;
@@ -66,11 +82,11 @@ GPUprogram1.u_mTrans = gl.getUniformLocation(GPUprogram1, "u_mTrans");
             gl.clearColor(0.5, 0.5, 0.5, 1);
             gl.clear(gl.COLOR_BUFFER_BIT);
 
-            gl.drawArrays(gl.TRIANGLES, 0, vrhovi.length);
+            gl.drawArrays(gl.TRIANGLES,  0, vrhovi.length);
 
             requestAnimationFrame(animacija);
           }
-          
+     
 
 
         function iscrtaj() {
@@ -78,17 +94,18 @@ GPUprogram1.u_mTrans = gl.getUniformLocation(GPUprogram1, "u_mTrans");
           gl.clear(gl.COLOR_BUFFER_BIT);
           gl.viewport(0, 0, platno1.width, platno1.height);
 
-          gl.drawArrays(gl.TRIANGLES, 0, vrhovi.length);
+          gl.drawArrays(gl.TRIANGLE_STRIP, 0, vrhovi.length);
         } // iscrtaj
 
         napuniSpremnike();
         animacija();
+   
       } // WebGLaplikacija
 	</script>
 
 	<script id="vertex-shader" type="x-shader/x-vertex">
       #version 300 es
-          in vec2 a_vrhXY;
+          in vec3 a_vrhXY;
           in vec3 a_boja;
 
           uniform mat4 u_mTrans;
@@ -96,7 +113,7 @@ GPUprogram1.u_mTrans = gl.getUniformLocation(GPUprogram1, "u_mTrans");
           out vec3 v_boja;
 
           void main() {
-            gl_Position = u_mTrans * vec4(a_vrhXY, 0.0, 1.0);
+            gl_Position = u_mTrans * vec4(a_vrhXY, 1.0);
             v_boja = a_boja;
       }
 

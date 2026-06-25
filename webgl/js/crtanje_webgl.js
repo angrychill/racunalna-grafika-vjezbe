@@ -1,11 +1,11 @@
 "use strict";
 // @ts-ignore
 class CrtanjeWebGL {
-    vratiVrhoveElipse() {
+    vratiVrhoveElipse(a, b) {
         var novi_vrhovi = [0.0, 0.0];
         for (let i = 0; i <= Math.PI * 2; i += Math.PI / 12) {
-            let x = 1.0 * Math.cos(i);
-            let y = 0.2 * Math.sin(i);
+            let x = a * Math.cos(i);
+            let y = b * Math.sin(i);
             novi_vrhovi.push(x);
             novi_vrhovi.push(y);
         }
