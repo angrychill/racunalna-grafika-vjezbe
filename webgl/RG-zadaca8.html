@@ -100,13 +100,11 @@
           mat.rotirajY(0.01);
           mat.rotirajX(0.02);
           mat.postaviKameru(5, 5, 8, 0, 0, 0, 0, 1, 0);
-          mat.persp(-10, 10, -10, 10, 4, 40);
+          // prednja pa straznja
+          mat.persp(-10, 10, -10, 10, 5, 40);
 
           gl.uniformMatrix4fv(GPUprogram1.u_mTrans, false, mat.lista());
         
-          
-          
-          
           
           bind_postavi_nacrtaj_triangles(kocka_buffer);
           bind_postavi_nacrtaj_lines(grid_buffer);

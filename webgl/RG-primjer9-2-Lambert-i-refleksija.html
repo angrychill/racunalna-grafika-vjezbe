@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="UTF-8">
 		<title>Lambert i refleksija</title>
-		<script src="js/RG-WebGL.js"></script>
+		<script src="RG-WebGL.js"></script>
 
 		<script>
 		  window.onload = WebGL2aplikacija;
@@ -103,6 +103,7 @@
 
         // vektori položaja izvora svjetlosti i kamere
         gl.uniform3fv(GPUprog1.u_izvorXYZ, [-10, 0, -10]);
+        
         gl.uniform3fv(GPUprog1.u_kameraXYZ, [0, 0, -10]);
 
         // boja izvora u RGB formatu

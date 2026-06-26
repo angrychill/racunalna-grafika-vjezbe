@@ -131,20 +131,18 @@ class CrtanjeWebGL {
         }
 
         vratiVrhoveGrid(min: number, max: number, step: number, boja: number[]) {
-            let novi: number[] = [];
-            for (let i = min; i <= max; i += step) {
-                // horizontalne linije (paralelne x)
-                novi.push(i, min, 0);
-                novi.push(boja[0], boja[1], boja[2]);
-                novi.push(i, max, 0);
-                novi.push(boja[0], boja[1], boja[2]);
-                // vertikalne linije (paralelne y)
-                novi.push(min, i, 0);
-                novi.push(boja[0], boja[1], boja[2]);
-                novi.push(max, i, 0);
-                novi.push(boja[0], boja[1], boja[2]);
-            }
-            return novi;
+                        let novi: number[] = [];
+                const z = 0.01;   // small offset
+
+                for (let i = min; i <= max; i += step) {
+                    // horizontal
+                    novi.push(i, min, z,  0, 1, 0);
+                    novi.push(i, max, z,  0, 1, 0);
+                    // vertical
+                    novi.push(min, i, z,  0, 1, 0);
+                    novi.push(max, i, z,  0, 1, 0);
+                }
+    return novi;
         }
 
         vratiVrhoveValjka(r: number, h: number, n: number) {

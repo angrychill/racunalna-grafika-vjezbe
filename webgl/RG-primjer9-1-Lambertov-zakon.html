@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="UTF-8">
 		<title>Lambertov zakon</title>
-		<script src="../RG-WebGL.js"></script>
+		<script src="RG-WebGL.js"></script>
 
 		<script>
 		  window.onload = WebGL2aplikacija;
@@ -20,6 +20,8 @@
         GPUprog1.u_mTrans = gl.getUniformLocation(GPUprog1, "u_mTrans");
         GPUprog1.u_izvorXYZ = gl.getUniformLocation(GPUprog1, "u_izvorXYZ");
         GPUprog1.u_boja = gl.getUniformLocation(GPUprog1, "u_boja");
+        GPUprog1.u_izvorXYZ2 = gl.getUniformLocation(GPUprog1, "u_izvorXYZ2");
+        GPUprog1.u_boja2 = gl.getUniformLocation(GPUprog1, "u_boja2");
 
         function valjak(r, h, n) {
           var vrhovi = []; 
@@ -102,10 +104,11 @@
 
         // vektor položaja izvora svjetlosti
         gl.uniform3fv(GPUprog1.u_izvorXYZ, [-10, 0, -10]);
+        gl.uniform3fv(GPUprog1.u_izvorXYZ2, [10, 0, -10]);
 
         // boja izvora u RGB formatu
-        gl.uniform3fv(GPUprog1.u_boja, [1.0, 1.0, 0.0]);
-
+        gl.uniform3fv(GPUprog1.u_boja, [0.0, 1.0, 0.0]);
+        gl.uniform3fv(GPUprog1.u_boja2, [1.0, 0.0, 0.0]);
         // omogući selektivno odbacivanje
         gl.enable(gl.CULL_FACE);
 
@@ -119,7 +122,9 @@
       in vec3 a_normala;
       uniform mat4 u_mTrans;
       uniform vec3 u_izvorXYZ;
+      uniform vec3 u_izvorXYZ2;
       out float v_svjetlina;
+      out float v_svjetlina2;
 
       void main() {
         vec4 vrh = u_mTrans * a_vrhXYZ; // primijeni matricu transformacije
@@ -127,7 +132,9 @@
 
         // Lambertov zakon
         vec3 premaIzvoru = normalize(u_izvorXYZ - vec3(vrh));
+        vec3 premaIzvoru2 = normalize(u_izvorXYZ2 - vec3(vrh));
         v_svjetlina = dot(premaIzvoru, normala);
+        v_svjetlina2 = dot(premaIzvoru2, normala);
 
         gl_Position = vrh;
       }
@@ -137,11 +144,14 @@
       #version 300 es
       precision highp float;
       uniform vec3 u_boja;
+      uniform vec3 u_boja2;
       in float v_svjetlina;
+      in float v_svjetlina2;
       out vec4 bojaFragmenta;
 
       void main() {
-        bojaFragmenta = vec4(v_svjetlina * u_boja, 1.0); // postavlja se boja fragmenta
+        bojaFragmenta = vec4(v_svjetlina * u_boja, 1.0);
+        bojaFragmenta = vec4(v_svjetlina2 * u_boja2, 1.0) + bojaFragmenta; // postavlja se boja fragmenta
       }
     </script>
 	</head>
