@@ -114,6 +114,22 @@
 
     }
 
+    function bind_postavi_nacrtaj_triangle_strip(buffer, mat_main, mat_model, boja){
+  
+       gl.bindBuffer(gl.ARRAY_BUFFER, buffer.buffer);
+       gl.uniformMatrix4fv(GPUprogram1.u_modelMatrix, false, mat_model.modelLista());
+      gl.uniformMatrix4fv(GPUprogram1.u_mTrans, false, mat_main.viewProjLista());
+       gl.uniform3fv(GPUprogram1.model_boja, boja);
+      gl.enableVertexAttribArray(GPUprogram1.a_vrhXYZ);
+        gl.enableVertexAttribArray(GPUprogram1.a_normala);
+
+         gl.vertexAttribPointer(GPUprogram1.a_vrhXYZ, 3, gl.FLOAT, false, 24, 0);
+          gl.vertexAttribPointer(GPUprogram1.a_normala, 3, gl.FLOAT, false, 24, 12);
+
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.count);
+
+    }
+
 
     function postavi_izvor(pozicija, boja) {
        gl.uniform3fv(GPUprogram1.u_izvorXYZ, pozicija);
@@ -144,7 +160,7 @@ function animacija() {
     mat_kocka.rotirajZ(kut_kocka);
 
     // Draw
-    bind_postavi_nacrtaj_triangles(kocka_buffer, mat, mat_kocka, [1, 0, 0]);
+    bind_postavi_nacrtaj_triangle_strip(kocka_buffer, mat, mat_kocka, [1, 0, 0]);
     bind_postavi_nacrtaj_lines(grid_buffer, mat, mat_grid, [0, 1, 0]);
 
     requestAnimationFrame(animacija);
@@ -164,7 +180,7 @@ function animacija() {
           // prednja pa straznja
         mat.persp(-10, 10, -10, 10, 5, 40);
 
-         postavi_izvor([3, 4, 6], [1.0, 1.0, 1.0]);
+         postavi_izvor([0, 1, 1], [1.0, 1.0, 1.0]);
 
 
         

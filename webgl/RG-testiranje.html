@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="hr">
+	<head>
+		<meta charset="UTF-8">
+		<title>WebGL2 - testiranje</title>
+		<script src="js/RG-WebGL.js"></script>
+        <script src="js/gks2d.js"></script>
+        <script src="js/mt2d.js"></script>
+		<script src="js/utility.js"></script>
+        <script src="js/crtanje_3d.js"></script>
+        <script src="js/gks3d.js"></script>
+        <script src="js/mt3d.js"></script>
+        <script src="js/gks3d_pers.js"></script>
+
+      <script src="js/crtanje_webgl.js"></script>
+
+		<script>
+		  window.onload = WebGLaplikacija;
+
+		  function WebGLaplikacija() {
+        var platno1 = document.getElementById("slika1");
+        gl = platno1.getContext("webgl2");
+        if (!gl) alert("WebGL2 nije dostupan!");
+
+        GPUprogram1 = pripremiGPUprogram(gl, "vertex-shader", "fragment-shader");
+        gl.useProgram(GPUprogram1); // možemo imati više GPU programa
+
+        let crtac = new CrtanjeWebGL();
+        let mat = new MT3D();
+        let mat_grid = new MT3D();
+        let mat_kocka = new MT3D();
+        
+        // --- UNIFORMS ---
+        GPUprogram1.u_mTrans = gl.getUniformLocation(GPUprogram1, "u_mTrans");
+        GPUprogram1.u_izvorXYZ = gl.getUniformLocation(GPUprogram1, "u_izvorXYZ");
+        GPUprogram1.u_kameraXYZ = gl.getUniformLocation(GPUprogram1, "u_kameraXYZ");
+        GPUprogram1.u_boja = gl.getUniformLocation(GPUprogram1, "u_boja");
+        GPUprogram1.model_boja = gl.getUniformLocation(GPUprogram1, "model_boja");
+        GPUprogram1.u_modelMatrix = gl.getUniformLocation(GPUprogram1, "u_modelMatrix");
+        
+        GPUprogram1.a_vrhXYZ = gl.getAttribLocation(GPUprogram1, "a_vrhXYZ");
+        GPUprogram1.a_normala = gl.getAttribLocation(GPUprogram1, "a_normala");
+        GPUprogram1.u_izvorXYZ2 = gl.getUniformLocation(GPUprogram1, "u_izvorXYZ2");
+        GPUprogram1.u_boja2     = gl.getUniformLocation(GPUprogram1, "u_boja2");
+
+        
+      function napravi_spremnik(data) {
+          let vertices;
+
+          if (data.vertices && data.drawModes) {
+              // It's already a Mesh3D object
+              vertices = data.vertices;
+          } else {
+              // Raw array (old behavior)
+              vertices = data.flat ? data.flat() : data;
+          }
+
+          const buffer = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+          return {
+              buffer: buffer,
+              vertices: vertices,           // keep reference if needed
+              drawModes: data.drawModes || [{ mode: WebGL2RenderingContext.TRIANGLES, count: vertices.length / 6, offset: 0 }]
+          };
+}
+
+  
+        // Unified draw function that supports Mesh3D with multiple draw modes
+        function bind_postavi_nacrtaj_mesh(buffer, mat_main, mat_model, boja) {
+            if (!buffer || !buffer.drawModes) {
+                console.error("Buffer is not a valid Mesh3D!");
+                return;
+            }
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer.buffer);
+            
+            gl.uniformMatrix4fv(GPUprogram1.u_modelMatrix, false, mat_model.modelLista());
+            gl.uniformMatrix4fv(GPUprogram1.u_mTrans, false, mat_main.viewProjLista());
+            gl.uniform3fv(GPUprogram1.model_boja, boja);
+
+            gl.enableVertexAttribArray(GPUprogram1.a_vrhXYZ);
+            gl.enableVertexAttribArray(GPUprogram1.a_normala);
+            gl.vertexAttribPointer(GPUprogram1.a_vrhXYZ, 3, gl.FLOAT, false, 24, 0);
+            gl.vertexAttribPointer(GPUprogram1.a_normala, 3, gl.FLOAT, false, 24, 12);
+
+            // Draw all parts of the mesh
+            for (const mode of buffer.drawModes) {
+                gl.drawArrays(mode.mode, mode.offset, mode.count);
+            }
+        }
+
+    function nacrtaj_kuglu(){}
+
+    function nacrtaj_polukuglu() {}
+    
+    function nacrtaj_grid() {}
+
+    function nacrtaj_kocku() {}
+
+    function nacrtaj_stozac(){}
+
+    function nacrtaj_cilindar(){}
+
+    function nacrtaj_prsten() {}
+
+    function nacrtaj_kvadar() {}
+
+    function nacrtaj_trokut() {}
+
+    function nacrtaj_piramidu() {}
+
+    function nacrtaj_krnji_stozac() {}
+
+
+
+    function postavi_izvor(pozicija, boja) {
+       gl.uniform3fv(GPUprogram1.u_izvorXYZ, pozicija);
+       
+        gl.uniform3fv(GPUprogram1.u_boja, boja);
+    }
+
+    function postavi_izvor_2(pozicija, boja) {
+       gl.uniform3fv(GPUprogram1.u_izvorXYZ2, pozicija);
+       
+        gl.uniform3fv(GPUprogram1.u_boja2, boja);
+    }
+
+
+    function animacija() {
+        gl.viewport(0, 0, platno1.width, platno1.height);
+        gl.clearColor(0.2, 0.2, 0.2, 1);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+      
+
+
+        // Reset model matrices and apply fresh rotation each frame
+        mat_grid.identitet();           // VERY IMPORTANT
+        mat_kocka.identitet();          // VERY IMPORTANT
+       
+
+        // Draw
+        bind_postavi_nacrtaj_mesh(kocka_buffer, mat, mat_kocka, [1.0, 0.6, 0.75]);
+        //bind_postavi_nacrtaj_lines(grid_buffer, mat, mat_grid, [0, 1, 0]);
+
+        requestAnimationFrame(animacija);
+    }
+     
+
+      let kocka = crtac.vratiMeshPoluKugla(5, 15, 15);
+      let kocka_buffer = napravi_spremnik(kocka);
+      //let grid_buffer = napravi_spremnik(grid);
+
+      
+
+      gl.enable(gl.DEPTH_TEST);
+
+      
+      mat.postaviKameru(15, 5, 2, 0, 0, 0, 0, 1, 0);
+        // prednja pa straznja
+      mat.persp(-10, 10, -10, 10, 5, 40);
+
+      postavi_izvor([500, 1000, 0], [1.0, 1.0, 1.0]);   
+      postavi_izvor_2([0, 0, 10], [0.0, 0.0, 1.0]);  
+
+      animacija();
+    
+    } // WebGLaplikacija
+	</script>
+
+	<script id="vertex-shader" type="x-shader/x-vertex">
+      #version 300 es
+      in vec4 a_vrhXYZ;
+      in vec3 a_normala;
+
+      uniform mat4 u_mTrans;
+      uniform mat4 u_modelMatrix;
+
+      uniform vec3 u_izvorXYZ;   // svjetlo 1
+      uniform vec3 u_boja;
+      uniform vec3 u_izvorXYZ2;  // svjetlo 2
+      uniform vec3 u_boja2;
+
+      uniform vec3 u_kameraXYZ;
+
+      out vec3 v_osvjetljenje;   // ← changed: pass color instead of scalar
+
+      void main() {
+          vec4 worldPos = u_modelMatrix * a_vrhXYZ;
+          vec3 normala = normalize(mat3(u_modelMatrix) * a_normala);
+
+          // Prvo svjetlo
+          vec3 premaIzvoru1 = normalize(u_izvorXYZ - vec3(worldPos));
+          float difuzno1 = max(dot(premaIzvoru1, normala), 0.0);
+          float refleksija1 = 0.0;
+          if (difuzno1 > 0.0) {
+              vec3 premaKameri = normalize(u_kameraXYZ - vec3(worldPos));
+              vec3 reflektiranaZraka = reflect(-premaIzvoru1, normala);
+              refleksija1 = pow(max(dot(reflektiranaZraka, premaKameri), 0.0), 16.0);
+          }
+
+          // Drugo svjetlo
+          vec3 premaIzvoru2 = normalize(u_izvorXYZ2 - vec3(worldPos));
+          float difuzno2 = max(dot(premaIzvoru2, normala), 0.0);
+          float refleksija2 = 0.0;
+          if (difuzno2 > 0.0) {
+              vec3 premaKameri = normalize(u_kameraXYZ - vec3(worldPos));
+              vec3 reflektiranaZraka = reflect(-premaIzvoru2, normala);
+              refleksija2 = pow(max(dot(reflektiranaZraka, premaKameri), 0.0), 16.0);
+          }
+
+          // Kombiniraj oba svjetla s bojama
+          vec3 osvjetljenje = (difuzno1 * u_boja + difuzno2 * u_boja2) * 0.5 +
+                              (refleksija1 * u_boja + refleksija2 * u_boja2) * 0.5;
+
+          v_osvjetljenje = osvjetljenje;
+
+          gl_Position = u_mTrans * worldPos;
+      }
+      </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+        #version 300 es
+        precision highp float;
+
+        in vec3 v_osvjetljenje;     // ← receive colored lighting
+        uniform vec3 model_boja;
+
+        out vec4 bojaFragmenta;
+
+        void main() {
+            vec3 konacnaBoja = v_osvjetljenje * model_boja ;
+            //konacnaBoja = clamp(konacnaBoja, 0.0, 1.0);
+            bojaFragmenta = vec4(konacnaBoja, 1.0);
+        }
+  </script>
+	</head>
+
+	<body>
+		<h1>WebGL2 - testiranje</code></h1>
+		<div>
+			<canvas id="slika1" width="500" height="500" style="border:5px solid black">
+				Vaš preglednik ne podržava HTML5 canvas.
+      </canvas>
+		</div>
+	</body>
+</html>
