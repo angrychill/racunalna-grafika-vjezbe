@@ -622,42 +622,458 @@ class CrtanjeWebGL {
         // ====================== KRIVA LINE - BRIGHT (Max brightness) ======================
     // Normals are calculated to face towards the camera for maximum lighting
         // ====================== KRIVA LINE - ALWAYS BRIGHT ======================
+        // ====================== KRIVA / LINE (continuous thin curve) ======================
+            // ====================== KRIVA LINE - ALWAYS BRIGHT (normals face the light) ======================
     vratiMeshLine(
-        points: [number, number, number][],
-        kameraXYZ: [number, number, number] = [10, 5, 2]
+        points: number[], 
+        lightPos: [number, number, number] = [10, 15, 20]   // default light position
     ): Mesh3D {
-        if (points.length < 2) {
-            console.warn("vratiMeshKrivaLine: Need at least 2 points");
+        if (!points || points.length < 6) {
+            console.warn("vratiMeshLine: Need at least one full vertex (6 values)");
             return { vertices: new Float32Array(0), drawModes: [] };
         }
 
         let vrhovi: number[] = [];
 
-        // Strong direction towards main light / camera
-        const lightDirX = 0.5;   // tweak these if needed
-        const lightDirY = 0.6;
-        const lightDirZ = 0.6;
+        for (let i = 0; i < points.length; i += 6) {
+            const x = points[i];
+            const y = points[i + 1];
+            const z = points[i + 2];
 
-        const len = Math.sqrt(lightDirX*lightDirX + lightDirY*lightDirY + lightDirZ*lightDirZ);
-        const nx = lightDirX / len;
-        const ny = lightDirY / len;
-        const nz = lightDirZ / len;
+            // Vector from point to light
+            let dx = lightPos[0] - x;
+            let dy = lightPos[1] - y;
+            let dz = lightPos[2] - z;
 
-        for (let i = 0; i < points.length - 1; i++) {
-            const p0 = points[i];
-            const p1 = points[i + 1];
+            // Normalize
+            const len = Math.sqrt(dx*dx + dy*dy + dz*dz) || 1.0;
+            dx /= len;
+            dy /= len;
+            dz /= len;
 
-            vrhovi.push(p0[0], p0[1], p0[2], nx, ny, nz);
-            vrhovi.push(p1[0], p1[1], p1[2], nx, ny, nz);
+            vrhovi.push(x, y, z, dx, dy, dz);   // position + normal toward light
         }
 
         return {
             vertices: new Float32Array(vrhovi),
             drawModes: [{
-                mode: WebGL2RenderingContext.LINES,
+                mode: WebGL2RenderingContext.LINE_STRIP,
                 count: vrhovi.length / 6,
                 offset: 0
             }]
+        };
+    }
+
+        // ====================== TORUS / PRSTEN (with optional square cross-section) ======================
+        // ====================== TORUS / PRSTEN (with rotation + arc support) ======================
+        vratiMeshTorus(
+        R: number = 3,
+        r: number = 0.8,
+        nMajor: number = 64,
+        nTube: number = 24,
+        squareCrossSection: boolean = false,
+        crossSectionRotation: number = 0,
+        startAngle: number = 0,
+        endAngle: number = 360
+    ): Mesh3D {
+        let vrhovi: number[] = [];
+        const phiStart = startAngle * Math.PI / 180;
+        const phiEnd = endAngle * Math.PI / 180;
+        const phiRange = phiEnd - phiStart;
+        const phiStep = phiRange / nMajor;
+
+        const rotRad = crossSectionRotation * Math.PI / 180;
+        const cosRot = Math.cos(rotRad);
+        const sinRot = Math.sin(rotRad);
+
+        const sides = squareCrossSection ? 4 : nTube;
+        const thetaStep = 2 * Math.PI / sides;
+
+        for (let i = 0; i < nMajor; i++) {
+            const phi0 = phiStart + i * phiStep;
+            const phi1 = phiStart + (i + 1) * phiStep;
+
+            const cx0 = R * Math.cos(phi0);
+            const cy0 = R * Math.sin(phi0);
+            const cx1 = R * Math.cos(phi1);
+            const cy1 = R * Math.sin(phi1);
+
+            for (let j = 0; j <= sides; j++) {
+                let theta = j * thetaStep;
+
+                let ex = 0, ey = 0;
+
+                if (squareCrossSection) {
+                    const s = r;
+                    const t = (theta + Math.PI / 4) % (Math.PI * 2);
+
+                    if (t < Math.PI / 2)      { ex = s;  ey = s * (2 * (t / (Math.PI / 2)) - 1); }
+                    else if (t < Math.PI)     { ex = s * (1 - 2 * ((t - Math.PI / 2) / (Math.PI / 2))); ey = s; }
+                    else if (t < 3*Math.PI/2) { ex = -s; ey = s * (1 - 2 * ((t - Math.PI) / (Math.PI / 2))); }
+                    else                      { ex = s * (2 * ((t - 3*Math.PI/2) / (Math.PI/2)) - 1); ey = -s; }
+                } else {
+                    ex = r * Math.cos(theta);
+                    ey = r * Math.sin(theta);
+                }
+
+                // Apply rotation to cross-section
+                const exRot = ex * cosRot - ey * sinRot;
+                const eyRot = ex * sinRot + ey * cosRot;
+
+                // Positions
+                const x0 = cx0 + exRot * Math.cos(phi0);
+                const y0 = cy0 + exRot * Math.sin(phi0);
+                const z0 = eyRot;
+
+                const x1 = cx1 + exRot * Math.cos(phi1);
+                const y1 = cy1 + exRot * Math.sin(phi1);
+                const z1 = eyRot;
+
+                // === IMPROVED NORMAL CALCULATION ===
+                // Direction from tube center to surface point
+                const nx0 = exRot * Math.cos(phi0);
+                const ny0 = exRot * Math.sin(phi0);
+                const nz0 = eyRot;
+
+                const len = Math.sqrt(nx0*nx0 + ny0*ny0 + nz0*nz0) || 1;
+                
+                const nx = nx0 / len;
+                const ny = ny0 / len;
+                const nz = nz0 / len;
+
+                vrhovi.push(x0, y0, z0, nx, ny, nz);
+                vrhovi.push(x1, y1, z1, nx, ny, nz);
+            }
+        }
+
+        return {
+            vertices: new Float32Array(vrhovi),
+            drawModes: [{
+                mode: WebGL2RenderingContext.TRIANGLE_STRIP,
+                count: vrhovi.length / 6,
+                offset: 0
+            }]
+        };
+    }
+
+        // ====================== DISK / KRUG (flat circle) ======================
+    vratiMeshDisk(
+        r: number = 1.0,           // Radius
+        n: number = 48,            // Number of segments (higher = smoother)
+        centered: boolean = true,  // Center at origin or at (0,0,0) with bottom at edge
+        plane: 'xy' | 'xz' | 'yz' = 'xy'  // Which plane the disk lies on
+    ): Mesh3D {
+        let vrhovi: number[] = [];
+        let offset = 0;
+        let drawModes: { mode: number; count: number; offset: number }[] = [];
+
+        const centerX = 0;
+        const centerY = 0;
+        const centerZ = 0;
+
+        // Normal direction depends on plane
+        let nx = 0, ny = 0, nz = 1;
+
+        if (plane === 'xz') nz = 0, nx = 0, ny = 1;   // +Y normal
+        if (plane === 'yz') nz = 0, nx = 1, ny = 0;   // +X normal
+
+        // Center vertex
+        vrhovi.push(centerX, centerY, centerZ, nx, ny, nz);
+
+        // Outer vertices
+        const angleStep = 2 * Math.PI / n;
+        for (let i = 0; i <= n; i++) {
+            const angle = i * angleStep;
+            let x = r * Math.cos(angle);
+            let y = r * Math.sin(angle);
+            let z = 0;
+
+            if (plane === 'xz') {
+                y = 0;
+                z = r * Math.sin(angle);
+                x = r * Math.cos(angle);
+            } else if (plane === 'yz') {
+                x = 0;
+                z = r * Math.sin(angle);
+                y = r * Math.cos(angle);
+            }
+
+            vrhovi.push(x, y, z, nx, ny, nz);
+        }
+
+        drawModes.push({
+            mode: WebGL2RenderingContext.TRIANGLE_FAN,
+            count: n + 2,
+            offset: offset
+        });
+
+        return {
+            vertices: new Float32Array(vrhovi),
+            drawModes: drawModes
+        };
+    }
+
+        // ====================== DISK WITH HOLE + THICKNESS (Annular Disc / Washer) ======================
+        // ====================== DISK WITH HOLE + THICKNESS (Annular Disc / Washer) ======================
+        // ====================== DISK WITH HOLE + THICKNESS (Annular Disc / Washer) ======================
+    vratiMeshDiskSaRupom(
+        rOuter: number = 2.0,      // Outer radius
+        rInner: number = 0.8,      // Inner radius (set 0 for full disk)
+        height: number = 0.3,      // Thickness
+        n: number = 48,            // Segments
+        centered: boolean = true
+    ): Mesh3D {
+        if (rInner < 0) rInner = 0;
+
+        const halfH = height / 2;
+        const z0 = centered ? -halfH : 0;
+        const z1 = centered ? halfH : height;
+
+        let vrhovi: number[] = [];
+        let drawModes: { mode: number; count: number; offset: number }[] = [];
+        let vertexOffset = 0;   // tracks number of vertices (not floats)
+
+        const angleStep = 2 * Math.PI / n;
+
+        // Helper to add a vertex
+        const addVertex = (x: number, y: number, z: number, nx: number, ny: number, nz: number) => {
+            vrhovi.push(x, y, z, nx, ny, nz);
+        };
+
+        // === TOP FACE ===
+        const topStart = vertexOffset;
+        if (rInner > 0.001) {
+            // Annular ring using TRIANGLE_STRIP
+            for (let i = 0; i <= n; i++) {
+                const a = i * angleStep;
+                const c = Math.cos(a);
+                const s = Math.sin(a);
+                addVertex(rInner * c, rInner * s, z1, 0, 0, 1);
+                addVertex(rOuter * c, rOuter * s, z1, 0, 0, 1);
+            }
+            drawModes.push({
+                mode: WebGL2RenderingContext.TRIANGLE_STRIP,
+                count: 2 * (n + 1),
+                offset: topStart
+            });
+            vertexOffset += 2 * (n + 1);
+        } else {
+            // Full disk using TRIANGLE_FAN
+            addVertex(0, 0, z1, 0, 0, 1);
+            for (let i = 0; i <= n; i++) {
+                const a = i * angleStep;
+                addVertex(rOuter * Math.cos(a), rOuter * Math.sin(a), z1, 0, 0, 1);
+            }
+            drawModes.push({
+                mode: WebGL2RenderingContext.TRIANGLE_FAN,
+                count: n + 2,
+                offset: topStart
+            });
+            vertexOffset += n + 2;
+        }
+
+        // === BOTTOM FACE ===
+        const bottomStart = vertexOffset;
+        if (rInner > 0.001) {
+            for (let i = 0; i <= n; i++) {
+                const a = i * angleStep;
+                const c = Math.cos(a);
+                const s = Math.sin(a);
+                addVertex(rOuter * c, rOuter * s, z0, 0, 0, -1);
+                addVertex(rInner * c, rInner * s, z0, 0, 0, -1);
+            }
+            drawModes.push({
+                mode: WebGL2RenderingContext.TRIANGLE_STRIP,
+                count: 2 * (n + 1),
+                offset: bottomStart
+            });
+            vertexOffset += 2 * (n + 1);
+        } else {
+            addVertex(0, 0, z0, 0, 0, -1);
+            for (let i = 0; i <= n; i++) {
+                const a = i * angleStep;
+                addVertex(rOuter * Math.cos(a), rOuter * Math.sin(a), z0, 0, 0, -1);
+            }
+            drawModes.push({
+                mode: WebGL2RenderingContext.TRIANGLE_FAN,
+                count: n + 2,
+                offset: bottomStart
+            });
+            vertexOffset += n + 2;
+        }
+
+        // === OUTER WALL ===
+        const outerStart = vertexOffset;
+        for (let i = 0; i <= n; i++) {
+            const a = i * angleStep;
+            const x = rOuter * Math.cos(a);
+            const y = rOuter * Math.sin(a);
+            addVertex(x, y, z0, x, y, 0);
+            addVertex(x, y, z1, x, y, 0);
+        }
+        drawModes.push({
+            mode: WebGL2RenderingContext.TRIANGLE_STRIP,
+            count: 2 * (n + 1),
+            offset: outerStart
+        });
+        vertexOffset += 2 * (n + 1);
+
+        // === INNER WALL ===
+        if (rInner > 0.001) {
+            const innerStart = vertexOffset;
+            for (let i = 0; i <= n; i++) {
+                const a = i * angleStep;
+                const x = rInner * Math.cos(a);
+                const y = rInner * Math.sin(a);
+                addVertex(x, y, z1, -x, -y, 0);
+                addVertex(x, y, z0, -x, -y, 0);
+            }
+            drawModes.push({
+                mode: WebGL2RenderingContext.TRIANGLE_STRIP,
+                count: 2 * (n + 1),
+                offset: innerStart
+            });
+        }
+
+        return {
+            vertices: new Float32Array(vrhovi),
+            drawModes: drawModes
+        };
+    }
+
+        // ====================== ELLIPTICAL DISK WITH HOLE + THICKNESS + ARC ======================
+    vratiMeshElipsaSaRupom(
+        rOuterX: number = 3.0,     // Outer radius X
+        rOuterY: number = 2.0,     // Outer radius Y
+        rInnerX: number = 1.5,     // Inner radius X (hole)
+        rInnerY: number = 1.0,     // Inner radius Y
+        height: number = 0.4,      // Thickness
+        n: number = 64,            // Segments
+        startAngle: number = 0,    // degrees
+        endAngle: number = 360,    // degrees (180 = half, 90 = quarter)
+        centered: boolean = true
+    ): Mesh3D {
+        if (rInnerX < 0) rInnerX = 0;
+        if (rInnerY < 0) rInnerY = 0;
+
+        const halfH = height / 2;
+        const z0 = centered ? -halfH : 0;
+        const z1 = centered ? halfH : height;
+
+        let vrhovi: number[] = [];
+        let drawModes: { mode: number; count: number; offset: number }[] = [];
+        let vertexOffset = 0;
+
+        const phiStart = startAngle * Math.PI / 180;
+        const phiEnd = endAngle * Math.PI / 180;
+        const phiRange = phiEnd - phiStart;
+        const step = phiRange / n;
+
+        const addVertex = (x: number, y: number, z: number, nx: number, ny: number, nz: number) => {
+            vrhovi.push(x, y, z, nx, ny, nz);
+        };
+
+        // === TOP FACE ===
+        const topStart = vertexOffset;
+        if (rInnerX > 0.001 || rInnerY > 0.001) {
+            // Elliptical ring
+            for (let i = 0; i <= n; i++) {
+                const phi = phiStart + i * step;
+                const c = Math.cos(phi);
+                const s = Math.sin(phi);
+
+                // Inner point
+                addVertex(rInnerX * c, rInnerY * s, z1, 0, 0, 1);
+                // Outer point
+                addVertex(rOuterX * c, rOuterY * s, z1, 0, 0, 1);
+            }
+            drawModes.push({
+                mode: WebGL2RenderingContext.TRIANGLE_STRIP,
+                count: 2 * (n + 1),
+                offset: topStart
+            });
+            vertexOffset += 2 * (n + 1);
+        } else {
+            // Full elliptical disk
+            addVertex(0, 0, z1, 0, 0, 1);
+            for (let i = 0; i <= n; i++) {
+                const phi = phiStart + i * step;
+                addVertex(rOuterX * Math.cos(phi), rOuterY * Math.sin(phi), z1, 0, 0, 1);
+            }
+            drawModes.push({
+                mode: WebGL2RenderingContext.TRIANGLE_FAN,
+                count: n + 2,
+                offset: topStart
+            });
+            vertexOffset += n + 2;
+        }
+
+        // === BOTTOM FACE ===
+        const bottomStart = vertexOffset;
+        if (rInnerX > 0.001 || rInnerY > 0.001) {
+            for (let i = 0; i <= n; i++) {
+                const phi = phiStart + i * step;
+                const c = Math.cos(phi);
+                const s = Math.sin(phi);
+                addVertex(rOuterX * c, rOuterY * s, z0, 0, 0, -1);
+                addVertex(rInnerX * c, rInnerY * s, z0, 0, 0, -1);
+            }
+            drawModes.push({
+                mode: WebGL2RenderingContext.TRIANGLE_STRIP,
+                count: 2 * (n + 1),
+                offset: bottomStart
+            });
+            vertexOffset += 2 * (n + 1);
+        } else {
+            addVertex(0, 0, z0, 0, 0, -1);
+            for (let i = 0; i <= n; i++) {
+                const phi = phiStart + i * step;
+                addVertex(rOuterX * Math.cos(phi), rOuterY * Math.sin(phi), z0, 0, 0, -1);
+            }
+            drawModes.push({
+                mode: WebGL2RenderingContext.TRIANGLE_FAN,
+                count: n + 2,
+                offset: bottomStart
+            });
+            vertexOffset += n + 2;
+        }
+
+        // === OUTER WALL ===
+        const outerStart = vertexOffset;
+        for (let i = 0; i <= n; i++) {
+            const phi = phiStart + i * step;
+            const x = rOuterX * Math.cos(phi);
+            const y = rOuterY * Math.sin(phi);
+            addVertex(x, y, z0, x, y, 0);
+            addVertex(x, y, z1, x, y, 0);
+        }
+        drawModes.push({
+            mode: WebGL2RenderingContext.TRIANGLE_STRIP,
+            count: 2 * (n + 1),
+            offset: outerStart
+        });
+        vertexOffset += 2 * (n + 1);
+
+        // === INNER WALL ===
+        if (rInnerX > 0.001 || rInnerY > 0.001) {
+            const innerStart = vertexOffset;
+            for (let i = 0; i <= n; i++) {
+                const phi = phiStart + i * step;
+                const x = rInnerX * Math.cos(phi);
+                const y = rInnerY * Math.sin(phi);
+                addVertex(x, y, z1, -x, -y, 0);
+                addVertex(x, y, z0, -x, -y, 0);
+            }
+            drawModes.push({
+                mode: WebGL2RenderingContext.TRIANGLE_STRIP,
+                count: 2 * (n + 1),
+                offset: innerStart
+            });
+        }
+
+        return {
+            vertices: new Float32Array(vrhovi),
+            drawModes: drawModes
         };
     }
 }

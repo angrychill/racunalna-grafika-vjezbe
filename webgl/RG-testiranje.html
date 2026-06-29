@@ -26,9 +26,6 @@
         gl.useProgram(GPUprogram1); // možemo imati više GPU programa
 
         let crtac = new CrtanjeWebGL();
-        let mat = new MT3D();
-        let mat_grid = new MT3D();
-        let mat_kocka = new MT3D();
         
         // --- UNIFORMS ---
         GPUprogram1.u_mTrans = gl.getUniformLocation(GPUprogram1, "u_mTrans");
@@ -105,28 +102,143 @@
         gl.uniform3fv(GPUprogram1.u_boja2, boja);
     }
 
-
+    let alpha = 0;
     function animacija() {
         gl.viewport(0, 0, platno1.width, platno1.height);
         gl.clearColor(0.2, 0.2, 0.2, 1);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-      
+    mat_sfera.identitet();
+        mat_prsten_donji.identitet();
+        mat_prsten_donji.rotirajY(Math.PI/2);
+        mat_prsten_donji.rotirajX(Math.PI/2);
 
+        mat_prsten_gornji_1.identitet();
+        //mat_prsten_gornji_1.rotirajY(Math.PI);
+        mat_prsten_gornji_1.rotirajX(Math.PI);
+        mat_prsten_gornji_2.identitet();
+        mat_prsten_gornji_2.rotirajX(Math.PI);
+        mat_prsten_gornji_2.rotirajY(Math.PI/2);
 
-        // Reset model matrices and apply fresh rotation each frame
-      // VERY IMPORTANT
-        //mat_kocka.identitet();    
-        mat_kocka.rotirajX(0.005);
-        //mat_kocka.rotirajY(0.01);      // VERY IMPORTANT
+        mat_krivulja.identitet();
+        mat_krivulja.rotirajY(Math.PI/2);
+        mat_krivulja.rotirajX(Math.PI/2);
+        mat_krivulja.pomakni(0, 0, -5);
+
        
+        for (let i = 0; i<4; i++ ) {
+            mat_sfera.rotirajY((Math.PI/2)*i);
+             mat_sfera.rotirajY(Math.PI/4);
+            mat_sfera.pomakni(0, 1.5, 0);
+            mat_sfera.pomakni(9, 0, 0);
+            bind_postavi_nacrtaj_mesh(sfera_buff, mat, mat_sfera, [1.0, 1.0, 0.0]);
+            mat_sfera.identitet();
+        }
+        mat_sfera.identitet();
+                // === Moving sphere along the curve ===
+        alpha += 0.01;   // speed control
 
+        const theta = alpha;
+        const rho = r * (Math.cos(k * theta) * Math.cos(k * theta) + 0.4) + innerOffset;
+        const x = rho * Math.cos(theta);
+        const y = rho * Math.sin(theta);
+        const z = 0;
+
+        mat_sfera.identitet();                    // reset every frame
+        mat_sfera.rotirajY(Math.PI/2);            // optional orientation
+        mat_sfera.rotirajX(Math.PI/2);
+        //mat_sfera.pomakni(Math.PI/2);
+        mat_sfera.pomakni(x, y, z-5);               // move to curve position
+
+        bind_postavi_nacrtaj_mesh(sfera_buff, mat, mat_sfera, [1.0, 0.3, 0.3]);
+        
+      
+        
         // Draw
-        bind_postavi_nacrtaj_mesh(kocka_buffer, mat, mat_kocka, [1.0, 1.0, 1.0]);
+        bind_postavi_nacrtaj_mesh(prsten_donji_buff, mat, mat_prsten_donji, [0.6, 1.0, 1.0]);
+        bind_postavi_nacrtaj_mesh(prsten_gornji_buff, mat, mat_prsten_gornji_1, [0.6, 1.0, 1.0]);
+        bind_postavi_nacrtaj_mesh(prsten_gornji_buff, mat, mat_prsten_gornji_2, [0.6, 1.0, 1.0]);
+        //bind_postavi_nacrtaj_mesh(prsten_gornji_buff, mat, mat_prsten_gornji_2, [1.0, 1.0, 1.0]);
+
+        bind_postavi_nacrtaj_mesh(krivulja_buff, mat, mat_krivulja, [2.0, 2.0, 0.0]);
+
         //bind_postavi_nacrtaj_lines(grid_buffer, mat, mat_grid, [0, 1, 0]);
 
         requestAnimationFrame(animacija);
     }
+
+    /*astroida(r : number, t: number) {
+    // x = 4*r cos^3 t, y = 4*r sin^3 t
+    // t e 0, 2pi
+
+    let x = 4*r*Math.pow(Math.cos(t), 3);
+    let y = 4*r*Math.pow(Math.sin(t), 3);
+    if (t == 0){
+        this.gks.postaviNa(x, y);
+    }
+    this.gks.linijaDo(x, y, true);
+
+    // nacrtaj kruznicu, liniju i tocku
+    return {x: x, y: y}
+
+   }*/
+
+    const wavyPoints = [];
+        const segments = 200;           // higher = smoother
+        const r = 5;                    // overall size
+        const k = 2;                    // 2 = 4 petals
+        const innerOffset = 4;        // ← change this to control the hole in the middle
+
+        for (let i = 0; i <= segments; i++) {
+            let theta = (i / segments) * 2 * Math.PI;
+
+            // Rose curve with offset → creates inner hole
+            let rho = r * (Math.cos(k * theta) * Math.cos(k * theta) + 0.4) + innerOffset;
+            let x = rho * Math.cos(theta);
+            let y = rho * Math.sin(theta);
+            let z = 0;
+
+            wavyPoints.push(x, y, z);   // normal facing up
+        }
+
+    console.log(wavyPoints)
+    
+        let mat = new MT3D();
+        let mat_prsten_donji = new MT3D();
+        let mat_prsten_gornji_1 = new MT3D();
+        let mat_prsten_gornji_2 = new MT3D();
+        let mat_krivulja = new MT3D();
+        let mat_sfera = new MT3D();
+
+        gl.enable(gl.DEPTH_TEST);
+
+
+        mat.postaviKameru(8, 10, 10, 0, 0, 0, 0, 1, 0);   // better angled view
+        mat.persp(-10, 10, -10, 10, 5, 50);
+
+        postavi_izvor([100, 100, 0], [1.0, 1.0, 1.0]);   
+        //postavi_izvor_2([0, 0, 10], [0.0, 0.0, 1.0]);  
+
+
+        let prsten_donji = crtac.vratiMeshDiskSaRupom(10, 8, 3);
+        let prsten_gornji = crtac.vratiMeshElipsaSaRupom(10, 11, 9, 10, 3, 16, 180);
+        let sfera = crtac.vratiMeshKugla(1.0);
+        let krivulja = crtac.vratiMeshLine(wavyPoints, [50, 200, 0]);
+
+         // vratiMeshElipsaSaRupom(rOuterX, rOuterY, rInnerX, rInnerY, height, n, startAngle=0, endAngle=360) 
+        let prsten_donji_buff = napravi_spremnik(prsten_donji);
+        let prsten_gornji_buff = napravi_spremnik(prsten_gornji);
+        let sfera_buff = napravi_spremnik(sfera);
+        let krivulja_buff = napravi_spremnik(krivulja);
+
+        
+
+
+
+
+        animacija();
+    
+    } // WebGLaplikacija
 
     // ====================== MESH FUNCTIONS QUICK REFERENCE ======================
         //
@@ -152,44 +264,11 @@
         // vratiMeshTrokut(a = 2, b = 2, centered = true)           → Flat triangle (single plane)
         // vratiMeshPravokutnik(width = 2, height = 1, centered = true) → Flat rectangle
         // vratiMeshLine(width = 2, height = 1, centered = true) → Flat rectangle
-
-        // =============================================================================
+        // vratiMeshTorus(R=3, r=0.8, nMajor=64, nTube=24, square=false, rot=0, start=0, end=360) → Torus with arc support
+        // vratiMeshDisk(r=1, n=48, centered=true, plane='xy') → Disk / flat circle
+        // vratiMeshElipsaSaRupom(rOuterX, rOuterY, rInnerX, rInnerY, height, n, startAngle=0, endAngle=360) 
+//     → Elliptical disk/ring with thickness and arc support
      
-
-    const wavyPoints = [];
-    const segments = 60;
-    for (let i = 0; i <= segments; i++) {
-        const a = (i / segments) * Math.PI * 2;
-        const radius = 4 + Math.sin(a * 3) * 0.6;   // wavy effect
-        wavyPoints.push([
-            radius * Math.cos(a),
-            radius * Math.sin(a),
-            Math.sin(a * 2) * 0.3   // some vertical variation
-        ]);
-    }
-
-// Create the mesh
-//const mesh = this.vratiMeshKriva(wavyPoints, 0.25, 8);
-
-//let grid_buffer = napravi_spremnik(grid);
-
-
-
-gl.enable(gl.DEPTH_TEST);
-
-
-mat.postaviKameru(10, 5, 2, 0, 0, 0, 0, 1, 0);
-// prednja pa straznja
-mat.persp(-10, 10, -10, 10, 5, 40);
-
-postavi_izvor([50, 100, 0], [1.0, 1.0, 1.0]);   
-postavi_izvor_2([0, 0, 10], [0.0, 0.0, 1.0]);  
-
-let kocka = crtac.vratiMeshTrokut();
-let kocka_buffer = napravi_spremnik(kocka);
-      animacija();
-    
-    } // WebGLaplikacija
 	</script>
 
 	<script id="vertex-shader" type="x-shader/x-vertex">
@@ -243,21 +322,24 @@ let kocka_buffer = napravi_spremnik(kocka);
       }
       </script>
 
-    <script id="fragment-shader" type="x-shader/x-fragment">
+<script id="fragment-shader" type="x-shader/x-fragment">
         #version 300 es
         precision highp float;
 
-        in vec3 v_osvjetljenje;     // ← receive colored lighting
+        in vec3 v_osvjetljenje;
         uniform vec3 model_boja;
 
         out vec4 bojaFragmenta;
 
         void main() {
-            vec3 konacnaBoja = v_osvjetljenje * model_boja ;
-            //konacnaBoja = clamp(konacnaBoja, 0.0, 1.0);
-            bojaFragmenta = vec4(konacnaBoja, 1.0);
+            vec3 boja = v_osvjetljenje * model_boja;
+
+            // Simple boost for lines (you can remove if you want pure lighting)
+            //boja = max(boja, model_boja * 0.6);
+
+            bojaFragmenta = vec4(boja, 1.0);
         }
-  </script>
+</script>
 	</head>
 
 	<body>
