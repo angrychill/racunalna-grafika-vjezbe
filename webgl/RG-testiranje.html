@@ -91,28 +91,6 @@
             }
         }
 
-    function nacrtaj_kuglu(){}
-
-    function nacrtaj_polukuglu() {}
-    
-    function nacrtaj_grid() {}
-
-    function nacrtaj_kocku() {}
-
-    function nacrtaj_stozac(){}
-
-    function nacrtaj_cilindar(){}
-
-    function nacrtaj_prsten() {}
-
-    function nacrtaj_kvadar() {}
-
-    function nacrtaj_trokut() {}
-
-    function nacrtaj_piramidu() {}
-
-    function nacrtaj_krnji_stozac() {}
-
 
 
     function postavi_izvor(pozicija, boja) {
@@ -137,34 +115,78 @@
 
 
         // Reset model matrices and apply fresh rotation each frame
-        mat_grid.identitet();           // VERY IMPORTANT
-        mat_kocka.identitet();          // VERY IMPORTANT
+      // VERY IMPORTANT
+        //mat_kocka.identitet();    
+        mat_kocka.rotirajX(0.005);
+        //mat_kocka.rotirajY(0.01);      // VERY IMPORTANT
        
 
         // Draw
-        bind_postavi_nacrtaj_mesh(kocka_buffer, mat, mat_kocka, [1.0, 0.6, 0.75]);
+        bind_postavi_nacrtaj_mesh(kocka_buffer, mat, mat_kocka, [1.0, 1.0, 1.0]);
         //bind_postavi_nacrtaj_lines(grid_buffer, mat, mat_grid, [0, 1, 0]);
 
         requestAnimationFrame(animacija);
     }
+
+    // ====================== MESH FUNCTIONS QUICK REFERENCE ======================
+        //
+        // vratiMeshKocka(a = 2, centered = true)                  → Cube (filled)
+        // vratiMeshKockaWire(a = 2, centered = true)              → Cube wireframe (edges only)
+        // vratiMeshGrid(min = -5, max = 5, step = 1)              → Grid on XY plane
+        //
+        // vratiMeshValjak(r = 1, h = 2, n = 32)                   → Cylinder (full)
+        // vratiMeshCilindar(r = 1, h = 2, n = 32)                 → Cylinder (alias for Valjak)
+        // vratiMeshStozac(r = 1, h = 2, n = 32)                   → Cone
+        // vratiMeshKrnjiStozac(r1 = 1, r2 = 0.5, h = 2, n = 32)  → Truncated cone / Frustum
+        //
+        // vratiMeshKugla(r = 1, nLat = 20, nLon = 30)             → Full sphere
+        // vratiMeshPoluKugla(r = 1, nLat = 20, nLon = 30)         → Hemisphere
+        //
+        // vratiMeshPrsten(R = 2, r = 0.5, nR = 32, nT = 24)       → Torus / Ring
+        //
+        // vratiMeshKvadar(sx = 2, sy = 1, sz = 3, centered = true)→ Cuboid / Rectangular box
+        // vratiMeshTrokut(a = 2, b = 2, c = 2, height = 0.01)     → Flat triangle (with small thickness)
+        // vratiMeshPiramida(base = 2, height = 2, n = 4)          → Square pyramid
+        //vratiMeshPoluPrstenElipsa(R, rX, rY, angledeg, nSeg, nArc )
+        //vratiMeshCilindarSuplji(r: number = 1, h: number = 2, n: number = 48)
+        // vratiMeshTrokut(a = 2, b = 2, centered = true)           → Flat triangle (single plane)
+        // vratiMeshPravokutnik(width = 2, height = 1, centered = true) → Flat rectangle
+        // vratiMeshLine(width = 2, height = 1, centered = true) → Flat rectangle
+
+        // =============================================================================
      
 
-      let kocka = crtac.vratiMeshPoluKugla(5, 15, 15);
-      let kocka_buffer = napravi_spremnik(kocka);
-      //let grid_buffer = napravi_spremnik(grid);
+    const wavyPoints = [];
+    const segments = 60;
+    for (let i = 0; i <= segments; i++) {
+        const a = (i / segments) * Math.PI * 2;
+        const radius = 4 + Math.sin(a * 3) * 0.6;   // wavy effect
+        wavyPoints.push([
+            radius * Math.cos(a),
+            radius * Math.sin(a),
+            Math.sin(a * 2) * 0.3   // some vertical variation
+        ]);
+    }
 
-      
+// Create the mesh
+//const mesh = this.vratiMeshKriva(wavyPoints, 0.25, 8);
 
-      gl.enable(gl.DEPTH_TEST);
+//let grid_buffer = napravi_spremnik(grid);
 
-      
-      mat.postaviKameru(15, 5, 2, 0, 0, 0, 0, 1, 0);
-        // prednja pa straznja
-      mat.persp(-10, 10, -10, 10, 5, 40);
 
-      postavi_izvor([500, 1000, 0], [1.0, 1.0, 1.0]);   
-      postavi_izvor_2([0, 0, 10], [0.0, 0.0, 1.0]);  
 
+gl.enable(gl.DEPTH_TEST);
+
+
+mat.postaviKameru(10, 5, 2, 0, 0, 0, 0, 1, 0);
+// prednja pa straznja
+mat.persp(-10, 10, -10, 10, 5, 40);
+
+postavi_izvor([50, 100, 0], [1.0, 1.0, 1.0]);   
+postavi_izvor_2([0, 0, 10], [0.0, 0.0, 1.0]);  
+
+let kocka = crtac.vratiMeshTrokut();
+let kocka_buffer = napravi_spremnik(kocka);
       animacija();
     
     } // WebGLaplikacija

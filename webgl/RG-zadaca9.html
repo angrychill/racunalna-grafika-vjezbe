@@ -160,7 +160,7 @@ function animacija() {
     mat_kocka.rotirajZ(kut_kocka);
 
     // Draw
-    bind_postavi_nacrtaj_triangle_strip(kocka_buffer, mat, mat_kocka, [1, 0, 0]);
+    bind_postavi_nacrtaj_triangles(kocka_buffer, mat, mat_kocka, [1, 0, 0]);
     bind_postavi_nacrtaj_lines(grid_buffer, mat, mat_grid, [0, 1, 0]);
 
     requestAnimationFrame(animacija);
