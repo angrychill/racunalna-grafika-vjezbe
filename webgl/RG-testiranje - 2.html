@@ -191,6 +191,9 @@
 
 
         gl.enable(gl.DEPTH_TEST);
+        gl.enable(gl.CULL_FACE);
+        gl.cullFace(gl.BACK);
+        gl.frontFace(gl.CW);
 
 
         mat.postaviKameru(10, 8, 9, 0, 5, 0, 0, 1, 0);   // better angled view

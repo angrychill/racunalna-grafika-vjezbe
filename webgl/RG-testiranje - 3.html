@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="hr">
+	<head>
+		<meta charset="UTF-8">
+		<title>WebGL2 - testiranje 3</title>
+		<script src="js/RG-WebGL.js"></script>
+		<script src="js/utility.js"></script>
+        <script src="js/crtanje_3d.js"></script>
+        <script src="js/mt3d.js"></script>
+      <script src="js/crtanje_webgl.js"></script>
+
+		<script>
+		  window.onload = WebGLaplikacija;
+
+		  function WebGLaplikacija() {
+        var platno1 = document.getElementById("slika1");
+        gl = platno1.getContext("webgl2");
+        if (!gl) alert("WebGL2 nije dostupan!");
+
+        GPUprogram1 = pripremiGPUprogram(gl, "vertex-shader", "fragment-shader");
+        gl.useProgram(GPUprogram1); // možemo imati više GPU programa
+
+        let crtac = new CrtanjeWebGL();
+        
+        // --- UNIFORMS ---
+        GPUprogram1.u_mTrans = gl.getUniformLocation(GPUprogram1, "u_mTrans");
+        GPUprogram1.u_izvorXYZ = gl.getUniformLocation(GPUprogram1, "u_izvorXYZ");
+        GPUprogram1.u_kameraXYZ = gl.getUniformLocation(GPUprogram1, "u_kameraXYZ");
+        GPUprogram1.u_boja = gl.getUniformLocation(GPUprogram1, "u_boja");
+        GPUprogram1.model_boja = gl.getUniformLocation(GPUprogram1, "model_boja");
+        GPUprogram1.u_modelMatrix = gl.getUniformLocation(GPUprogram1, "u_modelMatrix");
+        
+        GPUprogram1.a_vrhXYZ = gl.getAttribLocation(GPUprogram1, "a_vrhXYZ");
+        GPUprogram1.a_normala = gl.getAttribLocation(GPUprogram1, "a_normala");
+        GPUprogram1.u_izvorXYZ2 = gl.getUniformLocation(GPUprogram1, "u_izvorXYZ2");
+        GPUprogram1.u_boja2     = gl.getUniformLocation(GPUprogram1, "u_boja2");
+
+        
+      function napravi_spremnik(data) {
+          let vertices;
+
+          if (data.vertices && data.drawModes) {
+              // It's already a Mesh3D object
+              vertices = data.vertices;
+          } else {
+              // Raw array (old behavior)
+              vertices = data.flat ? data.flat() : data;
+          }
+
+          const buffer = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+          return {
+              buffer: buffer,
+              vertices: vertices,           // keep reference if needed
+              drawModes: data.drawModes || [{ mode: WebGL2RenderingContext.TRIANGLES, count: vertices.length / 6, offset: 0 }]
+          };
+}
+
+  
+        // Unified draw function that supports Mesh3D with multiple draw modes
+        function bind_postavi_nacrtaj_mesh(buffer, mat_main, mat_model, boja) {
+            if (!buffer || !buffer.drawModes) {
+                console.error("Buffer is not a valid Mesh3D!");
+                return;
+            }
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer.buffer);
+            
+            gl.uniformMatrix4fv(GPUprogram1.u_modelMatrix, false, mat_model.modelLista());
+            gl.uniformMatrix4fv(GPUprogram1.u_mTrans, false, mat_main.viewProjLista());
+            gl.uniform3fv(GPUprogram1.model_boja, boja);
+
+            gl.enableVertexAttribArray(GPUprogram1.a_vrhXYZ);
+            gl.enableVertexAttribArray(GPUprogram1.a_normala);
+            gl.vertexAttribPointer(GPUprogram1.a_vrhXYZ, 3, gl.FLOAT, false, 24, 0);
+            gl.vertexAttribPointer(GPUprogram1.a_normala, 3, gl.FLOAT, false, 24, 12);
+
+            // Draw all parts of the mesh
+            for (const mode of buffer.drawModes) {
+                gl.drawArrays(mode.mode, mode.offset, mode.count);
+            }
+        }
+
+
+
+    function postavi_izvor(pozicija, boja) {
+       gl.uniform3fv(GPUprogram1.u_izvorXYZ, pozicija);
+       
+        gl.uniform3fv(GPUprogram1.u_boja, boja);
+    }
+
+    function postavi_izvor_2(pozicija, boja) {
+       gl.uniform3fv(GPUprogram1.u_izvorXYZ2, pozicija);
+       
+        gl.uniform3fv(GPUprogram1.u_boja2, boja);
+    }
+
+    let alpha = 0;
+    function animacija() {
+        gl.viewport(0, 0, platno1.width, platno1.height);
+        gl.clearColor(0.5, 0.5, 0.5, 1);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        for (let i = 0; i<3; i++){
+            mat_sipka.identitet();
+            mat_sipka.rotirajY((Math.PI/1.5)*i);
+            mat_sipka.pomakni(0, 0, 5.5);
+            bind_postavi_nacrtaj_mesh(sipka_buff, mat_kamera, mat_sipka, obj_colour);
+        }
+
+        mat_prsten.identitet();
+        mat_prsten.rotirajX(Math.PI/2);
+        bind_postavi_nacrtaj_mesh(prsten_buff, mat_kamera, mat_prsten, obj_colour);
+      
+        bind_postavi_nacrtaj_mesh(sipka_debela_buff, mat_kamera, mat_prsten, obj_colour);
+
+        mat_sfera.identitet();
+        mat_sfera.pomakni(0, 4, 0);
+        bind_postavi_nacrtaj_mesh(sfera_buff, mat_kamera, mat_sfera, obj_colour);
+        mat_sfera.pomakni(0, -8, 0);
+        bind_postavi_nacrtaj_mesh(sfera_buff, mat_kamera, mat_sfera, obj_colour);
+
+        requestAnimationFrame(animacija);
+    }
+
+    /*astroida(r : number, t: number) {
+    // x = 4*r cos^3 t, y = 4*r sin^3 t
+    // t e 0, 2pi
+
+    let x = 4*r*Math.pow(Math.cos(t), 3);
+    let y = 4*r*Math.pow(Math.sin(t), 3);
+    if (t == 0){
+        this.gks.postaviNa(x, y);
+    }
+    this.gks.linijaDo(x, y, true);
+
+    // nacrtaj kruznicu, liniju i tocku
+    return {x: x, y: y}
+
+   }*/
+
+    const wavyPoints = [];
+        const segments = 200;           // higher = smoother
+        const r = 5;                    // overall size
+        const k = 2;                    // 2 = 4 petals
+        const innerOffset = 4;        // ← change this to control the hole in the middle
+
+        for (let i = 0; i <= segments; i++) {
+            let theta = (i / segments) * 2 * Math.PI;
+
+            // Rose curve with offset → creates inner hole
+            let rho = r * (Math.cos(k * theta) * Math.cos(k * theta) + 0.4) + innerOffset;
+            let x = rho * Math.cos(theta);
+            let y = rho * Math.sin(theta);
+            let z = 0;
+
+            wavyPoints.push(x, y, z);   // normal facing up
+        }
+
+
+        let mat_kamera = new MT3D();
+        let mat_prsten = new MT3D();
+        let mat_sipka = new MT3D();
+        let mat_sfera = new MT3D();
+
+        gl.enable(gl.DEPTH_TEST);
+        //gl.enable(gl.CULL_FACE);
+        //gl.cullFace(gl.BACK);
+        //gl.frontFace(gl.CW);
+
+        let obj_colour = [1, 1, 1];
+        
+
+        mat_kamera.postaviKameru(15, 10, 0, 0, 1, 0, 0, 1, 0);   // better angled view
+        mat_kamera.persp(-5, 5, -5, 5, 5, 50);
+
+        postavi_izvor([25, 50, 0], [1, 1, 1]);   
+        postavi_izvor_2([0, 10, 0], [0, 0.5, 0]);  
+
+
+        // 3 sipke
+        // 2 sfere 
+        // 1 debela sipka
+        // prsten
+        let prsten = crtac.vratiMeshElipsaSaRupom(12, 12, 11, 11, 1.5, 64);
+        let sipka = crtac.vratiMeshValjak(0.5, 12, 16);
+        let sipka_debela = crtac.vratiMeshValjak(1, 6, 16);
+        let sfera = crtac.vratiMeshKugla(2, 32, 32);
+
+    
+
+        let prsten_buff = napravi_spremnik(prsten);
+        let sipka_buff = napravi_spremnik(sipka);
+        let sipka_debela_buff = napravi_spremnik(sipka_debela);
+        let sfera_buff = napravi_spremnik(sfera);
+
+     
+
+
+        animacija();
+    
+    } // WebGLaplikacija
+
+    // ====================== MESH FUNKCIJE ======================
+        //
+        // vratiMeshKocka(a = 2, centered = true)  
+        // vratiMeshKockaWire(a = 2, centered = true)       
+        // vratiMeshGrid(min = -5, max = 5, step = 1)  
+    
+        // vratiMeshValjak(r = 1, h = 2, n = 32)    
+        // vratiMeshStozac(r = 1, h = 2, n = 32)                   
+        // vratiMeshKrnjiStozac(r1 = 1, r2 = 0.5, h = 2, n = 32)  
+
+        // vratiMeshKugla(r = 1, nLat = 20, nLon = 30)            
+        // vratiMeshPoluKugla(r = 1, nLat = 20, nLon = 30)        
+  
+        // vratiMeshPrsten(R = 2, r = 0.5, nR = 32, nT = 24)       
+
+        // vratiMeshKvadar(sx = 2, sy = 1, sz = 3, centered = true)
+        // vratiMeshTrokut(a = 2, b = 2, c = 2, height = 0.01)     
+        // vratiMeshPiramida(base = 2, height = 2, n = 4)          
+        //vratiMeshPoluPrstenElipsa(R, rX, rY, angledeg, nSeg, nArc )
+        //vratiMeshCilindarSuplji(r: number = 1, h: number = 2, n: number = 48)
+        // vratiMeshTrokut(a = 2, b = 2, centered = true)          
+        // vratiMeshPravokutnik(width = 2, height = 1, centered = true) 
+        // vratiMeshLine(width = 2, height = 1, centered = true) → Flat rectangle
+        // vratiMeshTorus(R=3, r=0.8, nMajor=64, nTube=24, square=false, rot=0, start=0, end=360) → Torus with arc support
+        // vratiMeshDisk(r=1, n=48, centered=true, plane='xy') 
+        // vratiMeshElipsaSaRupom(rOuterX, rOuterY, rInnerX, rInnerY, height, n, startAngle=0, endAngle=360) 
+     
+	</script>
+
+	<script id="vertex-shader" type="x-shader/x-vertex">
+      #version 300 es
+      in vec4 a_vrhXYZ;
+      in vec3 a_normala;
+
+      uniform mat4 u_mTrans;
+      uniform mat4 u_modelMatrix;
+
+      uniform vec3 u_izvorXYZ;   // svjetlo 1
+      uniform vec3 u_boja;
+      uniform vec3 u_izvorXYZ2;  // svjetlo 2
+      uniform vec3 u_boja2;
+
+      uniform vec3 u_kameraXYZ;
+
+      out vec3 v_osvjetljenje;   // ← changed: pass color instead of scalar
+
+      void main() {
+          vec4 worldPos = u_modelMatrix * a_vrhXYZ;
+          vec3 normala = normalize(mat3(u_modelMatrix) * a_normala);
+
+          // Prvo svjetlo
+          vec3 premaIzvoru1 = normalize(u_izvorXYZ - vec3(worldPos));
+          float difuzno1 = max(dot(premaIzvoru1, normala), 0.0);
+          float refleksija1 = 0.0;
+          if (difuzno1 > 0.0) {
+              vec3 premaKameri = normalize(u_kameraXYZ - vec3(worldPos));
+              vec3 reflektiranaZraka = reflect(-premaIzvoru1, normala);
+              refleksija1 = pow(max(dot(reflektiranaZraka, premaKameri), 0.0), 8.0);
+          }
+
+          // Drugo svjetlo
+          vec3 premaIzvoru2 = normalize(u_izvorXYZ2 - vec3(worldPos));
+          float difuzno2 = max(dot(premaIzvoru2, normala), 0.0);
+          float refleksija2 = 0.0;
+          if (difuzno2 > 0.0) {
+              vec3 premaKameri = normalize(u_kameraXYZ - vec3(worldPos));
+              vec3 reflektiranaZraka = reflect(-premaIzvoru2, normala);
+              refleksija2 = pow(max(dot(reflektiranaZraka, premaKameri), 0.0), 8.0);
+          }
+
+          // Kombiniraj oba svjetla s bojama
+          vec3 osvjetljenje = (difuzno1 * u_boja + difuzno2 * u_boja2) * 0.5 +
+                              (refleksija1 * u_boja + refleksija2 * u_boja2) * 0.5;
+
+          v_osvjetljenje = osvjetljenje;
+
+          gl_Position = u_mTrans * worldPos;
+      }
+      </script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+        #version 300 es
+        precision highp float;
+
+        in vec3 v_osvjetljenje;
+        uniform vec3 model_boja;
+
+        out vec4 bojaFragmenta;
+
+        void main() {
+            vec3 boja = v_osvjetljenje * model_boja;
+
+            // Simple boost for lines (you can remove if you want pure lighting)
+            //boja = max(boja, model_boja * 0.6);
+
+            bojaFragmenta = vec4(boja, 1.0);
+        }
+</script>
+	</head>
+
+	<body>
+		<h1>WebGL2 - testiranje 3</code></h1>
+		<div>
+			<canvas id="slika1" width="500" height="500" style="border:5px solid black">
+				Vaš preglednik ne podržava HTML5 canvas.
+      </canvas>
+		</div>
+	</body>
+</html>

@@ -11,42 +11,36 @@ class CrtanjeWebGL {
         const y1 = y0 + a;
         const z1 = z0 + a;
         const vertices = [
-            // Front (+Z)
             x0, y0, z1, 0, 0, 1,
             x1, y0, z1, 0, 0, 1,
             x1, y1, z1, 0, 0, 1,
             x0, y0, z1, 0, 0, 1,
             x1, y1, z1, 0, 0, 1,
             x0, y1, z1, 0, 0, 1,
-            // Back (-Z)
             x0, y0, z0, 0, 0, -1,
             x1, y0, z0, 0, 0, -1,
             x1, y1, z0, 0, 0, -1,
             x0, y0, z0, 0, 0, -1,
             x1, y1, z0, 0, 0, -1,
             x0, y1, z0, 0, 0, -1,
-            // Left (-X)
             x0, y0, z0, -1, 0, 0,
             x0, y0, z1, -1, 0, 0,
             x0, y1, z1, -1, 0, 0,
             x0, y0, z0, -1, 0, 0,
             x0, y1, z1, -1, 0, 0,
             x0, y1, z0, -1, 0, 0,
-            // Right (+X)
             x1, y0, z0, 1, 0, 0,
             x1, y0, z1, 1, 0, 0,
             x1, y1, z1, 1, 0, 0,
             x1, y0, z0, 1, 0, 0,
             x1, y1, z1, 1, 0, 0,
             x1, y1, z0, 1, 0, 0,
-            // Top (+Y)
             x0, y1, z0, 0, 1, 0,
             x0, y1, z1, 0, 1, 0,
             x1, y1, z1, 0, 1, 0,
             x0, y1, z0, 0, 1, 0,
             x1, y1, z1, 0, 1, 0,
             x1, y1, z0, 0, 1, 0,
-            // Bottom (-Y)
             x0, y0, z0, 0, -1, 0,
             x0, y0, z1, 0, -1, 0,
             x1, y0, z1, 0, -1, 0,
@@ -70,17 +64,14 @@ class CrtanjeWebGL {
         const y1 = y0 + a;
         const z1 = z0 + a;
         const vertices = [
-            // Bottom face
             x0, y0, z0, 0, 0, 1, x1, y0, z0, 0, 0, 1,
             x1, y0, z0, 0, 0, 1, x1, y1, z0, 0, 0, 1,
             x1, y1, z0, 0, 0, 1, x0, y1, z0, 0, 0, 1,
             x0, y1, z0, 0, 0, 1, x0, y0, z0, 0, 0, 1,
-            // Top face
             x0, y0, z1, 0, 0, 1, x1, y0, z1, 0, 0, 1,
             x1, y0, z1, 0, 0, 1, x1, y1, z1, 0, 0, 1,
             x1, y1, z1, 0, 0, 1, x0, y1, z1, 0, 0, 1,
             x0, y1, z1, 0, 0, 1, x0, y0, z1, 0, 0, 1,
-            // Vertical edges
             x0, y0, z0, 0, 0, 1, x0, y0, z1, 0, 0, 1,
             x1, y0, z0, 0, 0, 1, x1, y0, z1, 0, 0, 1,
             x1, y1, z0, 0, 0, 1, x1, y1, z1, 0, 0, 1,
@@ -228,9 +219,6 @@ class CrtanjeWebGL {
             drawModes: [{ mode: WebGL2RenderingContext.TRIANGLE_STRIP, count: vrhovi.length / 6, offset: 0 }]
         };
     }
-    vratiMeshCilindar(r = 1, h = 2, n = 32) {
-        return this.vratiMeshValjak(r, h, n); // Reuse existing valjak implementation
-    }
     vratiMeshPrsten(R = 2, r = 0.5, nR = 32, nT = 24) {
         let vrhovi = [];
         const phiStep = 2 * Math.PI / nR;
@@ -240,14 +228,12 @@ class CrtanjeWebGL {
             const phi1 = (i + 1) * phiStep;
             for (let j = 0; j <= nT; j++) {
                 const theta = j * thetaStep;
-                // First ring
                 const x0 = (R + r * Math.cos(theta)) * Math.cos(phi0);
                 const y0 = (R + r * Math.cos(theta)) * Math.sin(phi0);
                 const z0 = r * Math.sin(theta);
                 const nx0 = Math.cos(theta) * Math.cos(phi0);
                 const ny0 = Math.cos(theta) * Math.sin(phi0);
                 const nz0 = Math.sin(theta);
-                // Second ring
                 const x1 = (R + r * Math.cos(theta)) * Math.cos(phi1);
                 const y1 = (R + r * Math.cos(theta)) * Math.sin(phi1);
                 const z1 = r * Math.sin(theta);
@@ -274,42 +260,36 @@ class CrtanjeWebGL {
         const y1 = y0 + sy;
         const z1 = z0 + sz;
         const vertices = [
-            // Front (+Z)
             x0, y0, z1, 0, 0, 1,
             x1, y0, z1, 0, 0, 1,
             x1, y1, z1, 0, 0, 1,
             x0, y0, z1, 0, 0, 1,
             x1, y1, z1, 0, 0, 1,
             x0, y1, z1, 0, 0, 1,
-            // Back (-Z)
             x0, y0, z0, 0, 0, -1,
             x1, y0, z0, 0, 0, -1,
             x1, y1, z0, 0, 0, -1,
             x0, y0, z0, 0, 0, -1,
             x1, y1, z0, 0, 0, -1,
             x0, y1, z0, 0, 0, -1,
-            // Left (-X)
             x0, y0, z0, -1, 0, 0,
             x0, y0, z1, -1, 0, 0,
             x0, y1, z1, -1, 0, 0,
             x0, y0, z0, -1, 0, 0,
             x0, y1, z1, -1, 0, 0,
             x0, y1, z0, -1, 0, 0,
-            // Right (+X)
             x1, y0, z0, 1, 0, 0,
             x1, y0, z1, 1, 0, 0,
             x1, y1, z1, 1, 0, 0,
             x1, y0, z0, 1, 0, 0,
             x1, y1, z1, 1, 0, 0,
             x1, y1, z0, 1, 0, 0,
-            // Top (+Y)
             x0, y1, z0, 0, 1, 0,
             x0, y1, z1, 0, 1, 0,
             x1, y1, z1, 0, 1, 0,
             x0, y1, z0, 0, 1, 0,
             x1, y1, z1, 0, 1, 0,
             x1, y1, z0, 0, 1, 0,
-            // Bottom (-Y)
             x0, y0, z0, 0, -1, 0,
             x0, y0, z1, 0, -1, 0,
             x1, y0, z1, 0, -1, 0,
@@ -461,11 +441,6 @@ class CrtanjeWebGL {
                 }]
         };
     }
-    // ====================== ELIPTIČKI POLU-PRSTEN (Half Elliptical Ring) ======================
-    // Low poly (4 sides), but smooth shading thanks to correct normals
-    // ====================== ELIPTIČKI POLU-PRSTEN - FIXED ======================
-    // ====================== SMOOTH ELIPTIČKI POLU-PRSTEN ======================
-    // Designed to look like the yellow ring in your image
     vratiMeshPoluPrstenElipsa(R = 4, // Main radius (how wide the ring is)
     rX = 1, // Tube thickness horizontal
     rY = 1, // Tube thickness vertical
@@ -514,17 +489,6 @@ class CrtanjeWebGL {
                 }]
         };
     }
-    // ====================== KRIVA / TUBE PATH ======================
-    // Draws a smooth tubular curve based on array of points
-    // ====================== KRIVA LINE (Pure Line / Curve) ======================
-    // Draws a simple line or curve from array of points using LINES mode
-    // ====================== KRIVA LINE (Pure Thin Line) ======================
-    // Always 1px thin, unaffected by lighting, uses LINES mode
-    // ====================== KRIVA LINE - BRIGHT (Max brightness) ======================
-    // Normals are calculated to face towards the camera for maximum lighting
-    // ====================== KRIVA LINE - ALWAYS BRIGHT ======================
-    // ====================== KRIVA / LINE (continuous thin curve) ======================
-    // ====================== KRIVA LINE - ALWAYS BRIGHT (normals face the light) ======================
     vratiMeshLine(points, lightPos = [10, 15, 20] // default light position
     ) {
         if (!points || points.length < 6) {
@@ -557,7 +521,6 @@ class CrtanjeWebGL {
         };
     }
     // ====================== TORUS / PRSTEN (with optional square cross-section) ======================
-    // ====================== TORUS / PRSTEN (with rotation + arc support) ======================
     vratiMeshTorus(R = 3, r = 0.8, nMajor = 64, nTube = 24, squareCrossSection = false, crossSectionRotation = 0, startAngle = 0, endAngle = 360) {
         let vrhovi = [];
         const phiStart = startAngle * Math.PI / 180;
@@ -679,125 +642,6 @@ class CrtanjeWebGL {
             count: n + 2,
             offset: offset
         });
-        return {
-            vertices: new Float32Array(vrhovi),
-            drawModes: drawModes
-        };
-    }
-    // ====================== DISK WITH HOLE + THICKNESS (Annular Disc / Washer) ======================
-    // ====================== DISK WITH HOLE + THICKNESS (Annular Disc / Washer) ======================
-    // ====================== DISK WITH HOLE + THICKNESS (Annular Disc / Washer) ======================
-    vratiMeshDiskSaRupom(rOuter = 2.0, // Outer radius
-    rInner = 0.8, // Inner radius (set 0 for full disk)
-    height = 0.3, // Thickness
-    n = 48, // Segments
-    centered = true) {
-        if (rInner < 0)
-            rInner = 0;
-        const halfH = height / 2;
-        const z0 = centered ? -halfH : 0;
-        const z1 = centered ? halfH : height;
-        let vrhovi = [];
-        let drawModes = [];
-        let vertexOffset = 0; // tracks number of vertices (not floats)
-        const angleStep = 2 * Math.PI / n;
-        // Helper to add a vertex
-        const addVertex = (x, y, z, nx, ny, nz) => {
-            vrhovi.push(x, y, z, nx, ny, nz);
-        };
-        // === TOP FACE ===
-        const topStart = vertexOffset;
-        if (rInner > 0.001) {
-            // Annular ring using TRIANGLE_STRIP
-            for (let i = 0; i <= n; i++) {
-                const a = i * angleStep;
-                const c = Math.cos(a);
-                const s = Math.sin(a);
-                addVertex(rInner * c, rInner * s, z1, 0, 0, 1);
-                addVertex(rOuter * c, rOuter * s, z1, 0, 0, 1);
-            }
-            drawModes.push({
-                mode: WebGL2RenderingContext.TRIANGLE_STRIP,
-                count: 2 * (n + 1),
-                offset: topStart
-            });
-            vertexOffset += 2 * (n + 1);
-        }
-        else {
-            // Full disk using TRIANGLE_FAN
-            addVertex(0, 0, z1, 0, 0, 1);
-            for (let i = 0; i <= n; i++) {
-                const a = i * angleStep;
-                addVertex(rOuter * Math.cos(a), rOuter * Math.sin(a), z1, 0, 0, 1);
-            }
-            drawModes.push({
-                mode: WebGL2RenderingContext.TRIANGLE_FAN,
-                count: n + 2,
-                offset: topStart
-            });
-            vertexOffset += n + 2;
-        }
-        // === BOTTOM FACE ===
-        const bottomStart = vertexOffset;
-        if (rInner > 0.001) {
-            for (let i = 0; i <= n; i++) {
-                const a = i * angleStep;
-                const c = Math.cos(a);
-                const s = Math.sin(a);
-                addVertex(rOuter * c, rOuter * s, z0, 0, 0, -1);
-                addVertex(rInner * c, rInner * s, z0, 0, 0, -1);
-            }
-            drawModes.push({
-                mode: WebGL2RenderingContext.TRIANGLE_STRIP,
-                count: 2 * (n + 1),
-                offset: bottomStart
-            });
-            vertexOffset += 2 * (n + 1);
-        }
-        else {
-            addVertex(0, 0, z0, 0, 0, -1);
-            for (let i = 0; i <= n; i++) {
-                const a = i * angleStep;
-                addVertex(rOuter * Math.cos(a), rOuter * Math.sin(a), z0, 0, 0, -1);
-            }
-            drawModes.push({
-                mode: WebGL2RenderingContext.TRIANGLE_FAN,
-                count: n + 2,
-                offset: bottomStart
-            });
-            vertexOffset += n + 2;
-        }
-        // === OUTER WALL ===
-        const outerStart = vertexOffset;
-        for (let i = 0; i <= n; i++) {
-            const a = i * angleStep;
-            const x = rOuter * Math.cos(a);
-            const y = rOuter * Math.sin(a);
-            addVertex(x, y, z0, x, y, 0);
-            addVertex(x, y, z1, x, y, 0);
-        }
-        drawModes.push({
-            mode: WebGL2RenderingContext.TRIANGLE_STRIP,
-            count: 2 * (n + 1),
-            offset: outerStart
-        });
-        vertexOffset += 2 * (n + 1);
-        // === INNER WALL ===
-        if (rInner > 0.001) {
-            const innerStart = vertexOffset;
-            for (let i = 0; i <= n; i++) {
-                const a = i * angleStep;
-                const x = rInner * Math.cos(a);
-                const y = rInner * Math.sin(a);
-                addVertex(x, y, z1, -x, -y, 0);
-                addVertex(x, y, z0, -x, -y, 0);
-            }
-            drawModes.push({
-                mode: WebGL2RenderingContext.TRIANGLE_STRIP,
-                count: 2 * (n + 1),
-                offset: innerStart
-            });
-        }
         return {
             vertices: new Float32Array(vrhovi),
             drawModes: drawModes
