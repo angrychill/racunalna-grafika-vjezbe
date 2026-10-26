@@ -110,17 +110,8 @@
             bind_postavi_nacrtaj_mesh(sipka_buff, mat_kamera, mat_sipka, obj_colour);
         }
 
-        mat_prsten.identitet();
-        mat_prsten.rotirajX(Math.PI/2);
-        bind_postavi_nacrtaj_mesh(prsten_buff, mat_kamera, mat_prsten, obj_colour);
-      
-        bind_postavi_nacrtaj_mesh(sipka_debela_buff, mat_kamera, mat_prsten, obj_colour);
-
-        mat_sfera.identitet();
-        mat_sfera.pomakni(0, 4, 0);
-        bind_postavi_nacrtaj_mesh(sfera_buff, mat_kamera, mat_sfera, obj_colour);
-        mat_sfera.pomakni(0, -8, 0);
-        bind_postavi_nacrtaj_mesh(sfera_buff, mat_kamera, mat_sfera, obj_colour);
+        
+        
 
         requestAnimationFrame(animacija);
     }

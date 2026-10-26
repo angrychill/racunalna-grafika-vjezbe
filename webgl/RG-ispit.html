@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="hr">
+	<head>
+		<meta charset="UTF-8">
+		<title>WebGL2 - ispit</title>
+		<script src="js/RG-WebGL.js"></script>
+		<script src="js/utility.js"></script>
+        <script src="js/crtanje_3d.js"></script>
+        <script src="js/mt3d.js"></script>
+      <script src="js/crtanje_webgl.js"></script>
+
+		<script>
+		  window.onload = WebGLaplikacija;
+
+		  function WebGLaplikacija() {
+        var platno1 = document.getElementById("slika1");
+        gl = platno1.getContext("webgl2");
+        if (!gl) alert("WebGL2 nije dostupan!");
+
+        GPUprogram1 = pripremiGPUprogram(gl, "vertex-shader", "fragment-shader");
+        gl.useProgram(GPUprogram1); 
+
+        let crtac = new CrtanjeWebGL();
+        let util = new Utility();
+
+        GPUprogram1.u_mTrans = gl.getUniformLocation(GPUprogram1, "u_mTrans");
+        GPUprogram1.u_izvorXYZ = gl.getUniformLocation(GPUprogram1, "u_izvorXYZ");
+        GPUprogram1.u_kameraXYZ = gl.getUniformLocation(GPUprogram1, "u_kameraXYZ");
+        GPUprogram1.u_boja = gl.getUniformLocation(GPUprogram1, "u_boja");
+        GPUprogram1.model_boja = gl.getUniformLocation(GPUprogram1, "model_boja");
+        GPUprogram1.u_modelMatrix = gl.getUniformLocation(GPUprogram1, "u_modelMatrix");
+        
+        GPUprogram1.a_vrhXYZ = gl.getAttribLocation(GPUprogram1, "a_vrhXYZ");
+        GPUprogram1.a_normala = gl.getAttribLocation(GPUprogram1, "a_normala");
+        GPUprogram1.u_izvorXYZ2 = gl.getUniformLocation(GPUprogram1, "u_izvorXYZ2");
+        GPUprogram1.u_boja2     = gl.getUniformLocation(GPUprogram1, "u_boja2");
+
+        
+      function napravi_spremnik(data) {
+          let vertices;
+
+          if (data.vertices && data.drawModes) {
+          
+              vertices = data.vertices;
+          } else {
+           
+              vertices = data.flat ? data.flat() : data;
+          }
+
+          const buffer = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+          return {
+              buffer: buffer,
+              vertices: vertices,           // keep reference if needed
+              drawModes: data.drawModes || [{ mode: WebGL2RenderingContext.TRIANGLES, count: vertices.length / 6, offset: 0 }]
+          };
+}
+
+  
+        function bind_postavi_nacrtaj_mesh(buffer, mat_main, mat_model, boja) {
+            if (!buffer || !buffer.drawModes) {
+                console.error("Buffer is not a valid Mesh3D!");
+                return;
+            }
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer.buffer);
+            
+            gl.uniformMatrix4fv(GPUprogram1.u_modelMatrix, false, mat_model.modelLista());
+            gl.uniformMatrix4fv(GPUprogram1.u_mTrans, false, mat_main.viewProjLista());
+            gl.uniform3fv(GPUprogram1.model_boja, boja);
+
+            gl.enableVertexAttribArray(GPUprogram1.a_vrhXYZ);
+            gl.enableVertexAttribArray(GPUprogram1.a_normala);
+            gl.vertexAttribPointer(GPUprogram1.a_vrhXYZ, 3, gl.FLOAT, false, 24, 0);
+            gl.vertexAttribPointer(GPUprogram1.a_normala, 3, gl.FLOAT, false, 24, 12);
+
+            for (const mode of buffer.drawModes) {
+                gl.drawArrays(mode.mode, mode.offset, mode.count);
+            }
+        }
+
+
+
+    function postavi_izvor(pozicija, boja) {
+       gl.uniform3fv(GPUprogram1.u_izvorXYZ, pozicija);
+       
+        gl.uniform3fv(GPUprogram1.u_boja, boja);
+    }
+
+    function postavi_izvor_2(pozicija, boja) {
+       gl.uniform3fv(GPUprogram1.u_izvorXYZ2, pozicija);
+       
+        gl.uniform3fv(GPUprogram1.u_boja2, boja);
+    }
+
+    let alpha = 0;
+     let duljina_brida = 7;
+    let radius = duljina_brida;
+    function animacija() {
+        alpha += 0.01;
+        gl.viewport(0, 0, platno1.width, platno1.height);
+        gl.clearColor(0.5, 0.5, 0.5, 1);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        let kam_x = radius * Math.cos(alpha);
+        let kam_z = radius * Math.sin(alpha);
+
+       
+
+        // napravi wireframe kocke
+    
+        mat_sipka.identitet();
+        mat_sipka.rotirajY(alpha);
+        
+        bind_postavi_nacrtaj_mesh(kocka_wire_buff, mat_kamera, mat_sipka, boja_bridova);
+        mat_sipka.pomakni(duljina_brida, 0, 0);
+        bind_postavi_nacrtaj_mesh(kocka_wire_buff, mat_kamera, mat_sipka, boja_bridova);
+
+        mat_sipka.rotirajY(Math.PI/2);
+        mat_sipka.pomakni(duljina_brida/2, 0, -duljina_brida/2);
+        bind_postavi_nacrtaj_mesh(kocka_wire_buff, mat_kamera, mat_sipka, boja_bridova);
+
+        mat_sipka.rotirajX(Math.PI/2);
+        mat_sipka.pomakni(0, duljina_brida/2, -duljina_brida/2);
+        bind_postavi_nacrtaj_mesh(kocka_wire_buff, mat_kamera, mat_sipka, boja_bridova);
+
+        mat_sipka.identitet();
+        mat_sipka.rotirajY(alpha);
+        mat_sipka.pomakni(duljina_brida, duljina_brida/2, duljina_brida/2);
+        mat_sipka.rotirajX(Math.PI/2);
+        bind_postavi_nacrtaj_mesh(kocka_wire_buff, mat_kamera, mat_sipka, boja_bridova);
+
+        
+        mat_sipka.identitet();
+        mat_sipka.rotirajY(alpha);
+        mat_sipka.pomakni(duljina_brida/2, 0, duljina_brida/2);
+        mat_sipka.rotirajY(Math.PI/2);
+        bind_postavi_nacrtaj_mesh(kocka_wire_buff, mat_kamera, mat_sipka, boja_bridova);
+
+        mat_sipka.identitet();
+        mat_sipka.rotirajY(alpha);
+        mat_sipka.rotirajX(Math.PI/2);
+        mat_sipka.pomakni(duljina_brida/2, 0, -duljina_brida/2);
+        mat_sipka.pomakni(-duljina_brida/2, duljina_brida/2, 0);
+
+        bind_postavi_nacrtaj_mesh(kocka_wire_buff, mat_kamera, mat_sipka, boja_bridova);
+
+        mat_sipka.identitet();
+        mat_sipka.rotirajY(alpha);
+        mat_sipka.rotirajX(Math.PI/2);
+        mat_sipka.pomakni(duljina_brida/2, 0, -duljina_brida/2);
+        mat_sipka.pomakni(duljina_brida/2, duljina_brida/2, 0);
+        
+        bind_postavi_nacrtaj_mesh(kocka_wire_buff, mat_kamera, mat_sipka, boja_bridova);
+
+        
+        mat_sipka.identitet();
+        mat_sipka.rotirajY(alpha);
+        mat_sipka.rotirajX(Math.PI/2);
+        mat_sipka.pomakni(duljina_brida/2, 0, -duljina_brida/2);
+        mat_sipka.pomakni(-duljina_brida/2, -duljina_brida/2, 0);
+        bind_postavi_nacrtaj_mesh(kocka_wire_buff, mat_kamera, mat_sipka, boja_bridova);
+
+        // ---------- gornji dio
+        mat_sipka.identitet();
+        mat_sipka.rotirajY(alpha);
+        mat_sipka.pomakni(duljina_brida/2, duljina_brida, duljina_brida/2);
+        mat_sipka.rotirajY(Math.PI/2);
+    
+        bind_postavi_nacrtaj_mesh(kocka_wire_buff, mat_kamera, mat_sipka, boja_bridova);
+
+         mat_sipka.identitet();
+         mat_sipka.rotirajY(alpha);
+        mat_sipka.pomakni(duljina_brida/2, duljina_brida, -duljina_brida/2);
+        mat_sipka.rotirajY(Math.PI/2);
+    
+        bind_postavi_nacrtaj_mesh(kocka_wire_buff, mat_kamera, mat_sipka, boja_bridova);
+
+        mat_sipka.identitet();
+        mat_sipka.rotirajY(alpha);
+        mat_sipka.pomakni(duljina_brida, duljina_brida, 0);
+        mat_sipka.rotirajZ(Math.PI/2);
+    
+        bind_postavi_nacrtaj_mesh(kocka_wire_buff, mat_kamera, mat_sipka, boja_bridova);
+
+         mat_sipka.identitet();
+         mat_sipka.rotirajY(alpha);
+        mat_sipka.pomakni(duljina_brida, duljina_brida, 0);
+        mat_sipka.rotirajZ(Math.PI/2);
+        mat_sipka.pomakni(0, duljina_brida, 0);
+    
+        bind_postavi_nacrtaj_mesh(kocka_wire_buff, mat_kamera, mat_sipka, boja_bridova);
+
+        // dijagonala
+         mat_sipka.identitet();
+         mat_sipka.rotirajY(alpha);
+         mat_sipka.pomakni(duljina_brida/2, duljina_brida/2, 0);
+        mat_sipka.rotirajY(Math.PI/4);
+        mat_sipka.rotirajX(Math.PI/5);
+       //mat_sipka.pomakni(duljina_brida/2, duljina_brida/2, 0);
+         //mat_sipka.rotirajX(Math.PI/4);
+         //mat_sipka.rotirajY(Math.PI/4);
+         bind_postavi_nacrtaj_mesh(dijagonala_buff, mat_kamera, mat_sipka, boja_bridova);
+  
+    
+
+         // ---------- gornji dio
+
+         // ---------- sfere:
+         let a = duljina_brida/2;
+         
+
+        
+        mat_sfera.identitet();
+        mat_sfera.rotirajY(alpha);
+        mat_sfera.pomakni(2*a, 0, a);
+        bind_postavi_nacrtaj_mesh(sfera_buff, mat_kamera, mat_sfera, boja_kugle);
+
+        mat_sfera.pomakni(0, 2*a, 0);
+        
+        bind_postavi_nacrtaj_mesh(sfera_buff, mat_kamera, mat_sfera, boja_kugle);
+
+        mat_sfera.pomakni(-2*a, 0, 0);
+        bind_postavi_nacrtaj_mesh(sfera_buff, mat_kamera, mat_sfera, boja_kugle);
+
+        mat_sfera.pomakni(0, 0, -2*a);
+        bind_postavi_nacrtaj_mesh(sfera_buff, mat_kamera, mat_sfera, boja_kugle);
+
+        mat_sfera.pomakni(2*a, 0, 0);
+        bind_postavi_nacrtaj_mesh(sfera_buff, mat_kamera, mat_sfera, boja_kugle);
+
+        mat_sfera.pomakni(0, -2*a, 0);
+        bind_postavi_nacrtaj_mesh(sfera_buff, mat_kamera, mat_sfera, boja_kugle);
+
+    mat_sfera.pomakni(-2*a, 0, 0);
+            bind_postavi_nacrtaj_mesh(sfera_buff, mat_kamera, mat_sfera, boja_kugle);
+
+    mat_sfera.pomakni(0, 0, 2*a);
+            bind_postavi_nacrtaj_mesh(sfera_buff, mat_kamera, mat_sfera, boja_kugle);
+
+
+            // plohe
+        mat_ploha.identitet();
+        mat_ploha.rotirajY(alpha);
+        mat_ploha.pomakni(0, 0, a);
+        bind_postavi_nacrtaj_mesh(ploha_unutra_buff, mat_kamera, mat_ploha, boja_ploha_unutra);
+        mat_ploha.rotirajY(Math.PI/2);
+        bind_postavi_nacrtaj_mesh(ploha_unutra_buff, mat_kamera, mat_ploha, boja_ploha_unutra);
+        
+        mat_ploha.rotirajX(Math.PI/2);
+        mat_ploha.zrcaliNaY();
+        mat_ploha.pomakni(-2*a, 0, 0);
+        bind_postavi_nacrtaj_mesh(ploha_unutra_buff, mat_kamera, mat_ploha, boja_ploha_unutra);
+        
+        // vanjske
+        mat_ploha.identitet();
+        mat_ploha.rotirajY(alpha);
+        mat_ploha.pomakni(0, 0, 0);
+        mat_ploha.pomakni(0, 0, a+0.01);
+        bind_postavi_nacrtaj_mesh(ploha_unutra_buff, mat_kamera, mat_ploha, boja_ploha_van);
+
+        mat_ploha.identitet();
+       mat_ploha.rotirajY(alpha);
+        mat_ploha.zrcaliNaY();
+         mat_ploha.rotirajY(Math.PI/2);
+         mat_ploha.pomakni(-a, 0, 0.01);
+        bind_postavi_nacrtaj_mesh(ploha_unutra_buff, mat_kamera, mat_ploha, boja_ploha_van);
+
+         mat_ploha.zrcaliNaZ();
+        
+         mat_ploha.rotirajX(Math.PI/2);
+         mat_ploha.pomakni(-a*2, -a*2, -0.01);
+        bind_postavi_nacrtaj_mesh(ploha_unutra_buff, mat_kamera, mat_ploha, boja_ploha_van);
+
+
+
+        
+
+       
+
+        requestAnimationFrame(animacija);
+    }
+
+
+   
+        
+         let duljina_dijagonale = duljina_brida*Math.sqrt(3);
+
+        let mat_kamera = new MT3D();
+        let mat_kocka = new MT3D();
+        let mat_sipka = new MT3D();
+         let mat_sfera = new MT3D();
+        let mat_ploha = new MT3D();
+
+        //(0.93,0.6,0.29)
+        let boja_kugle = [0.93, 0.6, 0.29];
+        let boja_bridova = [0.4, 1, 1];
+        let boja_ploha_van = [0.6, 0.6, 1];
+        let boja_ploha_unutra = [1, 0.3, 1];
+
+        gl.enable(gl.DEPTH_TEST);
+     
+        
+
+
+        mat_kamera.persp(-5, 5, -5, 5, 5, 50);
+
+        mat_kamera.postaviKameru(14, 9, 0, 0, 0, 0, 0, 1, 0); 
+        postavi_izvor([20, 25, 20], [1, 1, 1]);   
+
+        let kocka_wire = crtac.vratiMeshValjak(0.15, duljina_brida, 32);
+        let kocka_wire_buff = napravi_spremnik(kocka_wire);
+
+        let sfera = crtac.vratiMeshKugla(0.3, 32, 32);
+        let sfera_buff = napravi_spremnik(sfera);
+        
+        let dijagonala = crtac.vratiMeshValjak(0.15, duljina_dijagonale, 32);
+        let dijagonala_buff = napravi_spremnik(dijagonala);
+
+        let ploha_unutra = crtac.vratiMeshPravokutnik(duljina_brida, duljina_brida, false);
+        let ploha_unutra_buff = napravi_spremnik(ploha_unutra);
+     
+
+
+        animacija();
+    
+    } 
+	</script>
+
+	<script id="vertex-shader" type="x-shader/x-vertex">
+      #version 300 es
+      in vec4 a_vrhXYZ;
+      in vec3 a_normala;
+
+      uniform mat4 u_mTrans;
+      uniform mat4 u_modelMatrix;
+
+      uniform vec3 u_izvorXYZ;   // svjetlo 1
+      uniform vec3 u_boja;
+      uniform vec3 u_izvorXYZ2;  // svjetlo 2
+      uniform vec3 u_boja2;
+
+      uniform vec3 u_kameraXYZ;
+
+      out vec3 v_osvjetljenje; 
+
+      void main() {
+          vec4 worldPos = u_modelMatrix * a_vrhXYZ;
+          vec3 normala = normalize(mat3(u_modelMatrix) * a_normala);
+
+          // Prvo svjetlo
+          vec3 premaIzvoru1 = normalize(u_izvorXYZ - vec3(worldPos));
+          float difuzno1 = max(dot(premaIzvoru1, normala), 0.0);
+          float refleksija1 = 0.0;
+          if (difuzno1 > 0.0) {
+              vec3 premaKameri = normalize(u_kameraXYZ - vec3(worldPos));
+              vec3 reflektiranaZraka = reflect(-premaIzvoru1, normala);
+              refleksija1 = pow(max(dot(reflektiranaZraka, premaKameri), 0.0), 5.0);
+          }
+
+          // Drugo svjetlo
+          vec3 premaIzvoru2 = normalize(u_izvorXYZ2 - vec3(worldPos));
+          float difuzno2 = max(dot(premaIzvoru2, normala), 0.0);
+          float refleksija2 = 0.0;
+          if (difuzno2 > 0.0) {
+              vec3 premaKameri = normalize(u_kameraXYZ - vec3(worldPos));
+              vec3 reflektiranaZraka = reflect(-premaIzvoru2, normala);
+              refleksija2 = pow(max(dot(reflektiranaZraka, premaKameri), 0.0), 5.0);
+          }
+
+          // Kombiniraj oba svjetla s bojama
+          vec3 osvjetljenje = (difuzno1 * u_boja + difuzno2 * u_boja2) * 0.7 +
+                              (refleksija1 * u_boja + refleksija2 * u_boja2) * 0.7;
+
+          v_osvjetljenje = osvjetljenje;
+
+          gl_Position = u_mTrans * worldPos;
+      }
+      </script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+        #version 300 es
+        precision highp float;
+
+        in vec3 v_osvjetljenje;
+        uniform vec3 model_boja;
+
+        out vec4 bojaFragmenta;
+
+        void main() {
+            vec3 boja = v_osvjetljenje * model_boja;
+
+           
+            bojaFragmenta = vec4(boja, 1.0);
+        }
+</script>
+	</head>
+
+	<body>
+		<h1>WebGL2 -  ispit</code></h1>
+		<div>
+			<canvas id="slika1" width="600" height="600" style="border:5px solid black">
+				Vaš preglednik ne podržava HTML5 canvas.
+      </canvas>
+		</div>
+	</body>
+</html>
